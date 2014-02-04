@@ -17,10 +17,27 @@
     color: white;
 }
 
+#customer {
+    background-color: white;
+    color: black;
+    width: 133px;
+    height: 110px;
+    padding: 10px;
+    border: 5px solid gray;
+    margin: 10px;
+    display: inline-block;
+    
+}
+
+#customer:hover {
+    background-color: aqua;
+    
+}
+
 #name {
-    color: white;
+    color: black;
 }
 
 #visits {
-    color: white;
+    color: red;
 }

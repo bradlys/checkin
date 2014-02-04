@@ -1,5 +1,6 @@
 //@author Bradly Schlenker
 $(document).ready(function(){
+$("#nonefound").hide();
 $('#search').each(function() {
     var elem = $(this);
     // Save current value of element
@@ -14,9 +15,14 @@ $('#search').each(function() {
             $.post("search.php",
             { name : elem.val() },
             function ( data ) {
-                $("#result").empty();
-                $("#result").append(data);
-                
+                $("#beforefound").hide();
+                $(".customer").remove();
+                if(data){
+                    $("#result").append(data);
+                    $("#nonefound").hide();
+                } else{
+                    $("#nonefound").show();
+                }
             });
         }
     });
