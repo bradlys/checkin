@@ -78,10 +78,25 @@
               <h4 class="modal-title" id="modaltitle"></h4>
             </div>
             <div class="modal-body">
+            <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="row">
+                <div class="col-lg-6">
+                  <div class="input-group">
+                    Name: <input type="text" class="form-control" id="modalName" placeholder="Enter Name" autocomplete="off">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div class="panel-body" id="result">
+                
+            </div>
+            </div>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Save changes</button>
+              <button type="button" class="btn btn-primary">Save & Checkin</button>
             </div>
           </div>
         </div>

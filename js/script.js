@@ -19,9 +19,26 @@ $('#search').each(function() {
                 $(".customer").remove();
                 if(data){
                     $("#result").append(data);
+                    $(".customer.thumbnail").on("click", function ( event ) {
+                        var name = $(this).find("#username").text();
+                        $("#modaltitle").text("Checking in " + name);
+                        $("#modalName").val(name);
+                        $("#myModal").modal('show');
+                        
+                    });
                     $("#nonefound").hide();
                 } else{
                     $("#nonefound").show();
+                }
+            }); 
+           
+            $(this).keypress(function (e) {
+                if (e.which === 13) {
+                    var name = $(this).val();
+                    $("#modaltitle").text("Checking in " + name);
+                    $("#modalName").val(name);
+                    $("#myModal").modal('show');
+                    e.preventDefault();
                 }
             });
         }
