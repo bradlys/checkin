@@ -1,6 +1,11 @@
 //@author Bradly Schlenker
 $(document).ready(function(){
 $("#nonefound").hide();
+$(".modalMoneyClearer").each(function() { 
+    $(this).on("click select", function( event) {
+        $("#modalMoney").val("");
+    });
+});
 $('#search').each(function() {
     var elem = $(this);
     // Save current value of element

@@ -70,8 +70,8 @@
         </div>
       </div>
       
-      <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+      <div class="modal fade bs-modal-lg" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
           <div class="modal-content">
             <div class="modal-header">
               <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -80,18 +80,45 @@
             <div class="modal-body">
             <div class="panel panel-default">
             <div class="panel-heading">
-                <div class="row">
-                <div class="col-lg-6">
-                  <div class="input-group">
-                    Name: <input type="text" class="form-control" id="modalName" placeholder="Enter Name" autocomplete="off">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="input-group-sm">
+                    <div class="panel-heading modalNameEmail">Name</div>
+                    <input type="text" class="form-control modalNameEmailInput" id="modalName" placeholder="Enter Name" autocomplete="off">
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <div class="input-group-sm">
+                      <div class="panel-heading modalNameEmail">Email</div>
+                    <input type="text" class="form-control" id="modalEmail" placeholder="Enter Email" autocomplete="off">
                   </div>
                 </div>
               </div>
-
             </div>
             <div class="panel-body" id="result">
-                
-            </div>
+                <div class="panel panel-default col-sm-3 paymentbox">
+                    <div class="panel-heading">Payment</div>
+                    <div class="panel-footer">
+                    <form class="form-horizontal" role="form">
+                    <div class="form-group payment">
+                    <div class="btn-group">
+                        <div class="col-sm-2 customMoney">
+                        <input type="text" class="form-control" id="modalMoney" placeholder="$XX" autocomplete="off">
+                        </div>
+                        <button type="button" class="btn btn-default modalMoneyClearer">$0</button>
+                        <button type="button" class="btn btn-default modalMoneyClearer">$3</button>
+                    </div>
+                    <br/>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default modalMoneyClearer">$5</button>
+                        <button type="button" class="btn btn-default modalMoneyClearer">$6</button>
+                        <button type="button" class="btn btn-default modalMoneyClearer">$7</button>
+                        <button type="button" class="btn btn-default modalMoneyClearer">$8</button>
+                    </div>
+                    </div>
+                    </form>
+                    </div>
+                </div>
             </div>
             </div>
             <div class="modal-footer">

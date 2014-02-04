@@ -5,3 +5,25 @@ body {
   padding: 40px 15px;
   text-align: center;
 }
+
+.customMoney {
+    width: 42%;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.modalNameEmail {
+    padding: 3px 3px;
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 1px;
+    border-top-right-radius: 1px;
+}
+
+.payment {
+    padding-left: 10px;
+}
+
+.paymentbox {
+    padding-left: 0px;
+    padding-right: 0px;
+}
