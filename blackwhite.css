@@ -1,0 +1,26 @@
+/* 
+    Document   : blackwhite
+    Created on : Feb 3, 2014, 7:45:33 PM
+    Author     : Bradly Schlenker
+    Description:
+        Gives an overarching theme in a black and white theme where black is the
+        main background color and white is the main foreground color.
+*/
+
+#search {
+    background-color: black;
+    color: white;
+}
+
+#result {
+    background-color: black;
+    color: white;
+}
+
+#name {
+    color: white;
+}
+
+#visits {
+    color: white;
+}

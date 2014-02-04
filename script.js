@@ -1,11 +1,5 @@
-
-
-
-
-
-
-
-
+//@author Bradly Schlenker
+$(document).ready(function(){
 $('#search').each(function() {
     var elem = $(this);
     // Save current value of element
@@ -17,15 +11,14 @@ $('#search').each(function() {
             // Updated stored value
             elem.data('oldVal', elem.val());
             // Do action
-            var posting = $.post("search.php", { name: elem.val() });
-            posting.done(function ( data ) {
+            $.post("search.php",
+            { name : elem.val() },
+            function ( data ) {
                 $("#result").empty();
-                var temp;
-                for(var i in data){
-                    temp = data[i];
-                    $("#result").append(temp);
-                }
+                $("#result").append(data);
+                
             });
         }
     });
+});
 });
