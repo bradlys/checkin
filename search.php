@@ -13,16 +13,10 @@ if( strtolower($method) != 'post'){
 
 $getstuff = mysql_real_escape_string($_POST['name']);
 
-//$sql = "SELECT * FROM customers WHERE name LIKE '%$getstuff%'";
-//$query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-//$visitsql = "SELECT COUNT(*) as visits, customer_id, name FROM checkins WHERE UPPER ( name ) LIKE UPPER ( '%$getstuff%' ) GROUP BY name ORDER BY visits DESC LIMIT 12";
-$visitsql = "SELECT COUNT(*) as visits, PatientID as name FROM Sessions WHERE PatientID LIKE '%$getstuff%' GROUP BY name ORDER BY visits DESC LIMIT 24";
+$visitsql = "SELECT COUNT(*) as visits, customer_id, name FROM checkins WHERE UPPER ( name ) LIKE UPPER ( '%$getstuff%' ) GROUP BY name ORDER BY visits DESC LIMIT 12";
+$visitsql = "SELECT name FROM checkins WHERE name LIKE '%$getstuff%'";
 $visitquery = mysql_query($visitsql) or die ("We didn't start the fire, but something went wrong with $visitsql");
 
-//$customers = array();
-//while($tmp = mysql_fetch_array($query)){
-//    $customers[$tmp['id']] = $tmp;
-//}
 while($visit = mysql_fetch_array($visitquery)){
     $name = $visit['name'];
     $visits = $visit['visits'];
