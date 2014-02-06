@@ -23,6 +23,7 @@ body {
 .cid {
     display: none;
 }
+
 .starter-template {
   padding: 40px 15px;
   text-align: center;
@@ -41,7 +42,20 @@ body {
     border-top-right-radius: 1px;
 }
 
+#modalProblem {
+    width: 50%;
+    float: right;
+}
+
 .payment {
+    display: none;
+}
+
+.email {
+    display: none;
+}
+
+.paymentArea {
     padding-left: 10px;
 }
 
@@ -49,6 +63,6 @@ body {
     padding-left: 0px;
     padding-right: 0px;
 }
-.paymentamount {
+.paymentAmount {
     display: none;
 }

@@ -57,7 +57,7 @@ if(isset($_POST['purpose'])){
         $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
         $result = mysql_fetch_array($query);
         if(!$result){
-            $sql = "INSERT INTO checkins VALUES ('', '$cid', '$eventid', '$money', '')";
+            $sql = "INSERT INTO checkins VALUES ('', '$cid', '$eventid', '$money', CURRENT_TIMESTAMP)";
             //$sql = "SELECT * FROM checkins WHERE cid = '$cid' AND event_id = '$eventid'";
             $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
             return '';
@@ -79,7 +79,7 @@ $id = mysql_real_escape_string($_POST['id']);
 
 $highestVisitsAndLikeName = <<<SQL
 CREATE TEMPORARY TABLE highestVisitsAndLikeName
-SELECT COUNT(*) as visits, cu.id as cid, cu.name as name
+SELECT COUNT(*) as visits, cu.id as cid, cu.name as name, cu.email as email
 FROM checkins as ch
 JOIN customers AS cu ON ch.customer_id = cu.id
 WHERE cu.name LIKE '%$getstuff%'
@@ -88,34 +88,32 @@ ORDER BY visits DESC
 LIMIT 11
 SQL;
 
-$highestVisitsAndLikeNameQuery = mysql_query($highestVisitsAndLikeName) or die ("We didn't start the fire, but something went wrong with $highestVisitsAndLikeName");
+mysql_query($highestVisitsAndLikeName) or die ("We didn't start the fire, but something went wrong with $highestVisitsAndLikeName");
 
 $visitsql = "SELECT * FROM highestVisitsAndLikeName";
 $visitquery = mysql_query($visitsql) or die ("We didn't start the fire, but something went wrong with $visitsql");
 
-$alreadycheckedinsql = "SELECT customers.name AS cname, checkins.customer_id AS customerid FROM checkins JOIN customers ON checkins.customer_id = customers.id WHERE event_id = '$id' AND customer_id IN (SELECT customer_id FROM highestVisitsAndLikeName)";
+$alreadycheckedinsql = "SELECT customers.name AS cname, checkins.customer_id AS customerid, checkins.payment AS payment FROM checkins JOIN customers ON checkins.customer_id = customers.id WHERE event_id = '$id' AND customer_id IN (SELECT customer_id FROM highestVisitsAndLikeName)";
 $alreadycheckedinquery = mysql_query($alreadycheckedinsql) or die ("We didn't start the fire, but something went wrong with $alreadycheckedinsql");
 
 
-
-$patientCountByQuestionnaireDetailed[] = <<<SQL
-create temporary table answeredQuestionnairesCounts2a
-select count(distinct PatientID) as pcount, count, QuestionnaireID
-from answeredQuestionnairesCounts
-group by QuestionnaireID, count
-SQL;
-
 $alreadycheckedin = array();
 while($tmp = mysql_fetch_array($alreadycheckedinquery)){
-    $alreadycheckedin[] = $tmp['cname'];
+    $alreadycheckedin[$tmp['cname']] = $tmp['payment'];
 }
-
+$keysAlreadyCheckedIn = array_keys($alreadycheckedin);
 while($visit = mysql_fetch_array($visitquery)){
     $name = $visit['name'];
     $visits = $visit['visits'];
-    $isCheckedIn = in_array($name, $alreadycheckedin);
-    echo '<div class="customer col-xs-3"><span class="cid">' . $visit['cid'] . '</span><div id="username">' . $name . '</div><div id="visits">' . $visits . ' visits</div>' 
-            . ($isCheckedIn ? '<small>Already Checked In</small>' : '') . '</a></div>';
+    $isCheckedIn = in_array($name, $keysAlreadyCheckedIn);
+    echo '<div class="customer col-xs-3">' . 
+            '<span class="cid">' . $visit['cid'] . '</span>' . 
+            '<span class="email">' . $visit['email'] . '</span>' . 
+            '<span class="payment">' . ($isCheckedIn ? $alreadycheckedin[$name] : '') . '</span>' .
+            '<div id="username">' . $name . '</div>' . 
+            '<div id="visits">' . $visits . ' visits</div>'. 
+            ($isCheckedIn ? '<small>Already Checked In</small>' : '') .
+            '</a></div>';
 }
 echo '<div class="customer col-xs-3" id="newuser"><div id="username">Add New User</div></div>';
 ?>

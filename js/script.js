@@ -4,26 +4,33 @@ $("#nonefound").hide();
 $(".modalMoneyClearer").each(function() { 
     $(this).on("click select", function( event) {
         $("#modalMoney").val("");
-        $("#paymentamount").val($(this).text());
+        $("#paymentAmount").val($(this).text());
     });
 });
 $("#modalMoney").on("propertychange keyup input paste", function(event){
-    $("#paymentamount").val($(this).val());
+    $("#paymentAmount").val($(this).val());
 });
-$.post("search.php", { purpose : 'getEvent', eventid : $("#theid").val() }, function(data) {
+$.post("search.php", { purpose : 'getEvent', eventid : $("#eventID").val() }, function(data) {
     $("#eventName").html(data);
 });
 $("#save").on("click", function() {
-    var money = $("#paymentamount").val();
+    var money = $("#paymentAmount").val();
     var email = $("#modalEmail").val();
     var name = $("#modalName").val();
     var cid = $("#myModal").find(".cid").val();
-    var eventid = $("#theid").val();
+    var eventid = $("#eventID").val();
     var checkout = false;
     money = money.replace('$', '');
+    $("#myModal").find(".alert").alert('close');
     $.post("search.php", { purpose : "checkin", eventid : eventid, money : money, email : email, name : name, cid : cid, checkout : checkout}, function(data){
-        $("#modal").modal('hide');
-        updateSearchResults($("#search").val());
+        if(data){
+            $("#myModal").find("#result").append(makeAlertBox(data));
+        }
+        else{
+            $("#myModal").modal('hide');
+            $("#search").val(name);
+            updateSearchResults(name);
+        }
     });
 });
 $('#search').each(function() {
@@ -33,7 +40,7 @@ $('#search').each(function() {
     elem.data('oldVal', elem.val());
     // Look for changes in the value
     elem.bind("propertychange keyup input paste", function(event){
-        console.log("Here at bind");
+        console.log("Here at bind for search");
         // If value has changed
         if (elem.data('oldVal') !== elem.val() || elem.val() === '') {
             console.log("Here at elem.val() === ''");
@@ -41,91 +48,73 @@ $('#search').each(function() {
             elem.data('oldVal', elem.val());
             // Do action
             updateSearchResults(elem.val());
-            
-            $(this).keypress(function (e) {
-                console.log("Here at keypress");
-                if (e.which === 13) {
-                    console.log("Here after the which");
-                    var name = $(this).val();
-                    loadupModal(name);
-                    e.preventDefault();
-                }
-            });
         }
     });
 });
 
+function makeAlertBox(data){
+    var alert = '<div class="alert alert-danger fade in" id="modalProblem">\n\ \
+                <button class="close" aria-hidden="true" data-dismiss="alert" type="button">\n\ \
+                ×\n\ \
+                </button>\n\ \
+                <h4>\n\ \
+                Oh snap! You got an error!\n\ \
+                </h4>\n\ \
+                <p>\n\ ' + data +
+                '\n\ \
+                </p>\n\ \
+                </div>';
+    return alert;
+}
+
+$("#myModal").on('hide.bs.modal', function(){
+    $(".customMoney").removeClass("has-success");
+    $(".glyphicon").remove();
+    $("#myModal").find(".alert").alert('close');
+});
+
 //Loads up myModal for content
-function loadupModal(name){
-    console.log("Inside loadupModal and name is " + name);
-    $("#modaltitle").text("Checking in " + name);
-    var cid = isACustomer(name);
-    console.log("just after isacustomer and its value " + cid);
+function loadupModal(customerElem){
+    var name = customerElem.find("#username").text();
+    if(!name){
+        name = $("#search").val();
+    }
+    $("#modalTitle").text("Checking in " + name);
+    $("#modalName").val(name);
+    
+    var cid = customerElem.find(".cid").text();
     if(cid){
-        console.log("Just before modalemail");
-        $("#modalEmail").val(getCustomerEmail(cid));
-        var payment = getCustomerPayment(cid, $("#theid").val());
-        $("#paymentamount").val(payment);
+        var email = customerElem.find(".email").text();
+        $("#modalEmail").val(email);
+        var payment = customerElem.find(".payment").text();
+        $("#paymentAmount").val(payment);
+        if(payment){
+            $(".customMoney").addClass("has-success");
+            $(".customMoney").append('<span class="glyphicon glyphicon-ok form-control-feedback"></span>');
+        }
         $("#modalMoney").val(payment);
-        $("#modalName").val(name);
         $("#myModal").find(".cid").val(cid);
     }
     else{
         $("#modalEmail").val("");
-        $("#paymentamount").val("");
+        $("#paymentAmount").val("");
         $("#modalMoney").val("");
-        $("#modalName").val(name);
         $("#myModal").find(".cid").val("");
     }
     $("#myModal").modal('show');
 }
 
-//Returns false if not a customer. Returns customer's id if they are!
-function isACustomer (name){
-    var cid = false;
-    $.post("search.php", { purpose : "findUser", name: name}, function (data){
-        cid = data;
-        console.log("Here in isACustomer and cid in post is " + cid);
-    });
-    return cid;
-    console.log("I made it here, but I shouldn't have?");
-}
-
-//obtains the customer's email address
-function getCustomerEmail (cid){
-    var email;
-    $.when($.post("search.php", { purpose : "getEmail", cid : cid }, function (data) {
-        email = data;
-    }));
-    return email;
-}
-
-//obtains the customer's CID; currently works under presumption customer name is unique.
-//That's fine, I just need this to run.
-function getCustomerCID (name){
-    var cid;
-    $.when($.post("search.php", { purpose : "getCID", name : name }, function (data) {
-        cid = data;
-    }));
-    return cid;
-}
 
 function updateSearchResults (name){
     $.post("search.php",
-        { name : name, id : $("#theid").val() },
+        { name : name, id : $("#eventID").val() },
         function ( data ) {
             $("#beforefound").hide();
             $(".customer").remove();
             if(data){
                 $("#result").append(data);
                 $(".customer").on("click", function ( event ) {
-                    var name = $(this).find("#username").text();
-                    var cid = $(this).find(".cid").text();
-                    $("#modalEmail").val(getCustomerEmail(cid));
-                    $("#modaltitle").text("Checking in " + name);
-                    $("#modalName").val(name);
-                    $("#myModal").find(".cid").val(cid);
-                    $("#myModal").modal('show');
+                    loadupModal($(this));
                 });
                 $(".customer").mouseover(function (event ){
                     $(this).addClass("border-highlight");
