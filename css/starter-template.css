@@ -1,6 +1,28 @@
 body {
   padding-top: 50px;
 }
+.customer{
+    display: block;
+    padding: 4px;
+    line-height: 1.428571429;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    -webkit-transition: all .2s ease-in-out;
+          transition: all .2s ease-in-out;
+    display: block;
+    max-width: 100%;
+    height: 70px;
+    margin-right: auto;
+    margin-left: auto;
+}
+.border-highlight {
+    border-color: #428bca;
+}
+
+.cid {
+    display: none;
+}
 .starter-template {
   padding: 40px 15px;
   text-align: center;
@@ -26,4 +48,7 @@ body {
 .paymentbox {
     padding-left: 0px;
     padding-right: 0px;
+}
+.paymentamount {
+    display: none;
 }

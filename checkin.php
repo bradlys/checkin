@@ -3,6 +3,11 @@
  * 
  * @author Bradly Schlenker
  */
+
+if(isset($_GET['id'])){
+    $id = $_GET['id'];
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -48,10 +53,10 @@
     <div class="container">
 
       <div class="starter-template">
-        <h1>Check-in App</h1>
+        <h1>Check-in for <span id="eventName"></span></h1>
         <div class="panel panel-default">
             <div class="panel-heading">
-                <div class="row">
+              <div class="row">
                 <div class="col-lg-6">
                   <div class="input-group">
                     <input type="text" class="form-control" id="search" placeholder="Enter Name" autocomplete="off">
@@ -63,13 +68,26 @@
               </div>
 
             </div>
+            <?
+            if($id){
+            ?>
             <div class="panel-body" id="result">
                 <p class="lead" id="beforefound">Go ahead and try searching for a user!</p>
                 <p class="lead" id="nonefound">No users were found!</p>
+                <input type='hidden' id='theid' value='<?=$id?>'>
             </div>
         </div>
       </div>
-      
+      <?
+            }
+            else{
+                ?>
+                <div class="panel-body">
+                    <p class="lead has-warning">I don't know how you got here, but you did it wrong!</p>
+                </div>
+                <?
+            }
+      ?>
       <div class="modal fade bs-modal-lg" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
@@ -78,6 +96,7 @@
               <h4 class="modal-title" id="modaltitle"></h4>
             </div>
             <div class="modal-body">
+            <span class="cid"></span>
             <div class="panel panel-default">
             <div class="panel-heading">
               <div class="row">
@@ -90,13 +109,14 @@
                 <div class="col-sm-6">
                   <div class="input-group-sm">
                       <div class="panel-heading modalNameEmail">Email</div>
-                    <input type="text" class="form-control" id="modalEmail" placeholder="Enter Email" autocomplete="off">
+                    <input type="text" class="form-control modalNameEmailInput" id="modalEmail" placeholder="Enter Email" autocomplete="off">
                   </div>
                 </div>
               </div>
             </div>
             <div class="panel-body" id="result">
                 <div class="panel panel-default col-sm-3 paymentbox">
+                    <span id="paymentamount"></span>
                     <div class="panel-heading">Payment</div>
                     <div class="panel-footer">
                     <form class="form-horizontal" role="form">
@@ -108,7 +128,6 @@
                         <button type="button" class="btn btn-default modalMoneyClearer">$0</button>
                         <button type="button" class="btn btn-default modalMoneyClearer">$3</button>
                     </div>
-                    <br/>
                     <div class="btn-group">
                         <button type="button" class="btn btn-default modalMoneyClearer">$5</button>
                         <button type="button" class="btn btn-default modalMoneyClearer">$6</button>
@@ -123,7 +142,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Save & Checkin</button>
+              <button type="button" class="btn btn-primary" data-dismiss="modal" id="save">Save & Checkin</button>
             </div>
           </div>
         </div>
