@@ -48,9 +48,21 @@ if(isset($_POST['purpose'])){
     }
     else if($purpose == 'checkin'){
         $cid = mysql_real_escape_string($_POST['cid']);
+        if(empty($cid)){
+            $sql = "INSERT INTO customers VALUES ('', '$name', '$email', CURRENT_TIMESTAMP)";
+            $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
+        }
         $money = mysql_real_escape_string($_POST['money']);
+        if(empty($money)){
+            echo 'Please input payment';
+            return '';
+        }
         $email = mysql_real_escape_string($_POST['email']);
         $name = mysql_real_escape_string($_POST['name']);
+        if(empty($name)){
+            echo 'Please input a name';
+            return '';
+        }
         $eventid = mysql_real_escape_string($_POST['eventid']);
         $checkout = $_POST['checkout'];
         $sql = "SELECT * FROM checkins AS ch JOIN customers AS cu ON ch.customer_id = cu.id WHERE ch.customer_id = '$cid' AND ch.event_id = '$eventid'";

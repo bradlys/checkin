@@ -21,17 +21,15 @@ printHeader();
             <div class="panel-heading">
               <div class="row">
                 <div class="col-lg-6">
-                    <input type="text" class="form-control" id="search" placeholder="Enter Name" autocomplete="off">
+                    <input type="text" class="form-control" id="eventSearch" placeholder="Enter Name" autocomplete="off">
                 </div>
               </div>
-
             </div>
             <?
             if($id){
             ?>
-            <div class="panel-body" id="result">
-                <p class="lead" id="beforefound">Go ahead and try searching for a user!</p>
-                <p class="lead" id="nonefound">No users were found!</p>
+            <div class="panel-body" id="eventResult">
+                <p class="lead" id="nonefound">No events were found!</p>
                 <input type='hidden' id='eventID' value='<?=$id?>'>
             </div>
         </div>

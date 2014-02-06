@@ -3,7 +3,7 @@ $(document).ready(function(){
 $("#nonefound").hide();
 $(".modalMoneyClearer").each(function() { 
     $(this).on("click select", function( event) {
-        $("#modalMoney").val("");
+        $("#modalMoney").val($(this).text());
         $("#paymentAmount").val($(this).text());
     });
 });
@@ -68,7 +68,7 @@ function makeAlertBox(data){
 }
 
 $("#myModal").on('hide.bs.modal', function(){
-    $(".customMoney").removeClass("has-success");
+    $(".paymentArea").removeClass("has-success has-feedback");
     $(".glyphicon").remove();
     $("#myModal").find(".alert").alert('close');
 });
@@ -76,7 +76,7 @@ $("#myModal").on('hide.bs.modal', function(){
 //Loads up myModal for content
 function loadupModal(customerElem){
     var name = customerElem.find("#username").text();
-    if(!name){
+    if(!name || name === 'Add New User'){
         name = $("#search").val();
     }
     $("#modalTitle").text("Checking in " + name);
@@ -89,8 +89,8 @@ function loadupModal(customerElem){
         var payment = customerElem.find(".payment").text();
         $("#paymentAmount").val(payment);
         if(payment){
-            $(".customMoney").addClass("has-success");
-            $(".customMoney").append('<span class="glyphicon glyphicon-ok form-control-feedback"></span>');
+            $(".customMoney").append('<span class="glyphicon glyphicon-ok form-control-feedback" style="right:0px;"></span>');
+            $(".paymentArea").addClass("has-success has-feedback");
         }
         $("#modalMoney").val(payment);
         $("#myModal").find(".cid").val(cid);
