@@ -45,7 +45,7 @@ function printHeader(){
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="<?=$active ? 'active' : '' ?>"><a href="events.php?id=<?=$id?>">Check-in</a></li>
+            <li class="<?=$active ? 'active' : '' ?>"><a href="checkin.php?id=<?=$id?>">Check-in</a></li>
             <li><a href="about.php?id=<?= $id ?>">About</a></li>
             <li><a href="contact.php?id=<?= $id ?>">Contact</a></li>
           </ul>
