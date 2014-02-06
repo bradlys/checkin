@@ -171,5 +171,17 @@ if(isset($_POST['purpose'])){
         }
         echo '<div class="customer col-xs-3" id="newuser"><div id="username">Add New User</div></div>';
     }
+    else if($purpose == 'searchOrganizations'){
+        $name = mysql_real_escape_string($_POST['name']);
+        $sql = "SELECT * FROM organizations WHERE name LIKE '%$name%'";
+        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
+        while($oganization = mysql_fetch_array($query)){
+            echo '<div class="organizationResultItem col-xs-3">' . 
+                '<span class="organizationResultID">' . $oganization['id'] . '</span>' .
+                '<div id="organizationResultName">' . $oganization['name'] . '</div>' . 
+                '</div>';
+        }
+        //echo '<div class="organizationResultItem col-xs-3" id="newEvent"><div id="organizationResultName">Add New Organization</div></div>';
+    }
 }
 ?>

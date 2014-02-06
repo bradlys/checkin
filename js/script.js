@@ -108,6 +108,49 @@ if($("#organizationName").length > 0){
     
 }
 
+if($("#organizationSearch").length > 0){
+    updateOrganizationSearchResults("");
+    $("#myModal").on('hide.bs.modal', function(){
+        $("#myModal").find(".alert").alert('close');
+    });
+    $("#organizationSearch").each(function() {
+        var elem = $(this);
+        // Save current value of element
+        elem.data('oldVal', elem.val());
+        // Look for changes in the value
+        elem.bind("propertychange keyup input paste", function(event){
+            // If value has changed
+            if (elem.data('oldVal') !== elem.val() || elem.val() === '') {
+                // Updated stored value
+                elem.data('oldVal', elem.val());
+                // Do action
+                updateOrganizationSearchResults(elem.val());
+            }
+        });
+    });
+    $("#save").on("click", function() {
+        var name = $("#modalName").val();
+        var organizationID = $("#organizationID").val();
+        var checkout = false;
+        $("#myModal").find(".alert").alert('close');
+        $.post("search.php", { purpose : "editOrganization",  name : name, organizationid : organizationID, checkout : checkout}, function(data){
+            if(data){
+                $("#myModal").find("#result").append(makeAlertBox(data));
+            }
+            else{
+                if(eventID){
+                    $("#myModal").find("#result").append(makeSaveOrganizationSuccessBox());
+                }
+                else{
+                    $("#myModal").modal('hide');
+                    updateOrganizationSearchResults($("#eventSearch").val());
+                }
+            }
+        });
+    });
+    updateOrganizationSearchResults("");
+}
+
 function makeSaveEventSuccessBox(){
     var box = '<div class="alert alert-success alert-dismissable" id="modalSuccess"> \n\ \
                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> \n\ \
@@ -131,6 +174,7 @@ function makeAlertBox(data){
                 </div>';
     return alert;
 }
+
 //Loads up myModal for content on checkins
 function loadupModal(customerElem){
     var name = customerElem.find("#username").text();
@@ -190,6 +234,34 @@ function loadupEventModal(eventElem){
     $("#myModal").modal('show');
 }
 
+//Loads up the organization modal for index.php
+function loadupOrganizationModal(organizationElem){
+    var name = organizationElem.find("#organizationResultName").text();
+    var modalTitleText;
+    if(name === 'Add New Organization'){
+        modalTitleText = "Adding";
+    }
+    else{
+        modalTitleText = "Editing";
+    }
+    if(!name || name === 'Add New Event'){
+        name = $("#organizationSearch").val();
+    }
+    $("#modalTitle").text(modalTitleText + " event " + name);
+    $("#modalName").val(name);
+    
+    var eventResultID = organizationElem.find(".organizationResultID").text();
+    if(eventResultID){
+        $("#organizationID").val(eventResultID);
+        $("#gotoOrganization").show();
+        $("#gotoOrganization").attr("href", "events.php?id=" + eventResultID);
+    }
+    else{
+        $("#gotoOrganization").hide();
+    }
+    $("#myModal").modal('show');
+}
+
 //Used for the checkin.php page
 function updateSearchResults (name){
     $.post("search.php",
@@ -234,6 +306,33 @@ function updateEventSearchResults (name){
                     $(this).removeClass("border-highlight");
                 });
                 if($(".eventResultID").length > 0){
+                    $("#nonefound").hide();
+                } else {
+                    $("#nonefound").show();
+                }
+            }
+    });
+}
+
+//used for index.php page
+function updateOrganizationSearchResults (name) {
+    $.post("search.php",
+        { purpose : "searchOrganizations", name : name },
+        function ( data ) {
+            $("#beforefound").hide();
+            $(".organizationResultItem").remove();
+            if(data){
+                $("#organizationResult").prepend(data);
+                $(".organizationResultItem").on("click", function ( event ) {
+                    loadupOrganizationModal($(this));
+                });
+                $(".organizationResultItem").mouseover(function (event ){
+                    $(this).addClass("border-highlight");
+                });
+                $(".organizationResultItem").mouseout(function (event ){
+                    $(this).removeClass("border-highlight");
+                });
+                if($(".organizationResultID").length > 0){
                     $("#nonefound").hide();
                 } else {
                     $("#nonefound").show();

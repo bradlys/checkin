@@ -3,7 +3,10 @@
 
 function printHeader(){
     if(basename($_SERVER['PHP_SELF']) == 'checkin.php'){
-        $active = true;
+        $checkinactive = true;
+    }
+    if(basename($_SERVER['PHP_SELF']) == 'index.php'){
+        $checkinappactive = true;
     }
     if(isset($_GET['id'])){
         $id = $_GET['id'];
@@ -45,9 +48,9 @@ function printHeader(){
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="<?=$active ? 'active' : '' ?>"><a href="checkin.php?id=<?=$id?>">Check-in</a></li>
-            <li><a href="about.php?id=<?= $id ?>">About</a></li>
-            <li><a href="contact.php?id=<?= $id ?>">Contact</a></li>
+            <li class="<?=$checkinactive ? 'active' : '' ?>"><a href="<?= $checkinappactive ? '' : "checkin.php?id=$id"?>">Check-in</a></li>
+            <li><a href="<?= $checkinappactive ? '' : "about.php?id=$id"?>">About</a></li>
+            <li><a href="<?= $checkinappactive ? '' : "index.php?id=$id"?>">Contact</a></li>
           </ul>
         </div>
       </div>

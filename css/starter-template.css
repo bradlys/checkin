@@ -1,7 +1,7 @@
 body {
   padding-top: 50px;
 }
-.customer, .eventResultItem {
+.customer, .eventResultItem, .organizationResultItem {
     display: block;
     padding: 4px;
     line-height: 1.428571429;
@@ -17,14 +17,14 @@ body {
     margin-left: auto;
 }
 
-.eventResultItem {
+.eventResultItem, .organizationResultItem {
     padding-top: 20px;
 }
 .border-highlight {
     border-color: #428bca;
 }
 
-.cid, .eventResultID, .payment, .email, #eventID {
+.cid, .eventResultID, .payment, .email, #eventID, .organizationResultID {
     display: none;
 }
 
