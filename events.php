@@ -21,7 +21,7 @@ printHeader();
             <div class="panel-heading">
               <div class="row">
                 <div class="col-lg-6">
-                    <input type="text" class="form-control" id="eventSearch" placeholder="Enter Name" autocomplete="off">
+                    <input type="text" class="form-control" id="eventSearch" placeholder="Search For A Dance" autocomplete="off">
                 </div>
               </div>
             </div>
