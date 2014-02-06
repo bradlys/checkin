@@ -28,9 +28,9 @@ printHeader();
             <?
             if($id){
             ?>
-            <div class="panel-body" id="eventResult">
+            <div class="panel-body" id="eventResultArea">
                 <p class="lead" id="nonefound">No events were found!</p>
-                <input type='hidden' id='eventID' value='<?=$id?>'>
+                <input type='hidden' id='organizationID' value='<?=$id?>'>
             </div>
         </div>
       </div>
@@ -52,7 +52,7 @@ printHeader();
               <h4 class="modal-title" id="modalTitle"></h4>
             </div>
             <div class="modal-body">
-            <span class="cid"></span>
+            <span id="eventID"></span>
             <div class="panel panel-default">
             <div class="panel-heading">
               <div class="row">
@@ -63,42 +63,15 @@ printHeader();
                   </div>
                 </div>
                 <div class="col-sm-6">
-                  <div class="input-group-sm">
-                      <div class="panel-heading modalNameEmail">Email</div>
-                    <input type="email" class="form-control modalNameEmailInput" id="modalEmail" autofocus="" required="" placeholder="Enter Email" autocomplete="off">
-                  </div>
                 </div>
               </div>
             </div>
             <div class="panel-body" id="result">
-                <div class="panel panel-default col-sm-3 paymentbox">
-                    <span id="paymentAmount"></span>
-                    <div class="panel-heading">Payment</div>
-                    <div class="panel-footer">
-                    <form class="form-horizontal" role="form">
-                    <div class="form-group paymentArea">
-                    <div class="btn-group">
-                        <div class="col-sm-2 customMoney">
-                        <input type="text" class="form-control" id="modalMoney" placeholder="$XX" autocomplete="off">
-                        </div>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$0</button>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$3</button>
-                    </div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-default modalMoneyClearer">$5</button>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$6</button>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$7</button>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$8</button>
-                    </div>
-                    </div>
-                    </form>
-                    </div>
-                </div>
             </div>
             </div>
             <div class="modal-footer">
-              <button type="button" id ="modalCloseBot" class="btn btn-default" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" id="save">Save & Checkin</button>
+              <button type="button" class="btn btn-info" id="save">Save</button>
+              <a href="#" class="btn btn-primary" id="gotoEvent">Go!</a>
             </div>
           </div>
         </div>

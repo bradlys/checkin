@@ -2,7 +2,16 @@
 
 
 function printHeader(){
-    ?>
+    if(basename($_SERVER['PHP_SELF']) == 'checkin.php'){
+        $active = true;
+    }
+    if(isset($_GET['id'])){
+        $id = $_GET['id'];
+    }
+    else{
+        $id = '';
+    }
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -32,13 +41,13 @@ function printHeader(){
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">Check-in App</a>
+          <a class="navbar-brand" href="index.php">Check-in App</a>
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="events.php">Check-in</a></li>
-            <li><a href="about.php">About</a></li>
-            <li><a href="contact.php">Contact</a></li>
+            <li class="<?=$active ? 'active' : '' ?>"><a href="events.php?id=<?=$id?>">Check-in</a></li>
+            <li><a href="about.php?id=<?= $id ?>">About</a></li>
+            <li><a href="contact.php?id=<?= $id ?>">Contact</a></li>
           </ul>
         </div>
       </div>

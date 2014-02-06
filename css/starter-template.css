@@ -1,7 +1,7 @@
 body {
   padding-top: 50px;
 }
-.customer{
+.customer, .eventResultItem {
     display: block;
     padding: 4px;
     line-height: 1.428571429;
@@ -16,11 +16,15 @@ body {
     margin-right: auto;
     margin-left: auto;
 }
+
+.eventResultItem {
+    padding-top: 20px;
+}
 .border-highlight {
     border-color: #428bca;
 }
 
-.cid {
+.cid, .eventResultID, .payment, .email, #eventID {
     display: none;
 }
 
@@ -45,14 +49,6 @@ body {
 #modalProblem {
     width: 50%;
     float: right;
-}
-
-.payment {
-    display: none;
-}
-
-.email {
-    display: none;
 }
 
 .paymentArea {
