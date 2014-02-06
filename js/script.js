@@ -178,10 +178,17 @@ function makeAlertBox(data){
 //Loads up myModal for content on checkins
 function loadupModal(customerElem){
     var name = customerElem.find("#username").text();
+    var modalTitleText;
+    if(name === 'Add New User'){
+        modalTitleText = "Adding user ";
+    }
+    else{
+        modalTitleText = "Editing user ";
+    }
     if(!name || name === 'Add New User'){
         name = $("#search").val();
     }
-    $("#modalTitle").text("Checking in " + name);
+    $("#modalTitle").text(modalTitleText + name);
     $("#modalName").val(name);
     
     var cid = customerElem.find(".cid").text();
