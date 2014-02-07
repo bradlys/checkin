@@ -188,6 +188,7 @@ if(isset($_POST['purpose'])){
         $name = mysql_real_escape_string($_POST['name']);
         $email = mysql_real_escape_string($_POST['email']);
         $jsonarray['organizationid'] = $organizationID;
+        $jsonarray['neworganization'] = false;
         if(!$name){
             $jsonarray['error'] = 'Please enter a name';
             echo json_encode($jsonarray);
@@ -200,6 +201,7 @@ if(isset($_POST['purpose'])){
             $query = mysql_query($sql) or die (json_encode(array("error"=>"We didn't start the fire, but something went wrong with $sql")));
             $jsonarray['success'] = "You created a new organization!";
             $jsonarray['organizationid'] = mysql_insert_id();
+            $jsonarray['neworganization'] = true;
             echo json_encode($jsonarray);
             return '';
         }

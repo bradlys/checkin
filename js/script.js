@@ -142,6 +142,10 @@ if($("#organizationSearch").length > 0){
             else{
                 $("#myModal").find("#organizationID").val(json.organizationid);
                 $("#myModal").find("#result").append(makeSaveOrganizationSuccessBox(json.success));
+                if(json.neworganization){
+                    $("#gotoOrganization").show();
+                    $("#gotoOrganization").attr("href", "events.php?id=" + json.organizationid);
+                }
             }
         });
     });
@@ -266,11 +270,11 @@ function loadupOrganizationModal(organizationElem){
     $("#modalTitle").text(modalTitleTextBegin + modalTitleTextEnd);
     $("#modalName").val(name);
     
-    var eventResultID = organizationElem.find(".organizationResultID").text();
-    if(eventResultID){
-        $("#organizationID").val(eventResultID);
+    var organizationResultID = organizationElem.find(".organizationResultID").text();
+    if(organizationResultID){
+        $("#organizationID").val(organizationResultID);
         $("#gotoOrganization").show();
-        $("#gotoOrganization").attr("href", "events.php?id=" + eventResultID);
+        $("#gotoOrganization").attr("href", "events.php?id=" + organizationResultID);
     }
     else{
         $("#gotoOrganization").hide();
