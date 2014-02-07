@@ -4,7 +4,7 @@ $("#nonefound").hide();
 
 
 //if(checkin.php) essentially
-if($("#eventName").length > 0){
+if($("#search").length > 0){
     $("#myModal").on('hide.bs.modal', function(){
         $(".paymentArea").removeClass("has-success has-feedback");
         $(".glyphicon").remove();
@@ -61,7 +61,7 @@ if($("#eventName").length > 0){
 }
 
 //if(events.php)
-if($("#organizationName").length > 0){
+if($("#eventSearch").length > 0){
     $.post("search.php", { purpose : 'getOrganization', organizationid : $("#organizationID").val() }, function(data) {
         $("#organizationName").html(data);
     });
@@ -111,6 +111,7 @@ if($("#organizationName").length > 0){
 if($("#organizationSearch").length > 0){
     updateOrganizationSearchResults("");
     $("#myModal").on('hide.bs.modal', function(){
+        updateOrganizationSearchResults($("#organizationSearch").val());
         $("#myModal").find(".alert").alert('close');
     });
     $("#organizationSearch").each(function() {
@@ -133,22 +134,26 @@ if($("#organizationSearch").length > 0){
         var organizationID = $("#organizationID").val();
         var checkout = false;
         $("#myModal").find(".alert").alert('close');
-        $.post("search.php", { purpose : "editOrganization",  name : name, organizationid : organizationID, checkout : checkout}, function(data){
-            if(data){
-                $("#myModal").find("#result").append(makeAlertBox(data));
+        $.post("search.php", { purpose : "editOrganization",  name : name, organizationid : organizationID, checkout : checkout}, function(json){
+            json = $.parseJSON(json);
+            if(json.error){
+                $("#myModal").find("#result").append(makeAlertBox(json.error));
             }
             else{
-                if(eventID){
-                    $("#myModal").find("#result").append(makeSaveOrganizationSuccessBox());
-                }
-                else{
-                    $("#myModal").modal('hide');
-                    updateOrganizationSearchResults($("#eventSearch").val());
-                }
+                $("#myModal").find("#organizationID").val(json.organizationid);
+                $("#myModal").find("#result").append(makeSaveOrganizationSuccessBox(json.success));
             }
         });
     });
     updateOrganizationSearchResults("");
+}
+
+function makeSaveOrganizationSuccessBox(jsontext){
+    var box = '<div class="alert alert-success alert-dismissable" id="modalSuccess"> \n\ \
+               <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> \n\ \
+               <strong>Success!</strong> ' + jsontext + ' \n\ \
+               </div>';
+    return box;
 }
 
 function makeSaveEventSuccessBox(){
@@ -244,17 +249,21 @@ function loadupEventModal(eventElem){
 //Loads up the organization modal for index.php
 function loadupOrganizationModal(organizationElem){
     var name = organizationElem.find("#organizationResultName").text();
-    var modalTitleText;
+    var modalTitleTextBegin;
     if(name === 'Add New Organization'){
-        modalTitleText = "Adding";
+        modalTitleTextBegin = "Adding New Organization";
     }
     else{
-        modalTitleText = "Editing";
+        modalTitleTextBegin = "Editing An Existing Organization";
     }
-    if(!name || name === 'Add New Event'){
+    if(!name || name === 'Add New Organization'){
         name = $("#organizationSearch").val();
     }
-    $("#modalTitle").text(modalTitleText + " event " + name);
+    var modalTitleTextEnd = name;
+    if(name){
+        modalTitleTextEnd = " - " + name;
+    }
+    $("#modalTitle").text(modalTitleTextBegin + modalTitleTextEnd);
     $("#modalName").val(name);
     
     var eventResultID = organizationElem.find(".organizationResultID").text();

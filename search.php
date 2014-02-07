@@ -13,6 +13,7 @@ if( strtolower($method) != 'post'){
 
 //For putting the name of the event at the top
 if(isset($_POST['purpose'])){
+    $jsonarray = array();
     $purpose = $_POST['purpose'];
     if($purpose == 'getEvent'){
         $eventid = mysql_real_escape_string($_POST['eventid']);
@@ -174,14 +175,49 @@ if(isset($_POST['purpose'])){
     else if($purpose == 'searchOrganizations'){
         $name = mysql_real_escape_string($_POST['name']);
         $sql = "SELECT * FROM organizations WHERE name LIKE '%$name%'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
+        $query = mysql_query($sql) or die (json_encode(array("error"=>"We didn't start the fire, but something went wrong with $sql")));
         while($oganization = mysql_fetch_array($query)){
             echo '<div class="organizationResultItem col-xs-3">' . 
                 '<span class="organizationResultID">' . $oganization['id'] . '</span>' .
                 '<div id="organizationResultName">' . $oganization['name'] . '</div>' . 
                 '</div>';
         }
-        //echo '<div class="organizationResultItem col-xs-3" id="newEvent"><div id="organizationResultName">Add New Organization</div></div>';
+        echo '<div class="organizationResultItem col-xs-3" id="newEvent"><div id="organizationResultName">Add New Organization</div></div>';
     }
+    else if($purpose == 'editOrganization'){
+        $name = mysql_real_escape_string($_POST['name']);
+        $email = mysql_real_escape_string($_POST['email']);
+        $jsonarray['organizationid'] = $organizationID;
+        if(!$name){
+            $jsonarray['error'] = 'Please enter a name';
+            echo json_encode($jsonarray);
+            return '';
+        }
+        $organizationID = mysql_real_escape_string($_POST['organizationid']);
+        if(!$organizationID){
+            //create new organization
+            $sql = "INSERT INTO organizations VALUES('', '$name', '$email', CURRENT_TIMESTAMP)";
+            $query = mysql_query($sql) or die (json_encode(array("error"=>"We didn't start the fire, but something went wrong with $sql")));
+            $jsonarray['success'] = "You created a new organization!";
+            $jsonarray['organizationid'] = mysql_insert_id();
+            echo json_encode($jsonarray);
+            return '';
+        }
+        $sql = "SELECT * FROM organizations WHERE id = '$organizationID'";
+        $query = mysql_query($sql) or die (json_encode(array("error"=>"We didn't start the fire, but something went wrong with $sql")));
+        if(!mysql_fetch_array($query)){
+            $jsonarray['error'] = "No organization exists under id = $organizationID";
+            echo json_encode($jsonarray);
+            return '';
+        }
+        $sql = "UPDATE organizations
+                SET name = '$name', email = '$email'
+                WHERE id = '$organizationID'";
+        $query = mysql_query($sql) or die (json_encode(array("error"=>"We didn't start the fire, but something went wrong with $sql")));
+        $jsonarray['success'] = "Successfully saved changes.";
+        echo json_encode($jsonarray);
+        return '';
+    }
+    
 }
 ?>
