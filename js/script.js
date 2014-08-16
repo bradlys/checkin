@@ -108,6 +108,7 @@ if($("#eventSearch").length > 0){
     
 }
 
+//if(index.php)
 if($("#organizationSearch").length > 0){
     updateOrganizationSearchResults("");
     $("#myModal").on('hide.bs.modal', function(){
@@ -184,7 +185,7 @@ function makeAlertBox(data){
     return alert;
 }
 
-//Loads up myModal for content on checkins
+//Loads up myModal for content on checkin.php
 function loadupModal(customerElem){
     var name = customerElem.find("#username").text();
     var modalTitleText;
@@ -222,7 +223,7 @@ function loadupModal(customerElem){
     $("#myModal").modal('show');
 }
 
-
+//Loads up the modal for events.php
 function loadupEventModal(eventElem){
     var name = eventElem.find("#eventResultName").text();
     var modalTitleText;

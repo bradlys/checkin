@@ -57,7 +57,7 @@ if(isset($_POST['purpose'])){
     }
     else if($purpose == 'checkin'){
         $money = mysql_real_escape_string($_POST['money']);
-        if(empty($money)){
+        if(empty($money) && $money != "0"){
             echo 'Please input payment';
             return '';
         }

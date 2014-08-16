@@ -19,7 +19,7 @@ Overall structure list:
 Events page:
 1. Add date option for when the events occur.
 2. Add automatic event creation for reoccuring events.
-3. Add dropdown option in modal for a quick overview of the event with nice stats. (Number of newcomers, users who have attended more than 4 times, how many people have checked-in, cash flow for the event, cost of the event, current balance, how this stacks up to other events (in terms like: It's 9:15PM, and 45 people have checked in for a revenue sream of $315. This is 43% over the average for this time of night and statistically speaking there is only a 5% chance this would happen based off previous stats.), etc.)
+3. Add dropdown option in modal for a quick overview of the event with nice stats. (Number of newcomers, users who have attended more than 4 times, how many people have checked-in, cash flow for the event, cost of the event, current balance, how this stacks up to other events (in terms like: It's 9:15PM, and 45 people have checked in for a revenue stream of $315. This is 43% over the average for this time of night and statistically speaking there is only a 5% chance this would happen based off previous stats.), etc.)
 4. Add costs forms for various staff members and whether they've been paid or not. Venue cost, etc.
 5.
 
