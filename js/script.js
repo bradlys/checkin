@@ -1,10 +1,82 @@
-//@author Bradly Schlenker
+/**
+ * Custom JavaScript to create interaction
+ * @author Bradly Schlenker
+ */
 $(document).ready(function(){
 $("#nonefound").hide();
 
 
 //if(checkin.php) essentially
 if($("#search").length > 0){
+    checkinPage();
+}
+
+//if(events.php)
+if($("#eventSearch").length > 0){
+    eventsPage();
+}
+
+//if(index.php)
+if($("#organizationSearch").length > 0){
+    organizationsPage();
+}
+
+/**
+ * Sets up the organizations page.
+ * 
+ * @returns {null}
+ */
+function organizationsPage(){
+    updateOrganizationSearchResults("");
+    $("#myModal").on('hide.bs.modal', function(){
+        updateOrganizationSearchResults($("#organizationSearch").val());
+        $("#myModal").find(".alert").alert('close');
+    });
+    $("#organizationSearch").each(function() {
+        var elem = $(this);
+        // Save current value of element
+        elem.data('oldVal', elem.val());
+        // Look for changes in the value
+        elem.bind("propertychange keyup input paste", function( event ){
+            // If value has changed
+            if (elem.data('oldVal') !== elem.val() || elem.val() === '') {
+                // Updated stored value
+                elem.data('oldVal', elem.val());
+                // Do action
+                updateOrganizationSearchResults(elem.val());
+            }
+        });
+    });
+    $("#save").on("click", function() {
+        var name = $("#modalName").val();
+        var organizationID = $("#organizationID").val();
+        var checkout = false;
+        $("#myModal").find(".alert").alert('close');
+        $.post("backend/search.php", { purpose : "editOrganization",  name : name, organizationid : organizationID, checkout : checkout}, function(json){
+            json = $.parseJSON(json);
+            if(json.error){
+                $("#myModal").find("#result").append(makeAlertBox(json.error));
+            }
+            else{
+                $("#myModal").find("#organizationID").val(json.organizationid);
+                $("#myModal").find("#result").append(makeSaveOrganizationSuccessBox(json.success));
+                if(json.neworganization){
+                    $("#gotoOrganization").show();
+                    $("#gotoOrganization").attr("href", "events.php?id=" + json.organizationid);
+                }
+            }
+        });
+    });
+    updateOrganizationSearchResults("");
+}
+
+/**
+ * Sets up the check-in page
+ * 
+ * @returns {null}
+ */
+function checkinPage(){
+    updateSearchResults("");
     $("#myModal").on('hide.bs.modal', function(){
         $(".paymentArea").removeClass("has-success has-feedback");
         $(".glyphicon").remove();
@@ -60,8 +132,13 @@ if($("#search").length > 0){
     updateSearchResults("");
 }
 
-//if(events.php)
-if($("#eventSearch").length > 0){
+/**
+ * Sets up the events page
+ * 
+ * @returns {null}
+ */
+function eventsPage(){
+    updateEventSearchResults("");
     $.post("backend/search.php", { purpose : 'getOrganization', organizationid : $("#organizationID").val() }, function(data) {
         $("#organizationName").html(data);
     });
@@ -105,54 +182,17 @@ if($("#eventSearch").length > 0){
         });
     });
     updateEventSearchResults("");
-    
 }
 
-//if(index.php)
-if($("#organizationSearch").length > 0){
-    updateOrganizationSearchResults("");
-    $("#myModal").on('hide.bs.modal', function(){
-        updateOrganizationSearchResults($("#organizationSearch").val());
-        $("#myModal").find(".alert").alert('close');
-    });
-    $("#organizationSearch").each(function() {
-        var elem = $(this);
-        // Save current value of element
-        elem.data('oldVal', elem.val());
-        // Look for changes in the value
-        elem.bind("propertychange keyup input paste", function( event ){
-            // If value has changed
-            if (elem.data('oldVal') !== elem.val() || elem.val() === '') {
-                // Updated stored value
-                elem.data('oldVal', elem.val());
-                // Do action
-                updateOrganizationSearchResults(elem.val());
-            }
-        });
-    });
-    $("#save").on("click", function() {
-        var name = $("#modalName").val();
-        var organizationID = $("#organizationID").val();
-        var checkout = false;
-        $("#myModal").find(".alert").alert('close');
-        $.post("backend/search.php", { purpose : "editOrganization",  name : name, organizationid : organizationID, checkout : checkout}, function(json){
-            json = $.parseJSON(json);
-            if(json.error){
-                $("#myModal").find("#result").append(makeAlertBox(json.error));
-            }
-            else{
-                $("#myModal").find("#organizationID").val(json.organizationid);
-                $("#myModal").find("#result").append(makeSaveOrganizationSuccessBox(json.success));
-                if(json.neworganization){
-                    $("#gotoOrganization").show();
-                    $("#gotoOrganization").attr("href", "events.php?id=" + json.organizationid);
-                }
-            }
-        });
-    });
-    updateOrganizationSearchResults("");
-}
 
+
+/**
+ * Makes and returns a Bootstrap success box.
+ * This is specifically for when you successfully edit/save an organization in the modal.
+ * 
+ * @param {String} jsontext - a success message, usually in the form of a string
+ * @returns {String} - the success box as an HTML String
+ */
 function makeSaveOrganizationSuccessBox(jsontext){
     var box = '<div class="alert alert-success alert-dismissable" id="modalSuccess"> \n\ \
                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> \n\ \
@@ -161,6 +201,12 @@ function makeSaveOrganizationSuccessBox(jsontext){
     return box;
 }
 
+/**
+ * Makes and returns a Bootstrap success box.
+ * This is specifically for when you successfully edit/save an event in the modal.
+ * 
+ * @returns {String} - the success box as an HTML String
+ */
 function makeSaveEventSuccessBox(){
     var box = '<div class="alert alert-success alert-dismissable" id="modalSuccess"> \n\ \
                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> \n\ \
@@ -169,7 +215,12 @@ function makeSaveEventSuccessBox(){
     return box;
 }
 
-//Returns a div that is formatted to display whatever data is in an error format
+/**
+ * Makes and returns a Bootstrap alert box.
+ * 
+ * @param {element} data - an error message, usually in the form of a string
+ * @returns {String} - the alert box as an HTML String
+ */
 function makeAlertBox(data){
     var alert = '<div class="alert alert-danger fade in" id="modalProblem">\n\ \
                 <button class="close" aria-hidden="true" data-dismiss="alert" type="button">\n\ \
@@ -185,7 +236,14 @@ function makeAlertBox(data){
     return alert;
 }
 
-//Loads up myModal for content on checkin.php
+/**
+ * Loads up the modal (#myModal on checkin.php) with information about
+ * the customer provided in first argument. Allows the customer to be checked-in and
+ * have their information modified.
+ * 
+ * @param {element} customerElem - a customer element that from a search result
+ * @returns {null}
+ */
 function loadupModal(customerElem){
     var name = customerElem.find("#username").text();
     var modalTitleText;
@@ -283,7 +341,15 @@ function loadupOrganizationModal(organizationElem){
     $("#myModal").modal('show');
 }
 
-//Used for the checkin.php page
+/**
+ * Updates the search results div (#result) based on searching the
+ * database for customers whose name contains the first argument supplied.
+ * 
+ * 
+ * @param {string} name - The string to search for (based on whether the desired string contains this param)
+ * @param {integer} limit - The highest amount of search results to be returned. Defaults to 10.
+ * @returns {null}
+ */
 function updateSearchResults (name, limit){
     if(!limit){
         limit = 10;
@@ -315,7 +381,14 @@ function updateSearchResults (name, limit){
     });
 }
 
-//Used for the events.php page
+/**
+ * Updates the search results div (#eventResultArea) based on searching the
+ * database for events whose name contains the first argument supplied.
+ * 
+ * 
+ * @param {string} name - The string to search for (based on whether the desired string contains this param)
+ * @returns {null}
+ */
 function updateEventSearchResults (name){
     $.post("backend/search.php",
         { purpose : "searchEvents", name : name, organizationID : $("#organizationID").val() },
@@ -342,7 +415,14 @@ function updateEventSearchResults (name){
     });
 }
 
-//used for index.php page
+/**
+ * Updates the search results div (#organizationResult) based on searching the
+ * database for organizations whose name contains the first argument supplied.
+ * 
+ * 
+ * @param {string} name - The string to search for (based on whether the desired string contains this param)
+ * @returns {null}
+ */
 function updateOrganizationSearchResults (name) {
     $.post("backend/search.php",
         { purpose : "searchOrganizations", name : name },
