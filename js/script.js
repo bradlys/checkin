@@ -10,11 +10,11 @@ if($("#search").length > 0){
         $(".glyphicon").remove();
         $("#myModal").find(".alert").alert('close');
     });
-    $("#modalMoney").on("propertychange keyup input paste", function(event){
+    $("#modalMoney").on("propertychange keyup input paste", function( event ){
         $("#paymentAmount").val($(this).val());
     });
     $(".modalMoneyClearer").each(function() {
-        $(this).on("click select", function( event) {
+        $(this).on("click select", function( event ) {
             $("#modalMoney").val($(this).text());
             $("#paymentAmount").val($(this).text());
         });
@@ -47,7 +47,7 @@ if($("#search").length > 0){
         // Save current value of element
         elem.data('oldVal', elem.val());
         // Look for changes in the value
-        elem.bind("propertychange keyup input paste", function(event){
+        elem.bind("propertychange keyup input paste", function( event ){
             // If value has changed
             if (elem.data('oldVal') !== elem.val() || elem.val() === '') {
                 // Updated stored value
@@ -73,7 +73,7 @@ if($("#eventSearch").length > 0){
         // Save current value of element
         elem.data('oldVal', elem.val());
         // Look for changes in the value
-        elem.bind("propertychange keyup input paste", function(event){
+        elem.bind("propertychange keyup input paste", function( event ){
             // If value has changed
             if (elem.data('oldVal') !== elem.val() || elem.val() === '') {
                 // Updated stored value
@@ -120,7 +120,7 @@ if($("#organizationSearch").length > 0){
         // Save current value of element
         elem.data('oldVal', elem.val());
         // Look for changes in the value
-        elem.bind("propertychange keyup input paste", function(event){
+        elem.bind("propertychange keyup input paste", function( event ){
             // If value has changed
             if (elem.data('oldVal') !== elem.val() || elem.val() === '') {
                 // Updated stored value
@@ -294,7 +294,7 @@ function updateSearchResults (name, limit){
             $("#beforefound").hide();
             $(".customer").remove();
             if(data){
-                $("#result").prepend(data);
+                $("#result").append(data);
                 $(".customer").on("click", function ( event ) {
                     if($("#seemore").is($(this))){
                         updateSearchResults(name, (limit + 8) );
@@ -302,10 +302,10 @@ function updateSearchResults (name, limit){
                         loadupModal($(this));
                     }
                 });
-                $(".customer").mouseover(function (event ){
+                $(".customer").mouseover(function ( event ){
                     $(this).addClass("border-highlight");
                 });
-                $(".customer").mouseout(function (event ){
+                $(".customer").mouseout(function ( event ){
                     $(this).removeClass("border-highlight");
                 });
                 $("#nonefound").hide();
@@ -323,14 +323,14 @@ function updateEventSearchResults (name){
             $("#beforefound").hide();
             $(".eventResultItem").remove();
             if(data){
-                $("#eventResultArea").prepend(data);
+                $("#eventResultArea").append(data);
                 $(".eventResultItem").on("click", function ( event ) {
                     loadupEventModal($(this));
                 });
-                $(".eventResultItem").mouseover(function (event ){
+                $(".eventResultItem").mouseover(function ( event ){
                     $(this).addClass("border-highlight");
                 });
-                $(".eventResultItem").mouseout(function (event ){
+                $(".eventResultItem").mouseout(function ( event ){
                     $(this).removeClass("border-highlight");
                 });
                 if($(".eventResultID").length > 0){
@@ -350,14 +350,14 @@ function updateOrganizationSearchResults (name) {
             $("#beforefound").hide();
             $(".organizationResultItem").remove();
             if(data){
-                $("#organizationResult").prepend(data);
+                $("#organizationResult").append(data);
                 $(".organizationResultItem").on("click", function ( event ) {
                     loadupOrganizationModal($(this));
                 });
-                $(".organizationResultItem").mouseover(function (event ){
+                $(".organizationResultItem").mouseover(function ( event ){
                     $(this).addClass("border-highlight");
                 });
-                $(".organizationResultItem").mouseout(function (event ){
+                $(".organizationResultItem").mouseout(function ( event ){
                     $(this).removeClass("border-highlight");
                 });
                 if($(".organizationResultID").length > 0){
