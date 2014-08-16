@@ -1,5 +1,7 @@
 <?php
 /**
+ * This page is displaying events that the organization has created, creating new events for that organization,
+ * editing events that already exist, and going to those events to do check-in's.
  * 
  * @author Bradly Schlenker
  */

@@ -1,6 +1,8 @@
 <?php
 
-
+/**
+ * Prints the HTML Header (And, at this point, some body stuff too)
+ */
 function printHeader(){
     $checkinactive = false;
     $checkinappactive = false;
@@ -62,6 +64,9 @@ function printHeader(){
 
 }
 
+/**
+ * Prints the HTML Footer. (Does nothing currently)
+ */
 function printFooter() {}
 
 

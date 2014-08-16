@@ -1,6 +1,12 @@
 <?php
 /**
- * 
+ * This is where all POST requests are handled and all the back-end work is done.
+ * Security is very minimal at this point.
+ * POST requests are submitted to this page with a JSON format.
+ * When submitted, the JSON is combed through and actions are made based upon the purpose declared
+ * in the JSON string submitted. Once purpose is properly determined, it will check for the proper
+ * data that should follow and will then do work based upon the purpose and data. Once the work is done,
+ * this page will return a string containing the information desired. (Or an error)
  * @author Bradly Schlenker
  */
 
