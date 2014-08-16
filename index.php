@@ -3,6 +3,7 @@
 require_once 'backend/html.php';
 
 printHeader();
+
 ?>
 
 <div class="container">
@@ -67,4 +68,5 @@ printHeader();
 <?
 
 printFooter();
+
 ?>

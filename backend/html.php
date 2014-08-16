@@ -2,6 +2,8 @@
 
 
 function printHeader(){
+    $checkinactive = false;
+    $checkinappactive = false;
     if(basename($_SERVER['PHP_SELF']) == 'checkin.php'){
         $checkinactive = true;
     }
@@ -14,6 +16,7 @@ function printHeader(){
     else{
         $id = '';
     }
+    
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,17 +53,16 @@ function printHeader(){
           <ul class="nav navbar-nav">
             <li class="<?=$checkinactive ? 'active' : '' ?>"><a href="<?= $checkinappactive ? '' : "checkin.php?id=$id"?>">Check-in</a></li>
             <li><a href="<?= $checkinappactive ? '' : "about.php?id=$id"?>">About</a></li>
-            <li><a href="<?= $checkinappactive ? '' : "index.php?id=$id"?>">Contact</a></li>
+            <li><a href="<?= $checkinappactive ? '' : "contact.php?id=$id"?>">Contact</a></li>
           </ul>
         </div>
       </div>
     </div>
-<?    
-    
+<?php
+
 }
 
-function printFooter() {
-    
-}
+function printFooter() {}
+
 
 ?>

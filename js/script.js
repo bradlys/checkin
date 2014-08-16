@@ -19,7 +19,7 @@ if($("#search").length > 0){
             $("#paymentAmount").val($(this).text());
         });
     });
-    $.post("search.php", { purpose : 'getEvent', eventid : $("#eventID").val() }, function(data) {
+    $.post("backend/search.php", { purpose : 'getEvent', eventid : $("#eventID").val() }, function(data) {
         $("#eventName").html(data);
     });
     $("#save").on("click", function() {
@@ -31,7 +31,7 @@ if($("#search").length > 0){
         var checkout = false;
         money = money.replace('$', '');
         $("#myModal").find(".alert").alert('close');
-        $.post("search.php", { purpose : "checkin", eventid : eventid, money : money, email : email, name : name, cid : cid, checkout : checkout}, function(data){
+        $.post("backend/search.php", { purpose : "checkin", eventid : eventid, money : money, email : email, name : name, cid : cid, checkout : checkout}, function(data){
             if(data){
                 $("#myModal").find("#result").append(makeAlertBox(data));
             }
@@ -62,7 +62,7 @@ if($("#search").length > 0){
 
 //if(events.php)
 if($("#eventSearch").length > 0){
-    $.post("search.php", { purpose : 'getOrganization', organizationid : $("#organizationID").val() }, function(data) {
+    $.post("backend/search.php", { purpose : 'getOrganization', organizationid : $("#organizationID").val() }, function(data) {
         $("#organizationName").html(data);
     });
     $("#myModal").on('hide.bs.modal', function(){
@@ -89,7 +89,7 @@ if($("#eventSearch").length > 0){
         var organizationID = $("#organizationID").val();
         var checkout = false;
         $("#myModal").find(".alert").alert('close');
-        $.post("search.php", { purpose : "editEvent", eventid : eventID, name : name, organizationid : organizationID, checkout : checkout}, function(data){
+        $.post("backend/search.php", { purpose : "editEvent", eventid : eventID, name : name, organizationid : organizationID, checkout : checkout}, function(data){
             if(data){
                 $("#myModal").find("#result").append(makeAlertBox(data));
             }
@@ -134,7 +134,7 @@ if($("#organizationSearch").length > 0){
         var organizationID = $("#organizationID").val();
         var checkout = false;
         $("#myModal").find(".alert").alert('close');
-        $.post("search.php", { purpose : "editOrganization",  name : name, organizationid : organizationID, checkout : checkout}, function(json){
+        $.post("backend/search.php", { purpose : "editOrganization",  name : name, organizationid : organizationID, checkout : checkout}, function(json){
             json = $.parseJSON(json);
             if(json.error){
                 $("#myModal").find("#result").append(makeAlertBox(json.error));
@@ -283,16 +283,23 @@ function loadupOrganizationModal(organizationElem){
 }
 
 //Used for the checkin.php page
-function updateSearchResults (name){
-    $.post("search.php",
-        { purpose : "searchCustomers", name : name, eventID : $("#eventID").val() },
+function updateSearchResults (name, limit){
+    if(!limit){
+        limit = 10
+    }
+    $.post("backend/search.php",
+        { purpose : "searchCustomers", name : name, eventID : $("#eventID").val(), limit : limit },
         function ( data ) {
             $("#beforefound").hide();
             $(".customer").remove();
             if(data){
                 $("#result").prepend(data);
                 $(".customer").on("click", function ( event ) {
-                    loadupModal($(this));
+                    if($("#seemore").is($(this))){
+                        updateSearchResults(name, (limit + 8) );
+                    } else {
+                        loadupModal($(this));
+                    }
                 });
                 $(".customer").mouseover(function (event ){
                     $(this).addClass("border-highlight");
@@ -309,7 +316,7 @@ function updateSearchResults (name){
 
 //Used for the events.php page
 function updateEventSearchResults (name){
-    $.post("search.php",
+    $.post("backend/search.php",
         { purpose : "searchEvents", name : name, organizationID : $("#organizationID").val() },
         function ( data ) {
             $("#beforefound").hide();
@@ -336,7 +343,7 @@ function updateEventSearchResults (name){
 
 //used for index.php page
 function updateOrganizationSearchResults (name) {
-    $.post("search.php",
+    $.post("backend/search.php",
         { purpose : "searchOrganizations", name : name },
         function ( data ) {
             $("#beforefound").hide();

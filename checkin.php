@@ -24,7 +24,7 @@ printHeader();
               </div>
 
             </div>
-            <?
+            <?php
             if($id){
             ?>
             <div class="panel-body" id="result">
@@ -34,14 +34,14 @@ printHeader();
             </div>
         </div>
       </div>
-      <?
+      <?php
             }
             else{
                 ?>
                 <div class="panel-body">
                     <p class="lead has-warning">I don't know how you got here, but you did it wrong!</p>
                 </div>
-                <?
+                <?php
             }
       ?>
       <div class="modal fade bs-modal-lg" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -111,6 +111,6 @@ printHeader();
     <script type="text/javascript" src="js/script.js"></script>
   </body>
 </html>
-<?
+<?php
 printFooter();
 ?>

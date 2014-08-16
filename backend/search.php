@@ -4,7 +4,7 @@
  * @author Bradly Schlenker
  */
 
-require_once "backend/settings.php";
+require_once "settings.php";
 
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
@@ -137,6 +137,7 @@ if(isset($_POST['purpose'])){
     }
     else if($purpose == 'searchCustomers'){
         $name = mysql_real_escape_string($_POST['name']);
+        $limit = mysql_real_escape_string($_POST['limit']);
         $eventID = mysql_real_escape_string($_POST['eventID']);
         $highestVisitsAndLikeName =
         "CREATE TEMPORARY TABLE highestVisitsAndLikeName
@@ -146,9 +147,13 @@ if(isset($_POST['purpose'])){
         WHERE cu.name LIKE '%$name%'
         GROUP BY cu.id
         ORDER BY visits DESC
-        LIMIT 11";
+        ";
         mysql_query($highestVisitsAndLikeName) or die ("We didn't start the fire, but something went wrong with $highestVisitsAndLikeName");
-        $visitsql = "SELECT * FROM highestVisitsAndLikeName";
+        $numInSystemSQL = "SELECT COUNT(*) as K FROM highestVisitsAndLikeName";
+        $numInSystemQuery = mysql_query($numInSystemSQL) or die ("We didn't start the fire, but something went wrong with $numInSystemSQL");
+        $numInSystemNumber = mysql_fetch_array($numInSystemQuery);
+        $numInSystemNumber = $numInSystemNumber['K'];
+        $visitsql = "SELECT * FROM highestVisitsAndLikeName " . ($numInSystemNumber > ($limit + 1) ? "LIMIT " .  ($limit) : "");
         $visitquery = mysql_query($visitsql) or die ("We didn't start the fire, but something went wrong with $visitsql");
         $alreadycheckedinsql = "SELECT customers.name AS cname, checkins.customer_id AS customerid, checkins.payment AS payment FROM checkins JOIN customers ON checkins.customer_id = customers.id WHERE event_id = '$eventID' AND customer_id IN (SELECT customer_id FROM highestVisitsAndLikeName)";
         $alreadycheckedinquery = mysql_query($alreadycheckedinsql) or die ("We didn't start the fire, but something went wrong with $alreadycheckedinsql");
@@ -169,6 +174,9 @@ if(isset($_POST['purpose'])){
                 '<div id="visits">' . $visits . ' visits</div>'. 
                 ($isCheckedIn ? '<small>Already Checked In</small>' : '') .
                 '</div>';
+        }
+        if($numInSystemNumber > ($limit + 1) ){
+            echo '<div class="customer col-xs-3" id="seemore"><div id="username">' . ($numInSystemNumber - $limit) . ' more...</div></div>';
         }
         echo '<div class="customer col-xs-3" id="newuser"><div id="username">Add New User</div></div>';
     }
