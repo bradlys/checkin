@@ -286,7 +286,7 @@ function loadupOrganizationModal(organizationElem){
 //Used for the checkin.php page
 function updateSearchResults (name, limit){
     if(!limit){
-        limit = 10
+        limit = 10;
     }
     $.post("backend/search.php",
         { purpose : "searchCustomers", name : name, eventID : $("#eventID").val(), limit : limit },
