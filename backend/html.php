@@ -26,8 +26,8 @@ function printHeader(){
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="Dance Check-in App">
+    <meta name="author" content="Bradly Schlenker">
     <link rel="shortcut icon" href="/checkin/ico/favicon.ico">
 
     <title>Check-in App</title>
@@ -65,9 +65,16 @@ function printHeader(){
 }
 
 /**
- * Prints the HTML Footer. (Does nothing currently)
+ * Prints the HTML Footer.
  */
-function printFooter() {}
+function printFooter() {
 
-
+?>
+    <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/script.js"></script>
+  </body>
+</html>
+<?php
+}
 ?>

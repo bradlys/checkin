@@ -46,6 +46,7 @@ printHeader();
                 <?php
             }
       ?>
+    </div>
       <div class="modal fade bs-modal-lg" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
           <div class="modal-content">
@@ -78,14 +79,8 @@ printHeader();
           </div>
         </div>
       </div>
+      </div>
 
-    </div>
-
-    <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/script.js"></script>
-  </body>
-</html>
 <?php
 printFooter();
 ?>
