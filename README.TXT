@@ -5,8 +5,7 @@ So, when you view the code and you're thinking of setting up this app, keep that
 checkinapp.sql is an example database that has the schema and some included check-ins, organizations, and events.
 I would import that into a new database and then fill-in the proper information in backend/settings.php.
 
-Outside of that, you might be able to view an example of this running up at https://students.washington.edu/bradlys/ (But it will likely vaporize at any moment since I am no longer a student)
-
+Outside of that, you might be able to view an example of this running up at bradly.me/checkin/
 
 A few noticeable things to do for check-in app:
 
