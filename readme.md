@@ -31,7 +31,7 @@ Example:
 
 ### Did I say this was a work-in-progress?
 
-I did, right? Yeah, there's more you'll need to do in the future but right now that's it! Create an organization, some events for that organization, and start checking-in people! Let the good times roll! 
+I did, right? OK, just making sure. There's more you'll need to do in the future but right now that's it. Create an organization, some events for that organization, and start checking-in people. Let the good times roll!  
 
 # Work To Be Done
 
