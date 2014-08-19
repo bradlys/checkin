@@ -17,7 +17,7 @@ The first step is to just say, "no". CIA is currently not ready for deployment. 
 ### Database configuration
 
 1. Create an empty database via cPanel, phpMyAdmin, bash, or your other tool of choice. Since this app is currently designed to be used in English speaking countries with only standard English characters... I would use a collation of utf8\_general\_ci for the database and all tables. I have no responsibility with what happens when you use utf8\_unicode\_ci and fancy accented characters or what have you. :-þ
-1. Import checkinapp.sql from the base checkout directory into the database. It will fill-in the structure for you. Edited the collations as necessary.
+1. Import checkinapp.sql from the base checkout directory into the database. It will fill-in the structure for you. Edit the collations as necessary.
 
 ### Configuring the settings
 
