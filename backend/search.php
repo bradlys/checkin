@@ -142,7 +142,7 @@ if(isset($_POST['purpose'])){
         echo '<div class="eventResultItem col-xs-3" id="newEvent"><div id="eventResultName">Add New Event</div></div>';
     }
     else if($purpose == 'searchCustomers'){
-        $toEcho = findCustomers(
+        $toEcho = searchCustomers(
             array(
                 "name"=> $_POST['name'],
                 "limit" => $_POST['limit'],
@@ -152,16 +152,7 @@ if(isset($_POST['purpose'])){
         echo $toEcho;
     }
     else if($purpose == 'searchOrganizations'){
-        $name = mysql_real_escape_string($_POST['name']);
-        $sql = "SELECT * FROM organizations WHERE name LIKE '%$name%'";
-        $query = mysql_query($sql) or die (json_encode(array("error"=>"We didn't start the fire, but something went wrong with $sql")));
-        while($oganization = mysql_fetch_array($query)){
-            echo '<div class="organizationResultItem col-xs-3">' . 
-                '<span class="organizationResultID">' . $oganization['id'] . '</span>' .
-                '<div id="organizationResultName">' . $oganization['name'] . '</div>' . 
-                '</div>';
-        }
-        echo '<div class="organizationResultItem col-xs-3" id="newEvent"><div id="organizationResultName">Add New Organization</div></div>';
+        echo searchOrganizations(array("name" => $_POST['name']));
     }
     else if($purpose == 'editOrganization'){
         $name = mysql_real_escape_string($_POST['name']);
@@ -210,7 +201,7 @@ if(isset($_POST['purpose'])){
  * array['numberOfExtra'] contains an integer displaying how many customers were not 
  * returned in the search results.
  */
-function findCustomers($args){
+function searchCustomers($args){
     $name = mysql_real_escape_string($args['name']);
     $limit = mysql_real_escape_string($args['limit']);
     $eventID = mysql_real_escape_string($args['eventID']);
@@ -271,11 +262,31 @@ function findCustomers($args){
 }
 
 /**
+ * Searches the database for organizations that match LIKE %name% and returns them in JSON format
+ * @param Array $args - Array of arguments: array['name'] being the name of the organization
+ * @return JSON
+ */
+function searchOrganizations($args){
+    $name = mysql_real_escape_string($args['name']);
+    $sql = "SELECT * FROM organizations WHERE name LIKE '%$name%'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $organizations = array();
+    while($organization = mysql_fetch_array($query)){
+        array_push($organizations, array(
+            "organizationResultID" => $organization['id'],
+            "organizationResultName" => $organization['name']
+        ));
+    }
+    $returnJSON = json_encode($organizations);
+    return $returnJSON;
+}
+
+/**
  * Returns an error message that represents the error caused by the SQL command
  * 
  * @param String $sql - SQL statement that triggered the error
  * @param String $optiontext - Optional error message text to return
- * @return type
+ * @return String
  */
 function returnSQLError($sql, $optiontext = null){
     if($optiontext){
@@ -284,5 +295,18 @@ function returnSQLError($sql, $optiontext = null){
     return "We didn't start the fire but soemthing went wrong with $sql";
 }
 
+/**
+ * Returns a JSON error message that represents the error caused by the SQL command
+ * 
+ * @param String $sql - SQL statement that triggered the error
+ * @param String $optiontext - Optional error message text to return
+ * @return JSON
+ */
+function returnSQLErrorInJSON($sql, $optiontext = null){
+    if($optiontext){
+        return $optiontext . $sql;
+    }
+    return json_encode(array("error" => "We didn't start the fire but soemthing went wrong with $sql"));
+}
 
 ?>

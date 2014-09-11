@@ -430,7 +430,7 @@ function updateOrganizationSearchResults (name) {
             $("#beforefound").hide();
             $(".organizationResultItem").remove();
             if(data){
-                $("#organizationResult").append(data);
+                $("#organizationResult").append(displayOrganizationSearchResults(data));
                 $(".organizationResultItem").on("click", function ( event ) {
                     loadupOrganizationModal($(this));
                 });
@@ -477,6 +477,28 @@ function displayCustomerSearchResults (data) {
         returnString = returnString + '<div class="customer col-xs-3" id="seemore"><div id="username">' + (parsedData['numberOfExtra']) + ' more...</div></div>';
     }
     returnString = returnString + '<div class="customer col-xs-3" id="newuser"><div id="username">Add New User</div></div>';
+    return returnString;
+}
+
+/**
+ * Formats data that was returned from searching the customer database into customer divs.
+ * @param {JSON} data - JSON string of customer information returned by search
+ * @returns {String} - returns customer divs as a string
+ */
+function displayOrganizationSearchResults (data) {
+    var returnString = '';
+    var organizations = jQuery.parseJSON(data);
+    var tmpString = '';
+    for (var i = 0; i < organizations.length; i++){
+        var organization = organizations[i];
+        tmpString =
+                '<div class="organizationResultItem col-xs-3">' + 
+                '<span class="organizationResultID">' + organization['organizationResultID'] + '</span>' +
+                '<div id="organizationResultName">' + organization['organizationResultName'] + '</div>' +
+                '</div>';
+        returnString = returnString + tmpString;
+    }
+    returnString = returnString + '<div class="organizationResultItem col-xs-3" id="newEvent"><div id="organizationResultName">Add New Organization</div></div>';
     return returnString;
 }
 
