@@ -34,21 +34,25 @@ if(isset($_POST['purpose'])){
  * @return JSON
  */
 function checkinCustomer($args){
-    $money = $args['money'];
-    $eventid = $args['eventid'];
-    $email = $args['email'];
-    $name = $args['name'];
-    $cid = $args['cid'];
-    $useFreeEntrance = $args['useFreeEntrance'];
-    if($useFreeEntrance == "false"){
-        $useFreeEntrance = false;
-    }
-    $numberOfFreeEntrances = $args['numberOfFreeEntrances'];
-    if($useFreeEntrance && $numberOfFreeEntrances == 0){
-        return returnJSONError("Not enough Free Entrances to use a Free Entrance");
-    }
-    if(!is_int($numberOfFreeEntrances) || $numberOfFreeEntrances < 0){
-        return returnJSONError("Free Entrances must be non-negative integer");
+    $money = mysql_real_escape_string($args['money']);
+    $eventid = mysql_real_escape_string($args['eventid']);
+    $email = mysql_real_escape_string($args['email']);
+    $name = mysql_real_escape_string($args['name']);
+    $cid = mysql_real_escape_string($args['cid']);
+    $organizationID = inferOrganizationID($eventid);
+    $isFreeEntranceEnabled = isFreeEntranceEnabled($organizationID);
+    if($isFreeEntranceEnabled){
+        $useFreeEntrance = mysql_real_escape_string($args['useFreeEntrance']);
+        if($useFreeEntrance == "false"){
+            $useFreeEntrance = false;
+        }
+        $numberOfFreeEntrances = mysql_real_escape_string($args['numberOfFreeEntrances']);
+        if($useFreeEntrance && $numberOfFreeEntrances == 0){
+            return returnJSONError("Not enough Free Entrances to use a Free Entrance");
+        }
+        if(!is_int($numberOfFreeEntrances) || $numberOfFreeEntrances < 0){
+            return returnJSONError("Free Entrances must be non-negative integer");
+        }
     }
     if(empty($name)){
         return returnJSONError("Please input a name");
@@ -73,19 +77,25 @@ function checkinCustomer($args){
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $result = mysql_fetch_array($query);
     $checkinID = $result['checkin_id'];
-    $hasUsedFreeEntrance = hasUsedFreeEntrance($cid, $checkinID);
-    if(empty($money) && $money != "0" && !$useFreeEntrance && !$hasUsedFreeEntrance){
-        return returnJSONError("Please input payment or use Free Entrance");
-    }
-    $databaseNumberOfFreeEntrances = getNumberOfFreeEntrances($cid);
-    if($databaseNumberOfFreeEntrances != $numberOfFreeEntrances){
-        editNumberOfFreeEntrances($cid, $numberOfFreeEntrances);
+    if($isFreeEntranceEnabled){
+        $hasUsedFreeEntrance = hasUsedFreeEntrance($cid, $checkinID);
+        if(empty($money) && $money != "0" && !$useFreeEntrance && !$hasUsedFreeEntrance){
+            return returnJSONError("Please input payment or use Free Entrance");
+        }
+        $databaseNumberOfFreeEntrances = getNumberOfFreeEntrances($cid);
+        if($databaseNumberOfFreeEntrances != $numberOfFreeEntrances){
+            editNumberOfFreeEntrances($cid, $numberOfFreeEntrances);
+        }
+    } else {
+        if(empty($money) && $money != "0"){
+            return returnJSONError("Please input payment");
+        }
     }
     if(!$result){
         $sql = "INSERT INTO checkins VALUES
                 ('', '$cid', '$eventid', '$money', '1', CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
-        if($useFreeEntrance){
+        if($isFreeEntranceEnabled && $useFreeEntrance){
             useFreeEntrance($cid, mysql_insert_id());
         }
         return;
@@ -98,10 +108,10 @@ function checkinCustomer($args){
             SET name = '$name', email = '$email'
             WHERE id = '$cid'";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
-    if($hasUsedFreeEntrance && !$useFreeEntrance){
+    if($isFreeEntranceEnabled && $hasUsedFreeEntrance && !$useFreeEntrance){
         unuseFreeEntrance($cid, $checkinID);
     }
-    if($useFreeEntrance && !$hasUsedFreeEntrance){
+    if($isFreeEntranceEnabled && $useFreeEntrance && !$hasUsedFreeEntrance){
         useFreeEntrance($cid, $checkinID);
     }
 }
@@ -112,9 +122,9 @@ function checkinCustomer($args){
  * @return JSON
  */
 function editEvent($args){
-    $eventID = $args['eventid'];
-    $name = $args['name'];
-    $organizationID = $args['organizationID'];
+    $eventID = mysql_real_escape_string($args['eventid']);
+    $name = mysql_real_escape_string($args['name']);
+    $organizationID = mysql_real_escape_string($args['organizationID']);
     if(empty($name)){
         return returnJSONError('No name was entered for the event.');
     }
@@ -146,6 +156,8 @@ function editNumberOfFreeEntrances($cid, $number){
     if($cid < 1){
         throw new Exception("Cannot have less than 1 for customer ID number");
     }
+    $number = mysql_real_escape_string($number);
+    $cid = mysql_real_escape_string($cid);
     $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
@@ -167,10 +179,10 @@ function editNumberOfFreeEntrances($cid, $number){
  * @return JSON
  */
 function editOrganization($args){
-    $name = isset($args['name']) ? $args['name'] : "";
-    $email = isset($args['email']) ? $args['email'] : "";
+    $name = isset($args['name']) ? mysql_real_escape_string($args['name']) : "";
+    $email = isset($args['email']) ? mysql_real_escape_string($args['email']) : "";
     $organizationID = isset($args['organizationID']) ? $args['organizationID'] : "";
-    $jsonarray['organizationID'] = $args['organizationID'];
+    $jsonarray['organizationID'] = mysql_real_escape_string($args['organizationID']);
     $jsonarray['neworganization'] = false;
     if(!$name){
         $jsonarray['error'] = 'Please enter a name';
@@ -213,6 +225,8 @@ function getCheckinIDForCustomerAndEvent($cid, $eventID){
     if($eventID < 1){
         throw new Exception("Cannot have less than 1 for event ID number");
     }
+    $cid = mysql_real_escape_string($cid);
+    $eventID = mysql_real_escape_string($eventID);
     $sql = "SELECT *
             FROM checkins
             WHERE customer_id = '$cid' 
@@ -232,7 +246,7 @@ function getCheckinIDForCustomerAndEvent($cid, $eventID){
  * @return JSON
  */
 function getEmail($args){
-    $cid = $args['cid'];
+    $cid = mysql_real_escape_string($args['cid']);
     $sql = "SELECT email FROM customers WHERE id = '$cid'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
@@ -245,7 +259,7 @@ function getEmail($args){
  * @return JSON
  */
 function getEvent($args){
-    $eventid = $args['eventid'];
+    $eventid = mysql_real_escape_string($args['eventid']);
     $sql = "SELECT name FROM events WHERE id = '$eventid'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
@@ -255,12 +269,13 @@ function getEvent($args){
 /**
  * Gets the number of free entrances the customer has.
  * @param integer $cid - customer ID number
- * @throws Exception - When $cid is less than 0.
+ * @throws Exception - When $cid is less than 1.
  */
 function getNumberOfFreeEntrances($cid){
-    if($cid < 0){
-        throw new Exception("Cannot have customer ID less than 0.");
+    if($cid < 1){
+        throw new Exception("Cannot have customer ID less than 1.");
     }
+    $cid = mysql_real_escape_string($cid);
     $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $result = mysql_fetch_array($query);
@@ -277,7 +292,7 @@ function getNumberOfFreeEntrances($cid){
  * @return JSON
  */
 function getOrganization($args){
-    $organizationID = $args['organizationID'];
+    $organizationID = mysql_real_escape_string($args['organizationID']);
     $sql = "SELECT name FROM organizations WHERE id = '$organizationID'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
@@ -299,6 +314,8 @@ function hasUsedFreeEntrance($cid, $checkinID){
     if($checkinID < 1){
         throw new Exception("Cannot have less than 1 for checkin ID number");
     }
+    $cid = mysql_real_escape_string($cid);
+    $checkinID = mysql_real_escape_string($checkinID);
     $sql = "SELECT * FROM customerAttributes
             WHERE customer_id = '$cid'
             AND name = 'Used Free Entrance'
@@ -311,6 +328,26 @@ function hasUsedFreeEntrance($cid, $checkinID){
     }
     else{
         return false;
+    }
+}
+
+/**
+ * Infers the organization ID based off the event ID.
+ * @param int $eventID - event ID
+ * @throws Exception - When event ID is not a positive integer or refers to a non-existent event.
+ */
+function inferOrganizationID($eventID){
+    if(!is_int($eventID) || $eventID < 1){
+        throw new Exception("Event ID in inferOrganizationID must be a positive integer.");
+    }
+    $eventID = mysql_real_escape_string($eventID);
+    $sql = "SELECT * FROM events WHERE id = '$eventID'";
+    $query = $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($result);
+    if($result){
+        return $result['organization_id'];
+    } else {
+        throw new Exception("Invalid event ID given to inferOrganizationID.");
     }
 }
 
@@ -329,43 +366,6 @@ function parse_post_arguments(){
 }
 
 /**
- * Helper function. Takes error message string and returns a JSON with { error : message }
- * @param String $errorMessage - the message
- * @return JSON
- */
-function returnJSONError($errorMessage){
-    return json_encode(array("error" => $errorMessage));
-}
-
-/**
- * Returns an error message that represents the error caused by the SQL command
- * 
- * @param String $sql - SQL statement that triggered the error
- * @param String $optiontext - Optional error message text to return
- * @return String
- */
-function returnSQLError($sql, $optiontext = null){
-    if($optiontext){
-        return $optiontext . $sql;
-    }
-    return "We didn't start the fire but something went wrong with $sql";
-}
-
-/**
- * Returns a JSON error message that represents the error caused by the SQL command
- * 
- * @param String $sql - SQL statement that triggered the error
- * @param String $optiontext - Optional error message text to return
- * @return JSON
- */
-function returnSQLErrorInJSON($sql, $optiontext = null){
-    if($optiontext){
-        return $optiontext . $sql;
-    }
-    return json_encode(array("error" => "We didn't start the fire but something went wrong with $sql"));
-}
-
-/**
  * Finds customers whose names match in the databased based upon LIKE %name% and eventID.
  * This function will limit the return of results to whatever limit is set to, or by default 11.
  * @param Array $args - contains an array with value for name, limit, and eventID
@@ -374,9 +374,9 @@ function returnSQLErrorInJSON($sql, $optiontext = null){
  * returned in the search results.
  */
 function searchCustomers($args){
-    $name = $args['name'];
-    $limit = $args['limit'];
-    $eventID = $args['eventID'];
+    $name = mysql_real_escape_string($args['name']);
+    $limit = mysql_real_escape_string($args['limit']);
+    $eventID = mysql_real_escape_string($args['eventID']);
     $highestVisitsAndLikeName =
     "CREATE TEMPORARY TABLE highestVisitsAndLikeName
     SELECT COUNT(*) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
@@ -494,6 +494,8 @@ function unuseFreeEntrance($cid, $checkinID){
     if($checkinID < 1){
         throw new Exception("Cannot have less than 1 for checkin ID number");
     }
+    $cid = mysql_real_escape_string($cid);
+    $checkinID = mysql_real_escape_string($checkinID);
     $sql = "SELECT *
            FROM customerAttributes
            WHERE customer_id = '$cid'
@@ -528,6 +530,8 @@ function useFreeEntrance($cid, $checkinID){
     if($checkinID < 0){
         throw new Exception("Cannot have less than 0 for checkin ID number");
     }
+    $cid = mysql_real_escape_string($cid);
+    $checkinID = mysql_real_escape_string($checkinID);
     $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $result = mysql_fetch_array($query);
