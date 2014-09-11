@@ -360,7 +360,7 @@ function updateSearchResults (name, limit){
             $("#beforefound").hide();
             $(".customer").remove();
             if(data){
-                $("#result").append(data);
+                $("#result").append(displayCustomerSearchResults(data));
                 $(".customer").on("click", function ( event ) {
                     if($("#seemore").is($(this))){
                         updateSearchResults(name, (limit + 8) );
@@ -447,6 +447,37 @@ function updateOrganizationSearchResults (name) {
                 }
             }
     });
+}
+
+
+/**
+ * Formats data that was returned from searching the customer database into customer divs.
+ * @param {JSON} data - JSON string of customer information returned by search
+ * @returns {String} - returns customer divs as a string
+ */
+function displayCustomerSearchResults (data) {
+    var returnString = '';
+    var parsedData = jQuery.parseJSON(data);
+    var tmpString = '';
+    var customers = parsedData['customers'];
+    for (var i = 0; i < customers.length; i++){
+        var customer = customers[i];
+        tmpString =
+            '<div class="customer col-xs-3">' +
+            '<span class="cid">' + customer['cid'] + '</span>' +
+            '<span class="email">' + customer['email'] + '</span>' +
+            '<span class="payment">' + customer['payment'] + '</span>' +
+            '<div id="username">' + customer['name'] + '</div>' + 
+            '<div id="visits">' + customer['visits'] + ' visits</div>' +
+            (customer['isCheckedIn'] ? '<small>Already Checked In</small>' : '') +
+            '</div>';
+        returnString = returnString + tmpString;
+    }
+    if(parsedData['numberOfExtra'] > 0){
+        returnString = returnString + '<div class="customer col-xs-3" id="seemore"><div id="username">' + (parsedData['numberOfExtra']) + ' more...</div></div>';
+    }
+    returnString = returnString + '<div class="customer col-xs-3" id="newuser"><div id="username">Add New User</div></div>';
+    return returnString;
 }
 
 });

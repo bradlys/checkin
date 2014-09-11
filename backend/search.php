@@ -142,49 +142,14 @@ if(isset($_POST['purpose'])){
         echo '<div class="eventResultItem col-xs-3" id="newEvent"><div id="eventResultName">Add New Event</div></div>';
     }
     else if($purpose == 'searchCustomers'){
-        $name = mysql_real_escape_string($_POST['name']);
-        $limit = mysql_real_escape_string($_POST['limit']);
-        $eventID = mysql_real_escape_string($_POST['eventID']);
-        $highestVisitsAndLikeName =
-        "CREATE TEMPORARY TABLE highestVisitsAndLikeName
-        SELECT COUNT(*) as visits, cu.id as cid, cu.name as name, cu.email as email
-        FROM checkins as ch
-        JOIN customers AS cu ON ch.customer_id = cu.id
-        WHERE cu.name LIKE '%$name%'
-        GROUP BY cu.id
-        ORDER BY visits DESC
-        ";
-        mysql_query($highestVisitsAndLikeName) or die ("We didn't start the fire, but something went wrong with $highestVisitsAndLikeName");
-        $numInSystemSQL = "SELECT COUNT(*) as K FROM highestVisitsAndLikeName";
-        $numInSystemQuery = mysql_query($numInSystemSQL) or die ("We didn't start the fire, but something went wrong with $numInSystemSQL");
-        $numInSystemNumber = mysql_fetch_array($numInSystemQuery);
-        $numInSystemNumber = $numInSystemNumber['K'];
-        $visitsql = "SELECT * FROM highestVisitsAndLikeName " . ($numInSystemNumber > ($limit + 1) ? "LIMIT " .  ($limit) : "");
-        $visitquery = mysql_query($visitsql) or die ("We didn't start the fire, but something went wrong with $visitsql");
-        $alreadycheckedinsql = "SELECT customers.name AS cname, checkins.customer_id AS customerid, checkins.payment AS payment FROM checkins JOIN customers ON checkins.customer_id = customers.id WHERE event_id = '$eventID' AND customer_id IN (SELECT customer_id FROM highestVisitsAndLikeName)";
-        $alreadycheckedinquery = mysql_query($alreadycheckedinsql) or die ("We didn't start the fire, but something went wrong with $alreadycheckedinsql");
-        $alreadycheckedin = array();
-        while($tmp = mysql_fetch_array($alreadycheckedinquery)){
-            $alreadycheckedin[$tmp['cname']] = $tmp['payment'];
-        }
-        $keysAlreadyCheckedIn = array_keys($alreadycheckedin);
-        while($visit = mysql_fetch_array($visitquery)){
-            $name = $visit['name'];
-            $visits = $visit['visits'];
-            $isCheckedIn = in_array($name, $keysAlreadyCheckedIn);
-            echo '<div class="customer col-xs-3">' . 
-                '<span class="cid">' . $visit['cid'] . '</span>' . 
-                '<span class="email">' . $visit['email'] . '</span>' . 
-                '<span class="payment">' . ($isCheckedIn ? $alreadycheckedin[$name] : '') . '</span>' .
-                '<div id="username">' . $name . '</div>' . 
-                '<div id="visits">' . $visits . ' visits</div>'. 
-                ($isCheckedIn ? '<small>Already Checked In</small>' : '') .
-                '</div>';
-        }
-        if($numInSystemNumber > ($limit + 1) ){
-            echo '<div class="customer col-xs-3" id="seemore"><div id="username">' . ($numInSystemNumber - $limit) . ' more...</div></div>';
-        }
-        echo '<div class="customer col-xs-3" id="newuser"><div id="username">Add New User</div></div>';
+        $toEcho = findCustomers(
+            array(
+                "name"=> $_POST['name'],
+                "limit" => $_POST['limit'],
+                "eventID" => $_POST['eventID']
+            )
+        );
+        echo $toEcho;
     }
     else if($purpose == 'searchOrganizations'){
         $name = mysql_real_escape_string($_POST['name']);
@@ -236,4 +201,88 @@ if(isset($_POST['purpose'])){
     }
     
 }
+
+/**
+ * Finds customers whose names match in the databased based upon LIKE %name% and eventID.
+ * This function will limit the return of results to whatever limit is set to, or by default 11.
+ * @param Array $args - contains an array with value for name, limit, and eventID
+ * @return JSON array - array['customers'] contains an array of customers with information. 
+ * array['numberOfExtra'] contains an integer displaying how many customers were not 
+ * returned in the search results.
+ */
+function findCustomers($args){
+    $name = mysql_real_escape_string($args['name']);
+    $limit = mysql_real_escape_string($args['limit']);
+    $eventID = mysql_real_escape_string($args['eventID']);
+    $highestVisitsAndLikeName =
+    "CREATE TEMPORARY TABLE highestVisitsAndLikeName
+    SELECT COUNT(*) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
+    FROM checkins AS ch
+    JOIN customers AS cu ON ch.customer_id = cu.id
+    WHERE cu.name LIKE '%$name%'
+    GROUP BY cu.id
+    ORDER BY visits DESC
+    ";
+    mysql_query($highestVisitsAndLikeName) or die (returnSQLError($highestVisitsAndLikeName));
+    $numInSystemSQL = "SELECT COUNT(*) as count FROM highestVisitsAndLikeName";
+    $numInSystemQuery = mysql_query($numInSystemSQL) or die (returnSQLError($numInSystemSQL));
+    $numInSystemNumber = mysql_fetch_array($numInSystemQuery);
+    $numInSystemNumber = $numInSystemNumber['count'];
+    $visitsql = "SELECT * FROM highestVisitsAndLikeName " . ($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
+    $visitquery = mysql_query($visitsql) or die (returnSQLError($visitsql));
+    $alreadycheckedinsql =
+    "SELECT customers.name AS cname, checkins.customer_id AS customerid, checkins.payment AS payment
+    FROM checkins
+    JOIN customers
+    ON checkins.customer_id = customers.id
+    WHERE event_id = '$eventID'
+    AND customer_id IN (SELECT customer_id 
+                        FROM highestVisitsAndLikeName)";
+    $alreadycheckedinquery = mysql_query($alreadycheckedinsql) or die (returnSQLError($alreadycheckedinsql));
+    $alreadycheckedin = array();
+    while($tmp = mysql_fetch_array($alreadycheckedinquery)){
+        $alreadycheckedin[$tmp['cname']] = $tmp['payment'];
+    }
+    $keysAlreadyCheckedIn = array_keys($alreadycheckedin);
+    $customerArray = array();
+    while($visit = mysql_fetch_array($visitquery)){
+        $name = $visit['name'];
+        $visits = $visit['visits'];
+        $isCheckedIn = in_array($name, $keysAlreadyCheckedIn);
+        array_push($customerArray, 
+            array(
+            "cid" => $visit['cid'],
+            "email" => $visit['email'],
+            "payment" => ($isCheckedIn ? $alreadycheckedin[$name] : ''),
+            "name" => $name,
+            "visits" => $visits,
+            "isCheckedIn" => $isCheckedIn
+            )
+        );
+    }
+    $returnJSON = array();
+    $returnJSON['customers'] = $customerArray;
+    if($numInSystemNumber > $limit + 1){
+        $returnJSON['numberOfExtra'] = $numInSystemNumber - $limit;
+    } else {
+        $returnJSON['numberOfExtra'] = 0;
+    }
+    return json_encode($returnJSON);
+}
+
+/**
+ * Returns an error message that represents the error caused by the SQL command
+ * 
+ * @param String $sql - SQL statement that triggered the error
+ * @param String $optiontext - Optional error message text to return
+ * @return type
+ */
+function returnSQLError($sql, $optiontext = null){
+    if($optiontext){
+        return $optiontext . $sql;
+    }
+    return "We didn't start the fire but soemthing went wrong with $sql";
+}
+
+
 ?>
