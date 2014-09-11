@@ -4,6 +4,25 @@ include_once "database.php";
 include_once "misc.php";
 
 /**
+ * Infers the organization ID based off the event ID.
+ * @param int $eventID - event ID
+ * @throws Exception - When event ID is not a positive integer or refers to a non-existent event.
+ */
+function inferOrganizationID($eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID in inferOrganizationID must be a positive integer.");
+    }
+    $sql = "SELECT * FROM events WHERE id = '$eventID'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        return $result['organization_id'];
+    } else {
+        throw new Exception("Invalid event ID given to inferOrganizationID.");
+    }
+}
+
+/**
  * Returns true/false based on whether a value of
  * (id, $organizationID, 'FreeCheckins', 'true', '1', TIMESTAMP)
  * is in organizationAttributes.

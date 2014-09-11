@@ -4,9 +4,14 @@
  * @author Bradly Schlenker
  */
 require_once 'backend/html.php';
+require_once 'backend/settings.php';
 
 if(isset($_GET['id'])){
     $id = $_GET['id'];
+    if(!isInteger($id) || $id < 1){
+        echo "Need a positive integer for id";
+        exit;
+    }
 }
 
 printHeader();
@@ -95,6 +100,8 @@ printHeader();
                     </form>
                     </div>
                 </div>
+                <?php
+                if(isFreeEntranceEnabled(inferOrganizationID($id))){ ?>
                 <div class="panel panel-default col-sm-3 paymentOptionsBox">
                     <div class="form-group paymentOptionsArea">
                         <div class="checkbox useFreeEntrance">
@@ -108,6 +115,9 @@ printHeader();
                         </div>
                     </div>
                 </div>
+                <?php
+                }
+                ?>
             </div>
             </div>
             <div class="modal-footer">

@@ -335,25 +335,6 @@ function hasUsedFreeEntrance($cid, $checkinID){
 }
 
 /**
- * Infers the organization ID based off the event ID.
- * @param int $eventID - event ID
- * @throws Exception - When event ID is not a positive integer or refers to a non-existent event.
- */
-function inferOrganizationID($eventID){
-    if(!isInteger($eventID) || $eventID < 1){
-        throw new Exception("Event ID in inferOrganizationID must be a positive integer.");
-    }
-    $sql = "SELECT * FROM events WHERE id = '$eventID'";
-    $query = mysql_query($sql) or die (returnSQLError($sql));
-    $result = mysql_fetch_array($query);
-    if($result){
-        return $result['organization_id'];
-    } else {
-        throw new Exception("Invalid event ID given to inferOrganizationID.");
-    }
-}
-
-/**
  * Looks for escape strings in $_POST and returns everything into an array
  * 
  * @return Array
