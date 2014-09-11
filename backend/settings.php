@@ -1,6 +1,7 @@
 <?php
 
 include_once "database.php";
+include_once "misc.php";
 
 /**
  * Returns true/false based on whether a value of
@@ -11,7 +12,7 @@ include_once "database.php";
  * @throws Exception - When $organizationID is not an integer or less than 1.
  */
 function isFreeEntranceEnabled($organizationID){
-    if(!is_int($organizationID) || $organizationID < 1){
+    if(!isInteger($organizationID) || $organizationID < 1){
         throw new Exception("organizationID in isFreeEntranceEnabled must be a positive integer");
     }
     $organizationID = mysql_real_escape_string($organizationID);

@@ -29,38 +29,38 @@ if(isset($_POST['purpose'])){
 }
 
 /**
- * 
+ * Checks in the customer.
  * @param array $args - Parsed arguments
  * @return JSON
  */
 function checkinCustomer($args){
-    $money = mysql_real_escape_string($args['money']);
-    $eventid = mysql_real_escape_string($args['eventid']);
-    $email = mysql_real_escape_string($args['email']);
-    $name = mysql_real_escape_string($args['name']);
-    $cid = mysql_real_escape_string($args['cid']);
+    $money = $args['money'];
+    $eventid = $args['eventid'];
+    $email = $args['email'];
+    $name = $args['name'];
+    $cid = $args['cid'];
     $organizationID = inferOrganizationID($eventid);
     $isFreeEntranceEnabled = isFreeEntranceEnabled($organizationID);
     if($isFreeEntranceEnabled){
-        $useFreeEntrance = mysql_real_escape_string($args['useFreeEntrance']);
+        $useFreeEntrance = $args['useFreeEntrance'];
         if($useFreeEntrance == "false"){
             $useFreeEntrance = false;
         }
-        $numberOfFreeEntrances = mysql_real_escape_string($args['numberOfFreeEntrances']);
+        $numberOfFreeEntrances = $args['numberOfFreeEntrances'];
         if($useFreeEntrance && $numberOfFreeEntrances == 0){
             return returnJSONError("Not enough Free Entrances to use a Free Entrance");
         }
-        if(!is_int($numberOfFreeEntrances) || $numberOfFreeEntrances < 0){
+        if(!isInteger($numberOfFreeEntrances) || $numberOfFreeEntrances < 0){
             return returnJSONError("Free Entrances must be non-negative integer");
         }
     }
     if(empty($name)){
         return returnJSONError("Please input a name");
     }
-    if(empty($eventid) || !is_int($eventid)){
+    if(empty($eventid) || !isInteger($eventid)){
         return returnJSONError("Please input a non-negative integer event id");
     }
-    if(!is_int($money)){
+    if(!isInteger($money)){
         return returnJSONError("Please input a non-negative integer for payment.");
     }
     if(empty($cid)){
@@ -122,9 +122,9 @@ function checkinCustomer($args){
  * @return JSON
  */
 function editEvent($args){
-    $eventID = mysql_real_escape_string($args['eventid']);
-    $name = mysql_real_escape_string($args['name']);
-    $organizationID = mysql_real_escape_string($args['organizationID']);
+    $eventID = $args['eventid'];
+    $name = $args['name'];
+    $organizationID = $args['organizationID'];
     if(empty($name)){
         return returnJSONError('No name was entered for the event.');
     }
@@ -147,17 +147,15 @@ function editEvent($args){
  * Edits the number of free entrances the customer has to the newly provided number
  * @param integer $cid - customer id number
  * @param integer $number - number of free entrances
- * @throws Exception - If $cid is less than 1 and if $number is less than 0. (Both are invalid)
+ * @throws Exception - When $cid is not a positive integer. When $number is not a non-negative integer.
  */
 function editNumberOfFreeEntrances($cid, $number){
-    if($number < 0){
-        throw new Exception("Cannot have less than 0 free entrances");
+    if($number < 0 || !isInteger($number)){
+        throw new Exception("Number must be a non-negative integer for free entrances");
     }
-    if($cid < 1){
-        throw new Exception("Cannot have less than 1 for customer ID number");
+    if($cid < 1 || !isInteger($cid)){
+        throw new Exception("Customer ID must be a positive integer");
     }
-    $number = mysql_real_escape_string($number);
-    $cid = mysql_real_escape_string($cid);
     $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
@@ -179,10 +177,10 @@ function editNumberOfFreeEntrances($cid, $number){
  * @return JSON
  */
 function editOrganization($args){
-    $name = isset($args['name']) ? mysql_real_escape_string($args['name']) : "";
-    $email = isset($args['email']) ? mysql_real_escape_string($args['email']) : "";
+    $name = isset($args['name']) ? $args['name'] : "";
+    $email = isset($args['email']) ? $args['email'] : "";
     $organizationID = isset($args['organizationID']) ? $args['organizationID'] : "";
-    $jsonarray['organizationID'] = mysql_real_escape_string($args['organizationID']);
+    $jsonarray['organizationID'] = $args['organizationID'];
     $jsonarray['neworganization'] = false;
     if(!$name){
         $jsonarray['error'] = 'Please enter a name';
@@ -216,17 +214,15 @@ function editOrganization($args){
  * @param integer $cid - customer ID
  * @param integer $eventID - event ID
  * @return int
- * @throws Exception - when $cid or $eventID is less than 1.
+ * @throws Exception - When $cid or $checkinID is not a positive integer.
  */
 function getCheckinIDForCustomerAndEvent($cid, $eventID){
-    if($cid < 1){
-        throw new Exception("Cannot have less than 1 for customer ID number");
+    if($cid < 1 || !isInteger($cid)){
+        throw new Exception("Customer ID must be a positive integer");
     }
-    if($eventID < 1){
-        throw new Exception("Cannot have less than 1 for event ID number");
+    if($eventID < 1 || !isInteger($eventID)){
+        throw new Exception("Event ID must be a positive integer");
     }
-    $cid = mysql_real_escape_string($cid);
-    $eventID = mysql_real_escape_string($eventID);
     $sql = "SELECT *
             FROM checkins
             WHERE customer_id = '$cid' 
@@ -246,7 +242,10 @@ function getCheckinIDForCustomerAndEvent($cid, $eventID){
  * @return JSON
  */
 function getEmail($args){
-    $cid = mysql_real_escape_string($args['cid']);
+    $cid = $args['cid'];
+    if(!isInteger($cid) || $cid < 1){
+        throw new Exception("Customer ID must be a positive integer");
+    }
     $sql = "SELECT email FROM customers WHERE id = '$cid'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
@@ -257,9 +256,13 @@ function getEmail($args){
  * Returns the name of the event given the eventID
  * @param array $args - array with eventID of event
  * @return JSON
+ * @throws Exception - When $args['eventid'] is not a positive integer.
  */
 function getEvent($args){
-    $eventid = mysql_real_escape_string($args['eventid']);
+    $eventid = $args['eventid'];
+    if(!isInteger($eventid) || $eventid < 1){
+        throw new Exception("Event ID must be a positive integer");
+    }
     $sql = "SELECT name FROM events WHERE id = '$eventid'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
@@ -269,13 +272,12 @@ function getEvent($args){
 /**
  * Gets the number of free entrances the customer has.
  * @param integer $cid - customer ID number
- * @throws Exception - When $cid is less than 1.
+ * @throws Exception - When $cid is not a positive integer.
  */
 function getNumberOfFreeEntrances($cid){
-    if($cid < 1){
-        throw new Exception("Cannot have customer ID less than 1.");
+    if(!isInteger($cid) || $cid < 1){
+        throw new Exception("Customer ID must be a positive integer");
     }
-    $cid = mysql_real_escape_string($cid);
     $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $result = mysql_fetch_array($query);
@@ -292,7 +294,10 @@ function getNumberOfFreeEntrances($cid){
  * @return JSON
  */
 function getOrganization($args){
-    $organizationID = mysql_real_escape_string($args['organizationID']);
+    $organizationID = $args['organizationID'];
+    if(!isInteger($organizationID) || $organizationID < 1){
+        throw new Exception("Organization ID must be a positive integer");
+    }
     $sql = "SELECT name FROM organizations WHERE id = '$organizationID'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
@@ -305,17 +310,15 @@ function getOrganization($args){
  * @param integer $cid - customer ID
  * @param integer $checkinID - checkin ID
  * @return boolean
- * @throws Exception - When customer ID or checkin ID is less than 1.
+ * @throws Exception - When $cid or $checkinID is not a positive integer.
  */
 function hasUsedFreeEntrance($cid, $checkinID){
-    if($cid < 1){
-        throw new Exception("Cannot have less than 1 for customer ID number");
+    if(!isInteger($cid) || $cid < 1){
+        throw new Exception("Customer ID must be a positive integer");
     }
-    if($checkinID < 1){
-        throw new Exception("Cannot have less than 1 for checkin ID number");
+    if(!isInteger($checkinID) || $checkinID < 1){
+        throw new Exception("Checkin ID must be a positive integer");
     }
-    $cid = mysql_real_escape_string($cid);
-    $checkinID = mysql_real_escape_string($checkinID);
     $sql = "SELECT * FROM customerAttributes
             WHERE customer_id = '$cid'
             AND name = 'Used Free Entrance'
@@ -337,13 +340,12 @@ function hasUsedFreeEntrance($cid, $checkinID){
  * @throws Exception - When event ID is not a positive integer or refers to a non-existent event.
  */
 function inferOrganizationID($eventID){
-    if(!is_int($eventID) || $eventID < 1){
+    if(!isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID in inferOrganizationID must be a positive integer.");
     }
-    $eventID = mysql_real_escape_string($eventID);
     $sql = "SELECT * FROM events WHERE id = '$eventID'";
-    $query = $query = mysql_query($sql) or die (returnSQLError($sql));
-    $result = mysql_fetch_array($result);
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($query);
     if($result){
         return $result['organization_id'];
     } else {
@@ -374,9 +376,9 @@ function parse_post_arguments(){
  * returned in the search results.
  */
 function searchCustomers($args){
-    $name = mysql_real_escape_string($args['name']);
-    $limit = mysql_real_escape_string($args['limit']);
-    $eventID = mysql_real_escape_string($args['eventID']);
+    $name = $args['name'];
+    $limit = $args['limit'];
+    $eventID = $args['eventID'];
     $highestVisitsAndLikeName =
     "CREATE TEMPORARY TABLE highestVisitsAndLikeName
     SELECT COUNT(*) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
@@ -485,17 +487,15 @@ function searchOrganizations($args){
  * @param integer $checkinID - customers check-in ID
  * @return null
  * @throws Exception - When trying to remove a used free entrance value when no used free entrance exists.
- * When $cid is less than 1. When $checkinID is less than 1.
+ * When $cid or $checkinID is not a positive integer.
  */
 function unuseFreeEntrance($cid, $checkinID){
-    if($cid < 1){
-        throw new Exception("Cannot have less than 1 for customer ID number");
+    if(!isInteger($cid) || $cid < 1){
+        throw new Exception("Customer ID must be a positive integer");
     }
-    if($checkinID < 1){
-        throw new Exception("Cannot have less than 1 for checkin ID number");
+    if(!isInteger($checkinID) || $checkinID < 1){
+        throw new Exception("Checkin ID must be a positive integer");
     }
-    $cid = mysql_real_escape_string($cid);
-    $checkinID = mysql_real_escape_string($checkinID);
     $sql = "SELECT *
            FROM customerAttributes
            WHERE customer_id = '$cid'
@@ -521,17 +521,15 @@ function unuseFreeEntrance($cid, $checkinID){
  * @param integer $checkinID - customers check-in ID
  * @return null
  * @throws Exception - When trying to use a free entrance credit when no credit exists.
- * When $cid is less than 0. When $checkinID is less than 0.
+ * When $cid or $checkinID is not a positive integer.
  */
 function useFreeEntrance($cid, $checkinID){
-    if($cid < 0){
-        throw new Exception("Cannot have less than 0 for customer ID number");
+    if(!isInteger($cid) || $cid < 1){
+        throw new Exception("Customer ID must be a positive integer");
     }
-    if($checkinID < 0){
-        throw new Exception("Cannot have less than 0 for checkin ID number");
+    if(!isInteger($checkinID) || $checkinID < 1){
+        throw new Exception("Checkin ID must be a positive integer");
     }
-    $cid = mysql_real_escape_string($cid);
-    $checkinID = mysql_real_escape_string($checkinID);
     $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $result = mysql_fetch_array($query);
