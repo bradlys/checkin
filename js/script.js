@@ -1,5 +1,5 @@
 /**
- * Custom JavaScript to create interaction
+ * JavaScript to help create the view
  * @author Bradly Schlenker
  */
 $(document).ready(function(){

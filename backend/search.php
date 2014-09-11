@@ -15,7 +15,7 @@ require_once "settings.php";
 $functions = array("checkinCustomer", "editEvent", "editOrganization", "getEmail", "getEvent", "getOrganization", "searchCustomers", "searchEvents", "searchOrganizations", );
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
-    return 'OUT-OUT-OUT-OUT-OUT!';
+    return '';
 }
 
 if(isset($_POST['purpose'])){
@@ -45,7 +45,7 @@ function checkinCustomer($args){
     }
     $cid = $args['cid'];
     if(empty($cid)){
-        $sql = "INSERT INTO customers VALUES ('', '$name', '$email', CURRENT_TIMESTAMP)";
+        $sql = "INSERT INTO customers VALUES ('', '$name', '$email', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
         $cid = mysql_insert_id();
     }
@@ -54,7 +54,7 @@ function checkinCustomer($args){
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $result = mysql_fetch_array($query);
     if(!$result){
-        $sql = "INSERT INTO checkins VALUES ('', '$cid', '$eventid', '$money', CURRENT_TIMESTAMP)";
+        $sql = "INSERT INTO checkins VALUES ('', '$cid', '$eventid', '$money', '1', CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
         return '';
     }
@@ -77,7 +77,6 @@ function editEvent($args){
     $eventID = $args['eventid'];
     $name = $args['name'];
     $organizationID = $args['organizationID'];
-    $checkout = $args['checkout'];
     if(empty($name)){
         return returnJSONError('No name was entered for the event.');
     }
@@ -85,7 +84,7 @@ function editEvent($args){
         return returnJSONError('No organization ID.');
     }
     if(empty($eventID)){
-        $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', CURRENT_TIMESTAMP)";
+        $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLError($sql));
         return '';
     }
@@ -114,7 +113,7 @@ function editOrganization($args){
     }
     if(!$organizationID){
         //create new organization
-        $sql = "INSERT INTO organizations VALUES('', '$name', '$email', CURRENT_TIMESTAMP)";
+        $sql = "INSERT INTO organizations VALUES('', '$name', '$email', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
         $jsonarray['success'] = "You created a new organization!";
         $jsonarray['organizationID'] = mysql_insert_id();
