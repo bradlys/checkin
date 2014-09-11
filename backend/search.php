@@ -129,17 +129,7 @@ if(isset($_POST['purpose'])){
         return '';
     }
     else if($purpose == 'searchEvents'){
-        $name = mysql_real_escape_string($_POST['name']);
-        $organizationID = mysql_real_escape_string($_POST['organizationID']);
-        $sql = "SELECT * FROM events WHERE organization_id = '$organizationID' AND name LIKE '%$name%'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        while($event = mysql_fetch_array($query)){
-            echo '<div class="eventResultItem col-xs-3">' . 
-                '<span class="eventResultID">' . $event['id'] . '</span>' .
-                '<div id="eventResultName">' . $event['name'] . '</div>' . 
-                '</div>';
-        }
-        echo '<div class="eventResultItem col-xs-3" id="newEvent"><div id="eventResultName">Add New Event</div></div>';
+        echo searchEvents(array("name" => $_POST['name'], "organizationID" => $_POST['organizationID']));
     }
     else if($purpose == 'searchCustomers'){
         $toEcho = searchCustomers(
@@ -278,6 +268,27 @@ function searchOrganizations($args){
         ));
     }
     $returnJSON = json_encode($organizations);
+    return $returnJSON;
+}
+
+/**
+ * Searches the database for events that match LIKE %name% and returns them in JSON format
+ * @param Array $args - Array of arguments: array['name'] being the name of the event
+ * @return JSON
+ */
+function searchEvents($args){
+    $name = mysql_real_escape_string($args['name']);
+    $organizationID = mysql_real_escape_string($args['organizationID']);
+    $sql = "SELECT * FROM events WHERE organization_id = '$organizationID' AND name LIKE '%$name%'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $events = array();
+    while($event = mysql_fetch_array($query)){
+        array_push($events, array(
+            "eventResultID" => $event['id'],
+            "eventResultName" => $event['name']
+        ));
+    }
+    $returnJSON = json_encode($events);
     return $returnJSON;
 }
 

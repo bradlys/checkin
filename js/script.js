@@ -396,7 +396,7 @@ function updateEventSearchResults (name){
             $("#beforefound").hide();
             $(".eventResultItem").remove();
             if(data){
-                $("#eventResultArea").append(data);
+                $("#eventResultArea").append(displayEventSearchResults(data));
                 $(".eventResultItem").on("click", function ( event ) {
                     loadupEventModal($(this));
                 });
@@ -481,9 +481,9 @@ function displayCustomerSearchResults (data) {
 }
 
 /**
- * Formats data that was returned from searching the customer database into customer divs.
- * @param {JSON} data - JSON string of customer information returned by search
- * @returns {String} - returns customer divs as a string
+ * Formats data that was returned from searching the organization database into organizationResultItem divs.
+ * @param {JSON} data - JSON string of organization information returned by search
+ * @returns {String} - returns organization divs as a string
  */
 function displayOrganizationSearchResults (data) {
     var returnString = '';
@@ -499,6 +499,28 @@ function displayOrganizationSearchResults (data) {
         returnString = returnString + tmpString;
     }
     returnString = returnString + '<div class="organizationResultItem col-xs-3" id="newEvent"><div id="organizationResultName">Add New Organization</div></div>';
+    return returnString;
+}
+
+/**
+ * Formats data that was returned from searching the events database into eventResultItem divs.
+ * @param {JSON} data - JSON string of event information returned by search
+ * @returns {String} - returns event divs as a string
+ */
+function displayEventSearchResults (data) {
+    var returnString = '';
+    var events = jQuery.parseJSON(data);
+    var tmpString = '';
+    for (var i = 0; i < events.length; i++){
+        var event = events[i];
+        tmpString =
+                '<div class="eventResultItem col-xs-3">' +
+                '<span class="eventResultID">' + event['eventResultID'] + '</span>' +
+                '<div id="eventResultName">' + event['eventResultName'] + '</div>' +
+                '</div>';
+        returnString = returnString + tmpString;
+    }
+    returnString = returnString + '<div class="eventResultItem col-xs-3" id="newEvent"><div id="eventResultName">Add New Event</div></div>';
     return returnString;
 }
 
