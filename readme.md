@@ -8,7 +8,7 @@ Check-In App (CIA) is a work-in-progress (WIP) web application used to check-in 
 
 ### Requirements
 
-CIA requires PHP 5.1+ and a MySQL database.
+CIA requires PHP 5.2+ and a MySQL database.
 
 ### Getting started
 
