@@ -52,17 +52,17 @@ function organizationsPage(){
         var organizationID = $("#organizationID").val();
         var checkout = false;
         $("#myModal").find(".alert").alert('close');
-        $.post("backend/search.php", { purpose : "editOrganization",  name : name, organizationid : organizationID, checkout : checkout}, function(json){
+        $.post("backend/search.php", { purpose : "editOrganization",  name : name, organizationID : organizationID, checkout : checkout}, function(json){
             json = $.parseJSON(json);
             if(json.error){
                 $("#myModal").find("#result").append(makeAlertBox(json.error));
             }
             else{
-                $("#myModal").find("#organizationID").val(json.organizationid);
+                $("#myModal").find("#organizationID").val(json.organizationID);
                 $("#myModal").find("#result").append(makeSaveOrganizationSuccessBox(json.success));
                 if(json.neworganization){
                     $("#gotoOrganization").show();
-                    $("#gotoOrganization").attr("href", "events.php?id=" + json.organizationid);
+                    $("#gotoOrganization").attr("href", "events.php?id=" + json.organizationID);
                 }
             }
         });
@@ -92,7 +92,7 @@ function checkinPage(){
         });
     });
     $.post("backend/search.php", { purpose : 'getEvent', eventid : $("#eventID").val() }, function(data) {
-        $("#eventName").html(data);
+        $("#eventName").html(jQuery.parseJSON(data).name);
     });
     $("#save").on("click", function() {
         var money = $("#paymentAmount").val();
@@ -103,7 +103,7 @@ function checkinPage(){
         var checkout = false;
         money = money.replace('$', '');
         $("#myModal").find(".alert").alert('close');
-        $.post("backend/search.php", { purpose : "checkin", eventid : eventid, money : money, email : email, name : name, cid : cid, checkout : checkout}, function(data){
+        $.post("backend/search.php", { purpose : "checkinCustomer", eventid : eventid, money : money, email : email, name : name, cid : cid, checkout : checkout}, function(data){
             if(data){
                 $("#myModal").find("#result").append(makeAlertBox(data));
             }
@@ -139,8 +139,8 @@ function checkinPage(){
  */
 function eventsPage(){
     updateEventSearchResults("");
-    $.post("backend/search.php", { purpose : 'getOrganization', organizationid : $("#organizationID").val() }, function(data) {
-        $("#organizationName").html(data);
+    $.post("backend/search.php", { purpose : 'getOrganization', organizationID : $("#organizationID").val() }, function(data) {
+        $("#organizationName").html(jQuery.parseJSON(data).name);
     });
     $("#myModal").on('hide.bs.modal', function(){
         $("#myModal").find(".alert").alert('close');
@@ -166,7 +166,7 @@ function eventsPage(){
         var organizationID = $("#organizationID").val();
         var checkout = false;
         $("#myModal").find(".alert").alert('close');
-        $.post("backend/search.php", { purpose : "editEvent", eventid : eventID, name : name, organizationid : organizationID, checkout : checkout}, function(data){
+        $.post("backend/search.php", { purpose : "editEvent", eventid : eventID, name : name, organizationID : organizationID, checkout : checkout}, function(data){
             if(data){
                 $("#myModal").find("#result").append(makeAlertBox(data));
             }
@@ -229,7 +229,7 @@ function makeAlertBox(data){
                 <h4>\n\ \
                 Oh snap! You got an error!\n\ \
                 </h4>\n\ \
-                <p>\n\ ' + data +
+                <p>\n\ ' + jQuery.parseJSON(data).error +
                 '\n\ \
                 </p>\n\ \
                 </div>';

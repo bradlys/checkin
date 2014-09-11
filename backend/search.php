@@ -9,178 +9,220 @@
  * this page will return a string containing the information desired. (Or an error)
  * @author Bradly Schlenker
  */
-
+error_reporting(E_ALL);
+ini_set('display_errors', 'On');
 require_once "settings.php";
-
+$functions = array("checkinCustomer", "editEvent", "editOrganization", "getEmail", "getEvent", "getOrganization", "searchCustomers", "searchEvents", "searchOrganizations", );
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
     return 'OUT-OUT-OUT-OUT-OUT!';
 }
 
-//For putting the name of the event at the top
 if(isset($_POST['purpose'])){
     $jsonarray = array();
-    $purpose = $_POST['purpose'];
-    if($purpose == 'getEvent'){
-        $eventid = mysql_real_escape_string($_POST['eventid']);
-        $sql = "SELECT name FROM events WHERE id = '$eventid'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        $result = mysql_fetch_array($query);
-        echo $result['name'];
+    $args = parse_post_arguments();
+    $purpose = $args['purpose'];
+    if(in_array($purpose, $functions)){
+        echo call_user_func_array($purpose, array($args));
         return '';
     }
-    else if($purpose == 'getOrganization'){
-        $organizationid = mysql_real_escape_string($_POST['organizationid']);
-        $sql = "SELECT name FROM organizations WHERE id = '$organizationid'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        $result = mysql_fetch_array($query);
-        echo $result['name'];
+}
+
+/**
+ * 
+ * @param array $args - Parsed arguments
+ * @return JSON
+ */
+function checkinCustomer($args){
+    $money = $args['money'];
+    if(empty($money) && $money != "0"){
+        return returnJSONError("Please input payment");
+    }
+    $email = $args['email'];
+    $name = $args['name'];
+    if(empty($name)){
+        return returnJSONError("Please input a name");
+    }
+    $cid = $args['cid'];
+    if(empty($cid)){
+        $sql = "INSERT INTO customers VALUES ('', '$name', '$email', CURRENT_TIMESTAMP)";
+        $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+        $cid = mysql_insert_id();
+    }
+    $eventid = $args['eventid'];
+    $sql = "SELECT * FROM checkins AS ch JOIN customers AS cu ON ch.customer_id = cu.id WHERE ch.customer_id = '$cid' AND ch.event_id = '$eventid'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $result = mysql_fetch_array($query);
+    if(!$result){
+        $sql = "INSERT INTO checkins VALUES ('', '$cid', '$eventid', '$money', CURRENT_TIMESTAMP)";
+        $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
         return '';
     }
-    else if($purpose == 'getEmail'){
-        $cid = mysql_real_escape_string($_POST['cid']);
-        $sql = "SELECT email FROM customers WHERE id = '$cid'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        $result = mysql_fetch_array($query);
-        echo $result['email'];
+    $sql = "UPDATE checkins
+            SET payment = $money
+            WHERE customer_id = '$cid' AND event_id = '$eventid'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $sql = "UPDATE customers
+            SET name = '$name', email = '$email'
+            WHERE id = '$cid'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+}
+
+/**
+ * Edits event information, with the provided event ID
+ * @param Array $args - parsed params
+ * @return JSON
+ */
+function editEvent($args){
+    $eventID = $args['eventid'];
+    $name = $args['name'];
+    $organizationID = $args['organizationID'];
+    $checkout = $args['checkout'];
+    if(empty($name)){
+        return returnJSONError('No name was entered for the event.');
+    }
+    if(empty($organizationID)){
+        return returnJSONError('No organization ID.');
+    }
+    if(empty($eventID)){
+        $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', CURRENT_TIMESTAMP)";
+        $query = mysql_query($sql) or die (returnSQLError($sql));
         return '';
     }
-    else if($purpose == 'findUser'){
-        $name = mysql_real_escape_string($_POST['name']);
-        $sql = "SELECT id FROM customers WHERE name = '$name'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        $result = mysql_fetch_array($query);
-        echo $result['id'];
-        return '';
+    $sql = "UPDATE events
+            SET name = '$name'
+            WHERE organization_id = '$organizationID' AND id = '$eventID'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    return '';
+}
+
+/**
+ * Method for editing the organization information
+ * 
+ * @param Array $args - Array with parameters name, email, and organizationID (when applicable)
+ * @return JSON
+ */
+function editOrganization($args){
+    $name = isset($args['name']) ? $args['name'] : "";
+    $email = isset($args['email']) ? $args['email'] : "";
+    $organizationID = isset($args['organizationID']) ? $args['organizationID'] : "";
+    $jsonarray['organizationID'] = $args['organizationID'];
+    $jsonarray['neworganization'] = false;
+    if(!$name){
+        $jsonarray['error'] = 'Please enter a name';
+        return json_encode($jsonarray);
     }
-    else if($purpose == 'getCID'){
-        $name = mysql_real_escape_string($_POST['name']);
-        $sql = "SELECT id FROM customers WHERE name = '$name'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        $result = mysql_fetch_array($query);
-        echo $result['id'];
-        return '';
+    if(!$organizationID){
+        //create new organization
+        $sql = "INSERT INTO organizations VALUES('', '$name', '$email', CURRENT_TIMESTAMP)";
+        $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+        $jsonarray['success'] = "You created a new organization!";
+        $jsonarray['organizationID'] = mysql_insert_id();
+        $jsonarray['neworganization'] = true;
+        return json_encode($jsonarray);
     }
-    else if($purpose == 'checkin'){
-        $money = mysql_real_escape_string($_POST['money']);
-        if(empty($money) && $money != "0"){
-            echo 'Please input payment';
-            return '';
-        }
-        $email = mysql_real_escape_string($_POST['email']);
-        $name = mysql_real_escape_string($_POST['name']);
-        if(empty($name)){
-            echo 'Please input a name';
-            return '';
-        }
-        $cid = mysql_real_escape_string($_POST['cid']);
-        if(empty($cid)){
-            $sql = "INSERT INTO customers VALUES ('', '$name', '$email', CURRENT_TIMESTAMP)";
-            $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-            $cid = mysql_insert_id();
-        }
-        $eventid = mysql_real_escape_string($_POST['eventid']);
-        $sql = "SELECT * FROM checkins AS ch JOIN customers AS cu ON ch.customer_id = cu.id WHERE ch.customer_id = '$cid' AND ch.event_id = '$eventid'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        $result = mysql_fetch_array($query);
-        if(!$result){
-            $sql = "INSERT INTO checkins VALUES ('', '$cid', '$eventid', '$money', CURRENT_TIMESTAMP)";
-            //$sql = "SELECT * FROM checkins WHERE cid = '$cid' AND event_id = '$eventid'";
-            $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-            return '';
-        }
-        $sql = "UPDATE checkins
-                SET payment = $money
-                WHERE customer_id = '$cid' AND event_id = '$eventid'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        $sql = "UPDATE customers
-                SET name = '$name', email = '$email'
-                WHERE id = '$cid'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        return '';
+    $sql = "SELECT * FROM organizations WHERE id = '$organizationID'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    if(!mysql_fetch_array($query)){
+        $jsonarray['error'] = "No organization exists under id = $organizationID";
+        return json_encode($jsonarray);
     }
-    else if($purpose == 'checkout'){
-        
+    $sql = "UPDATE organizations
+            SET name = '$name', email = '$email'
+            WHERE id = '$organizationID'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $jsonarray['success'] = "Successfully saved changes.";
+    return json_encode($jsonarray);
+}
+
+/**
+ * Returns the email of the customer given the cid
+ * @param array $args - array with cid of customer
+ * @return JSON
+ */
+function getEmail($args){
+    $cid = $args['cid'];
+    $sql = "SELECT email FROM customers WHERE id = '$cid'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($query);
+    return json_encode(array("email"=>$result['email']));
+}
+
+/**
+ * Returns the name of the event given the eventID
+ * @param array $args - array with eventID of event
+ * @return JSON
+ */
+function getEvent($args){
+    $eventid = $args['eventid'];
+    $sql = "SELECT name FROM events WHERE id = '$eventid'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($query);
+    return json_encode(array("name"=>$result['name']));
+}
+
+/**
+ * Gets the organization name provided the ID.
+ * @param array $args - array with organizationID of event
+ * @return JSON
+ */
+function getOrganization($args){
+    $organizationID = $args['organizationID'];
+    $sql = "SELECT name FROM organizations WHERE id = '$organizationID'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($query);
+    return json_encode(array("name" => $result['name']));
+}
+
+/**
+ * Looks for escape strings in $_POST and returns everything into an array
+ * 
+ * @return Array
+ */
+function parse_post_arguments(){
+    $args = array();
+    $keys = array_keys($_POST);
+    foreach ($keys as $key){
+        $args[$key] = mysql_real_escape_string($_POST[$key]);
     }
-    else if($purpose == 'editEvent'){
-        $eventID = mysql_real_escape_string($_POST['eventid']);
-        $name = mysql_real_escape_string($_POST['name']);
-        $organizationID = mysql_real_escape_string($_POST['organizationid']);
-        $checkout = mysql_real_escape_string($_POST['checkout']);
-        if(empty($name)){
-            echo 'No name was entered for the event.';
-            return '';
-        }
-        if(empty($organizationID)){
-            echo 'No organization ID. WHAT DID YOU DO!?';
-            return '';
-        }
-        if(empty($eventID)){
-            //new event time
-            $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', CURRENT_TIMESTAMP)";
-            $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-            return '';
-        }
-        $sql = "UPDATE events
-                SET name = '$name'
-                WHERE organization_id = '$organizationID' AND id = '$eventID'";
-        $query = mysql_query($sql) or die ("We didn't start the fire, but something went wrong with $sql");
-        
-        return '';
+    return $args;
+}
+
+/**
+ * Helper function. Takes error message string and returns a JSON with { error : message }
+ * @param String $errorMessage - the message
+ * @return JSON
+ */
+function returnJSONError($errorMessage){
+    return json_encode(array("error" => $errorMessage));
+}
+
+/**
+ * Returns an error message that represents the error caused by the SQL command
+ * 
+ * @param String $sql - SQL statement that triggered the error
+ * @param String $optiontext - Optional error message text to return
+ * @return String
+ */
+function returnSQLError($sql, $optiontext = null){
+    if($optiontext){
+        return $optiontext . $sql;
     }
-    else if($purpose == 'searchEvents'){
-        echo searchEvents(array("name" => $_POST['name'], "organizationID" => $_POST['organizationID']));
+    return "We didn't start the fire but soemthing went wrong with $sql";
+}
+
+/**
+ * Returns a JSON error message that represents the error caused by the SQL command
+ * 
+ * @param String $sql - SQL statement that triggered the error
+ * @param String $optiontext - Optional error message text to return
+ * @return JSON
+ */
+function returnSQLErrorInJSON($sql, $optiontext = null){
+    if($optiontext){
+        return $optiontext . $sql;
     }
-    else if($purpose == 'searchCustomers'){
-        $toEcho = searchCustomers(
-            array(
-                "name"=> $_POST['name'],
-                "limit" => $_POST['limit'],
-                "eventID" => $_POST['eventID']
-            )
-        );
-        echo $toEcho;
-    }
-    else if($purpose == 'searchOrganizations'){
-        echo searchOrganizations(array("name" => $_POST['name']));
-    }
-    else if($purpose == 'editOrganization'){
-        $name = mysql_real_escape_string($_POST['name']);
-        $email = mysql_real_escape_string($_POST['email']);
-        $jsonarray['organizationid'] = $organizationID;
-        $jsonarray['neworganization'] = false;
-        if(!$name){
-            $jsonarray['error'] = 'Please enter a name';
-            echo json_encode($jsonarray);
-            return '';
-        }
-        $organizationID = mysql_real_escape_string($_POST['organizationid']);
-        if(!$organizationID){
-            //create new organization
-            $sql = "INSERT INTO organizations VALUES('', '$name', '$email', CURRENT_TIMESTAMP)";
-            $query = mysql_query($sql) or die (json_encode(array("error"=>"We didn't start the fire, but something went wrong with $sql")));
-            $jsonarray['success'] = "You created a new organization!";
-            $jsonarray['organizationid'] = mysql_insert_id();
-            $jsonarray['neworganization'] = true;
-            echo json_encode($jsonarray);
-            return '';
-        }
-        $sql = "SELECT * FROM organizations WHERE id = '$organizationID'";
-        $query = mysql_query($sql) or die (json_encode(array("error"=>"We didn't start the fire, but something went wrong with $sql")));
-        if(!mysql_fetch_array($query)){
-            $jsonarray['error'] = "No organization exists under id = $organizationID";
-            echo json_encode($jsonarray);
-            return '';
-        }
-        $sql = "UPDATE organizations
-                SET name = '$name', email = '$email'
-                WHERE id = '$organizationID'";
-        $query = mysql_query($sql) or die (json_encode(array("error"=>"We didn't start the fire, but something went wrong with $sql")));
-        $jsonarray['success'] = "Successfully saved changes.";
-        echo json_encode($jsonarray);
-        return '';
-    }
-    
+    return json_encode(array("error" => "We didn't start the fire but soemthing went wrong with $sql"));
 }
 
 /**
@@ -192,9 +234,9 @@ if(isset($_POST['purpose'])){
  * returned in the search results.
  */
 function searchCustomers($args){
-    $name = mysql_real_escape_string($args['name']);
-    $limit = mysql_real_escape_string($args['limit']);
-    $eventID = mysql_real_escape_string($args['eventID']);
+    $name = $args['name'];
+    $limit = $args['limit'];
+    $eventID = $args['eventID'];
     $highestVisitsAndLikeName =
     "CREATE TEMPORARY TABLE highestVisitsAndLikeName
     SELECT COUNT(*) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
@@ -252,26 +294,6 @@ function searchCustomers($args){
 }
 
 /**
- * Searches the database for organizations that match LIKE %name% and returns them in JSON format
- * @param Array $args - Array of arguments: array['name'] being the name of the organization
- * @return JSON
- */
-function searchOrganizations($args){
-    $name = mysql_real_escape_string($args['name']);
-    $sql = "SELECT * FROM organizations WHERE name LIKE '%$name%'";
-    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
-    $organizations = array();
-    while($organization = mysql_fetch_array($query)){
-        array_push($organizations, array(
-            "organizationResultID" => $organization['id'],
-            "organizationResultName" => $organization['name']
-        ));
-    }
-    $returnJSON = json_encode($organizations);
-    return $returnJSON;
-}
-
-/**
  * Searches the database for events that match LIKE %name% and returns them in JSON format
  * @param Array $args - Array of arguments: array['name'] being the name of the event
  * @return JSON
@@ -293,31 +315,23 @@ function searchEvents($args){
 }
 
 /**
- * Returns an error message that represents the error caused by the SQL command
- * 
- * @param String $sql - SQL statement that triggered the error
- * @param String $optiontext - Optional error message text to return
- * @return String
- */
-function returnSQLError($sql, $optiontext = null){
-    if($optiontext){
-        return $optiontext . $sql;
-    }
-    return "We didn't start the fire but soemthing went wrong with $sql";
-}
-
-/**
- * Returns a JSON error message that represents the error caused by the SQL command
- * 
- * @param String $sql - SQL statement that triggered the error
- * @param String $optiontext - Optional error message text to return
+ * Searches the database for organizations that match LIKE %name% and returns them in JSON format
+ * @param Array $args - Array of arguments: array['name'] being the name of the organization
  * @return JSON
  */
-function returnSQLErrorInJSON($sql, $optiontext = null){
-    if($optiontext){
-        return $optiontext . $sql;
+function searchOrganizations($args){
+    $name = mysql_real_escape_string($args['name']);
+    $sql = "SELECT * FROM organizations WHERE name LIKE '%$name%'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $organizations = array();
+    while($organization = mysql_fetch_array($query)){
+        array_push($organizations, array(
+            "organizationResultID" => $organization['id'],
+            "organizationResultName" => $organization['name']
+        ));
     }
-    return json_encode(array("error" => "We didn't start the fire but soemthing went wrong with $sql"));
+    $returnJSON = json_encode($organizations);
+    return $returnJSON;
 }
 
 ?>
