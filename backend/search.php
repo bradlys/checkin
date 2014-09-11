@@ -35,21 +35,25 @@ if(isset($_POST['purpose'])){
  */
 function checkinCustomer($args){
     $money = $args['money'];
+    $eventid = $args['eventid'];
+    $email = $args['email'];
+    $name = $args['name'];
+    $cid = $args['cid'];
     if(empty($money) && $money != "0"){
         return returnJSONError("Please input payment");
     }
-    $email = $args['email'];
-    $name = $args['name'];
     if(empty($name)){
         return returnJSONError("Please input a name");
     }
-    $cid = $args['cid'];
+    if(empty($eventid)){
+        return returnJSONError("Please input an event id");
+    }
     if(empty($cid)){
         $sql = "INSERT INTO customers VALUES ('', '$name', '$email', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
         $cid = mysql_insert_id();
     }
-    $eventid = $args['eventid'];
+    
     $sql = "SELECT * FROM checkins AS ch JOIN customers AS cu ON ch.customer_id = cu.id WHERE ch.customer_id = '$cid' AND ch.event_id = '$eventid'";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $result = mysql_fetch_array($query);
@@ -207,7 +211,7 @@ function returnSQLError($sql, $optiontext = null){
     if($optiontext){
         return $optiontext . $sql;
     }
-    return "We didn't start the fire but soemthing went wrong with $sql";
+    return "We didn't start the fire but something went wrong with $sql";
 }
 
 /**
@@ -221,7 +225,7 @@ function returnSQLErrorInJSON($sql, $optiontext = null){
     if($optiontext){
         return $optiontext . $sql;
     }
-    return json_encode(array("error" => "We didn't start the fire but soemthing went wrong with $sql"));
+    return json_encode(array("error" => "We didn't start the fire but something went wrong with $sql"));
 }
 
 /**
