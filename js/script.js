@@ -101,9 +101,21 @@ function checkinPage(){
         var cid = $("#myModal").find(".cid").val();
         var eventid = $("#eventID").val();
         var checkout = false;
+        var useFreeEntrance = $("#useFreeEntrance").is(':checked');
+        var numberOfFreeEntrances = $("#numberOfFreeEntrances").val();
         money = money.replace('$', '');
         $("#myModal").find(".alert").alert('close');
-        $.post("backend/search.php", { purpose : "checkinCustomer", eventid : eventid, money : money, email : email, name : name, cid : cid, checkout : checkout}, function(data){
+        $.post("backend/search.php", {
+            purpose : "checkinCustomer", 
+            eventid : eventid,
+            money : money,
+            email : email,
+            name : name,
+            cid : cid,
+            checkout : checkout,
+            useFreeEntrance: useFreeEntrance,
+            numberOfFreeEntrances: numberOfFreeEntrances},
+        function(data){
             if(data){
                 $("#myModal").find("#result").append(makeAlertBox(data));
             }
@@ -269,6 +281,8 @@ function loadupModal(customerElem){
             $(".customMoney").append('<span class="glyphicon glyphicon-ok form-control-feedback" style="right:0px;"></span>');
             $(".paymentArea").addClass("has-success has-feedback");
         }
+        $("#numberOfFreeEntrances").val(customerElem.find(".numberOfFreeEntrances").text());
+        $("#useFreeEntrance").prop("checked", customerElem.find(".usedFreeEntrance").text() === "true" ? true : false);
         $("#modalMoney").val(payment);
         $("#myModal").find(".cid").val(cid);
     }
@@ -277,6 +291,8 @@ function loadupModal(customerElem){
         $("#paymentAmount").val("");
         $("#modalMoney").val("");
         $("#myModal").find(".cid").val("");
+        $("#numberOfFreeEntrances").val("0");
+        $("#useFreeEntrance").attr("checked", false);
     }
     $("#myModal").modal('show');
 }
@@ -467,6 +483,8 @@ function displayCustomerSearchResults (data) {
             '<span class="cid">' + customer['cid'] + '</span>' +
             '<span class="email">' + customer['email'] + '</span>' +
             '<span class="payment">' + customer['payment'] + '</span>' +
+            '<span class="usedFreeEntrance">' + customer['usedFreeEntrance'] + '</span>' +
+            '<span class="numberOfFreeEntrances">' + customer['numberOfFreeEntrances'] + '</span>' +
             '<div id="username">' + customer['name'] + '</div>' + 
             '<div id="visits">' + customer['visits'] + ' visits</div>' +
             (customer['isCheckedIn'] ? '<small>Already Checked In</small>' : '') +

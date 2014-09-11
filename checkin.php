@@ -72,7 +72,7 @@ printHeader();
               </div>
             </div>
             <div class="panel-body" id="result">
-                <div class="panel panel-default col-sm-3 paymentbox">
+                <div class="panel panel-default col-sm-3 paymentBox">
                     <span id="paymentAmount"></span>
                     <div class="panel-heading">Payment</div>
                     <div class="panel-footer">
@@ -93,6 +93,19 @@ printHeader();
                     </div>
                     </div>
                     </form>
+                    </div>
+                </div>
+                <div class="panel panel-default col-sm-3 paymentOptionsBox">
+                    <div class="form-group paymentOptionsArea">
+                        <div class="checkbox useFreeEntrance">
+                            <label>
+                                <input type="checkbox" id="useFreeEntrance"> Use Free Entrance
+                            </label>
+                        </div>
+                        <div class="numberOfFreeEntrances">
+                            <label for="numberOfFreeEntrances">Number Of Free Entrances</label>
+                            <input type="text" class="form-control" id="numberOfFreeEntrances" placeholder="0">
+                        </div>
                     </div>
                 </div>
             </div>

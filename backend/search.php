@@ -39,28 +39,56 @@ function checkinCustomer($args){
     $email = $args['email'];
     $name = $args['name'];
     $cid = $args['cid'];
-    if(empty($money) && $money != "0"){
-        return returnJSONError("Please input payment");
+    $useFreeEntrance = $args['useFreeEntrance'];
+    if($useFreeEntrance == "false"){
+        $useFreeEntrance = false;
+    }
+    $numberOfFreeEntrances = $args['numberOfFreeEntrances'];
+    if($useFreeEntrance && $numberOfFreeEntrances == 0){
+        return returnJSONError("Not enough Free Entrances to use a Free Entrance");
+    }
+    if(!is_int($numberOfFreeEntrances) || $numberOfFreeEntrances < 0){
+        return returnJSONError("Free Entrances must be non-negative integer");
     }
     if(empty($name)){
         return returnJSONError("Please input a name");
     }
-    if(empty($eventid)){
-        return returnJSONError("Please input an event id");
+    if(empty($eventid) || !is_int($eventid)){
+        return returnJSONError("Please input a non-negative integer event id");
+    }
+    if(!is_int($money)){
+        return returnJSONError("Please input a non-negative integer for payment.");
     }
     if(empty($cid)){
         $sql = "INSERT INTO customers VALUES ('', '$name', '$email', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
         $cid = mysql_insert_id();
     }
-    
-    $sql = "SELECT * FROM checkins AS ch JOIN customers AS cu ON ch.customer_id = cu.id WHERE ch.customer_id = '$cid' AND ch.event_id = '$eventid'";
+    $sql = "SELECT ch.id as checkin_id
+            FROM checkins AS ch
+            JOIN customers AS cu
+            ON ch.customer_id = cu.id
+            WHERE ch.customer_id = '$cid'
+            AND ch.event_id = '$eventid'";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $result = mysql_fetch_array($query);
+    $checkinID = $result['checkin_id'];
+    $hasUsedFreeEntrance = hasUsedFreeEntrance($cid, $checkinID);
+    if(empty($money) && $money != "0" && !$useFreeEntrance && !$hasUsedFreeEntrance){
+        return returnJSONError("Please input payment or use Free Entrance");
+    }
+    $databaseNumberOfFreeEntrances = getNumberOfFreeEntrances($cid);
+    if($databaseNumberOfFreeEntrances != $numberOfFreeEntrances){
+        editNumberOfFreeEntrances($cid, $numberOfFreeEntrances);
+    }
     if(!$result){
-        $sql = "INSERT INTO checkins VALUES ('', '$cid', '$eventid', '$money', '1', CURRENT_TIMESTAMP)";
+        $sql = "INSERT INTO checkins VALUES
+                ('', '$cid', '$eventid', '$money', '1', CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
-        return '';
+        if($useFreeEntrance){
+            useFreeEntrance($cid, mysql_insert_id());
+        }
+        return;
     }
     $sql = "UPDATE checkins
             SET payment = $money
@@ -70,6 +98,12 @@ function checkinCustomer($args){
             SET name = '$name', email = '$email'
             WHERE id = '$cid'";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    if($hasUsedFreeEntrance && !$useFreeEntrance){
+        unuseFreeEntrance($cid, $checkinID);
+    }
+    if($useFreeEntrance && !$hasUsedFreeEntrance){
+        useFreeEntrance($cid, $checkinID);
+    }
 }
 
 /**
@@ -90,13 +124,40 @@ function editEvent($args){
     if(empty($eventID)){
         $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLError($sql));
-        return '';
+        return;
     }
     $sql = "UPDATE events
             SET name = '$name'
             WHERE organization_id = '$organizationID' AND id = '$eventID'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
-    return '';
+    return;
+}
+
+/**
+ * Edits the number of free entrances the customer has to the newly provided number
+ * @param integer $cid - customer id number
+ * @param integer $number - number of free entrances
+ * @throws Exception - If $cid is less than 1 and if $number is less than 0. (Both are invalid)
+ */
+function editNumberOfFreeEntrances($cid, $number){
+    if($number < 0){
+        throw new Exception("Cannot have less than 0 free entrances");
+    }
+    if($cid < 1){
+        throw new Exception("Cannot have less than 1 for customer ID number");
+    }
+    $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        $id = $result['id'];
+        $sql = "UPDATE customerAttributes SET value = '$number' WHERE id = '$id'";
+        $query = mysql_query($sql) or die (returnSQLError($sql));
+    }
+    else{
+        $sql = "INSERT INTO customerAttributes VALUES(NULL, '$cid', 'Free Entrances', '$number', '1', CURRENT_TIMESTAMP)";
+        $query = mysql_query($sql) or die (returnSQLError($sql));
+    }
 }
 
 /**
@@ -139,6 +200,33 @@ function editOrganization($args){
 }
 
 /**
+ * Gets checkin ID based off the event ID and customer ID
+ * @param integer $cid - customer ID
+ * @param integer $eventID - event ID
+ * @return int
+ * @throws Exception - when $cid or $eventID is less than 1.
+ */
+function getCheckinIDForCustomerAndEvent($cid, $eventID){
+    if($cid < 1){
+        throw new Exception("Cannot have less than 1 for customer ID number");
+    }
+    if($eventID < 1){
+        throw new Exception("Cannot have less than 1 for event ID number");
+    }
+    $sql = "SELECT *
+            FROM checkins
+            WHERE customer_id = '$cid' 
+            AND event_id = '$eventID'
+            AND checkins.on = '1'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        return $result['id'];
+    }
+    return null;
+}
+
+/**
  * Returns the email of the customer given the cid
  * @param array $args - array with cid of customer
  * @return JSON
@@ -165,6 +253,25 @@ function getEvent($args){
 }
 
 /**
+ * Gets the number of free entrances the customer has.
+ * @param integer $cid - customer ID number
+ * @throws Exception - When $cid is less than 0.
+ */
+function getNumberOfFreeEntrances($cid){
+    if($cid < 0){
+        throw new Exception("Cannot have customer ID less than 0.");
+    }
+    $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        return $result['value'];
+    } else {
+        return 0;
+    }
+}
+
+/**
  * Gets the organization name provided the ID.
  * @param array $args - array with organizationID of event
  * @return JSON
@@ -175,6 +282,36 @@ function getOrganization($args){
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
     return json_encode(array("name" => $result['name']));
+}
+
+/**
+ * Returns true or false as to whether the customer has used a free
+ * entrance for the given event ID
+ * @param integer $cid - customer ID
+ * @param integer $checkinID - checkin ID
+ * @return boolean
+ * @throws Exception - When customer ID or checkin ID is less than 1.
+ */
+function hasUsedFreeEntrance($cid, $checkinID){
+    if($cid < 1){
+        throw new Exception("Cannot have less than 1 for customer ID number");
+    }
+    if($checkinID < 1){
+        throw new Exception("Cannot have less than 1 for checkin ID number");
+    }
+    $sql = "SELECT * FROM customerAttributes
+            WHERE customer_id = '$cid'
+            AND name = 'Used Free Entrance'
+            AND value = '$checkinID'
+            AND customerAttributes.on = '1'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
 /**
@@ -275,6 +412,9 @@ function searchCustomers($args){
         $name = $visit['name'];
         $visits = $visit['visits'];
         $isCheckedIn = in_array($name, $keysAlreadyCheckedIn);
+        $checkinID = getCheckinIDForCustomerAndEvent($visit['cid'], $eventID);
+        $usedFreeEntrance = $checkinID ? hasUsedFreeEntrance($visit['cid'], $checkinID) : false;
+        $numberOfFreeEntrances = getNumberOfFreeEntrances($visit['cid']);
         array_push($customerArray, 
             array(
             "cid" => $visit['cid'],
@@ -282,7 +422,9 @@ function searchCustomers($args){
             "payment" => ($isCheckedIn ? $alreadycheckedin[$name] : ''),
             "name" => $name,
             "visits" => $visits,
-            "isCheckedIn" => $isCheckedIn
+            "isCheckedIn" => $isCheckedIn,
+            "usedFreeEntrance" => $usedFreeEntrance,
+            "numberOfFreeEntrances" => $numberOfFreeEntrances,
             )
         );
     }
@@ -335,6 +477,72 @@ function searchOrganizations($args){
     }
     $returnJSON = json_encode($organizations);
     return $returnJSON;
+}
+
+/**
+ * Unuses a Free Entrance.
+ * @param integer $cid - customer id
+ * @param integer $checkinID - customers check-in ID
+ * @return null
+ * @throws Exception - When trying to remove a used free entrance value when no used free entrance exists.
+ * When $cid is less than 1. When $checkinID is less than 1.
+ */
+function unuseFreeEntrance($cid, $checkinID){
+    if($cid < 1){
+        throw new Exception("Cannot have less than 1 for customer ID number");
+    }
+    if($checkinID < 1){
+        throw new Exception("Cannot have less than 1 for checkin ID number");
+    }
+    $sql = "SELECT *
+           FROM customerAttributes
+           WHERE customer_id = '$cid'
+           AND name = 'Used Free Entrance'
+           AND value = '$checkinID'
+           AND customerAttributes.on = '1'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        $id = $result['id'];
+        $sql = "UPDATE customerAttributes SET customerAttributes.on = '0' WHERE id = '$id'";
+        $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+        $databaseNumberOfFreeEntrances = getNumberOfFreeEntrances($cid);
+        editNumberOfFreeEntrances($cid, $databaseNumberOfFreeEntrances + 1);
+        return null;
+    }
+    throw new Exception("Tried to unuse a free entrance within unuseFreeEntrance method when no used free entrance existed.");
+}
+
+/**
+ * Uses a Free Entrance
+ * @param integer $cid - customer id
+ * @param integer $checkinID - customers check-in ID
+ * @return null
+ * @throws Exception - When trying to use a free entrance credit when no credit exists.
+ * When $cid is less than 0. When $checkinID is less than 0.
+ */
+function useFreeEntrance($cid, $checkinID){
+    if($cid < 0){
+        throw new Exception("Cannot have less than 0 for customer ID number");
+    }
+    if($checkinID < 0){
+        throw new Exception("Cannot have less than 0 for checkin ID number");
+    }
+    $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        if($result['value'] > 0){
+            $newFreeEntrancesAmount = $result['value'] - 1;
+            $id = $result['id'];
+            $sql = "UPDATE customerAttributes SET value = '$newFreeEntrancesAmount' WHERE id = '$id'";
+            $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+            $sql = "INSERT INTO customerAttributes VALUES (NULL, '$cid', 'Used Free Entrance', '$checkinID', 1, CURRENT_TIMESTAMP)";
+            $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+            return null;
+        }
+    }
+    throw new Exception("Tried to use a free entrance within useFreeEntrance method when none were available.");
 }
 
 ?>

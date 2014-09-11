@@ -51,14 +51,30 @@ body {
     float: right;
 }
 
+.customer > .numberOfFreeEntrances {
+    display: none;
+}
+
+.customer > .usedFreeEntrance {
+    display: none;
+}
+
 .paymentArea {
     padding-left: 10px;
 }
 
-.paymentbox {
+.paymentBox {
     padding-left: 0px;
     padding-right: 0px;
 }
+
+.paymentOptionsArea {
+}
+
+.paymentOptionsBox {
+    float: right;
+}
+
 .paymentAmount {
     display: none;
 }
