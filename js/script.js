@@ -76,7 +76,7 @@ function organizationsPage(){
  * @returns {null}
  */
 function checkinPage(){
-    updateSearchResults("");
+    updateCheckinSearchResults("");
     $("#myModal").on('hide.bs.modal', function(){
         $(".paymentArea").removeClass("has-success has-feedback");
         $(".glyphicon").remove();
@@ -122,7 +122,7 @@ function checkinPage(){
             else{
                 $("#myModal").modal('hide');
                 $("#search").val(name);
-                updateSearchResults(name);
+                updateCheckinSearchResults(name);
             }
         });
     });
@@ -137,11 +137,11 @@ function checkinPage(){
                 // Updated stored value
                 elem.data('oldVal', elem.val());
                 // Do action
-                updateSearchResults(elem.val());
+                updateCheckinSearchResults(elem.val());
             }
         });
     });
-    updateSearchResults("");
+    updateCheckinSearchResults("");
 }
 
 /**
@@ -256,7 +256,7 @@ function makeAlertBox(data){
  * @param {element} customerElem - a customer element that from a search result
  * @returns {null}
  */
-function loadupModal(customerElem){
+function loadupCheckinModal(customerElem){
     var name = customerElem.find("#username").text();
     var modalTitleText;
     if(name === 'Add New User'){
@@ -366,7 +366,7 @@ function loadupOrganizationModal(organizationElem){
  * @param {integer} limit - The highest amount of search results to be returned. Defaults to 10.
  * @returns {null}
  */
-function updateSearchResults (name, limit){
+function updateCheckinSearchResults (name, limit){
     if(!limit){
         limit = 10;
     }
@@ -379,9 +379,9 @@ function updateSearchResults (name, limit){
                 $("#result").append(displayCustomerSearchResults(data));
                 $(".customer").on("click", function ( event ) {
                     if($("#seemore").is($(this))){
-                        updateSearchResults(name, (limit + 8) );
+                        updateCheckinSearchResults(name, (limit + 8) );
                     } else {
-                        loadupModal($(this));
+                        loadupCheckinModal($(this));
                     }
                 });
                 $(".customer").mouseover(function ( event ){
