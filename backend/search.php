@@ -12,7 +12,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 require_once "settings.php";
-$functions = array("checkinCustomer", "editCustomerBirthday", "editEvent", "editOrganization", "getEmail", "getEvent", "getEventCosts", "getOrganization", "searchCustomers", "searchEvents", "searchOrganizations", );
+$functions = array("checkinCustomer", "editCustomerBirthday", "editEvent", "editEventDate", "editOrganization", "getCustomerBirthday", "getEmail", "getEvent", "getEventDate", "getEventCosts", "getOrganization", "searchCustomers", "searchEvents", "searchOrganizations", );
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
     return '';

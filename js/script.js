@@ -563,10 +563,10 @@ function displayEventSearchResults (data) {
 
 /**
  * Sets up the cost forms
- * @param {JSON} formdata
+ * @param {JSON} retrievedFormData
  * @returns {null}
  */
-function setupDynamicCostForms( formdata ) {
+function setupDynamicCostForms( retrievedFormData ) {
     $(".costFieldGroup").each(function(){
         $(this).remove();
     });
@@ -580,8 +580,8 @@ function setupDynamicCostForms( formdata ) {
         </span> \n\
         </div>';
     $('.controls form:first').append($(newElem));
-    formdata = jQuery.parseJSON(formdata);
-    $(document).on('click', '.btn-add', function(e)
+    retrievedFormData = jQuery.parseJSON(retrievedFormData);
+    $(document).off('click', '.btn-add').on('click', '.btn-add', function(e)
     {
         e.preventDefault();
 
@@ -594,19 +594,19 @@ function setupDynamicCostForms( formdata ) {
             .removeClass('btn-add').addClass('btn-remove')
             .removeClass('btn-success').addClass('btn-danger')
             .html('<span class="glyphicon glyphicon-minus"></span>');
-    }).on('click', '.btn-remove', function(e)
+    }).off('click', '.btn-remove').on('click', '.btn-remove', function(e)
     {
         $(this).parents('.entry:first').remove();
         e.preventDefault();
         return false;
     });
-    if(formdata){
-        for(var i = 0; i < formdata.length; i++){
+    if(retrievedFormData){
+        for(var i = 0; i < retrievedFormData.length; i++){
             var cf = $('.controls form:first'),
                     ce = $(".btn-add").parents('.entry:first'),
                     ne = $(ce.clone()).prependTo(cf);
-            ne.find('input:first').val(formdata[i]['item']);
-            ne.find('input:last').val(formdata[i]['cost']);
+            ne.find('input:first').val(retrievedFormData[i]['item']);
+            ne.find('input:last').val(retrievedFormData[i]['cost']);
             cf.find('.entry:not(:last) .btn-add')
                 .removeClass('btn-add').addClass('btn-remove')
                 .removeClass('btn-success').addClass('btn-danger')
