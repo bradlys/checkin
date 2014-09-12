@@ -395,7 +395,7 @@ function updateCheckinSearchResults (name, limit){
             $("#beforefound").hide();
             $(".customer").remove();
             if(data){
-                $("#result").append(displayCustomerSearchResults(data));
+                $("#result").append(displayCheckinSearchResults(data));
                 $(".customer").on("click", function ( event ) {
                     if($("#seemore").is($(this))){
                         updateCheckinSearchResults(name, (limit + 8) );
@@ -490,7 +490,7 @@ function updateOrganizationSearchResults (name) {
  * @param {JSON} data - JSON string of customer information returned by search
  * @returns {String} - returns customer divs as a string
  */
-function displayCustomerSearchResults (data) {
+function displayCheckinSearchResults (data) {
     var returnString = '';
     var parsedData = jQuery.parseJSON(data);
     var tmpString = '';

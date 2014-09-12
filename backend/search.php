@@ -12,7 +12,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 require_once "settings.php";
-$functions = array("checkinCustomer", "editEvent", "editOrganization", "getEmail", "getEvent", "getEventCosts", "getOrganization", "searchCustomers", "searchEvents", "searchOrganizations", );
+$functions = array("checkinCustomer", "editCustomerBirthday", "editEvent", "editOrganization", "getEmail", "getEvent", "getEventCosts", "getOrganization", "searchCustomers", "searchEvents", "searchOrganizations", );
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
     return '';
@@ -113,6 +113,61 @@ function checkinCustomer($args){
     }
     if($isFreeEntranceEnabled && $useFreeEntrance && !$hasUsedFreeEntrance){
         useFreeEntrance($cid, $checkinID);
+    }
+}
+
+/**
+ * Sets customerAttributes.on = '0' for 
+ * customerAttributes.customer_id = '$cid' AND
+ * customerAttributes.on = '1' AND
+ * customerAttributes.name = 'Customer Birthday'
+ * @param integer $cid - Customer ID
+ * @return JSON
+ */
+function deleteCustomerBirthday($cid){
+    if(!isInteger($cid) || $cid < 1){
+        return returnJSONError("Customer ID must be a positive integer.");
+    }
+    $sql = "UPDATE customerAttributes
+            SET customerAttributes.on = '0'
+            WHERE customerAttributes.customer_id = '$cid'
+            AND customerAttributes.on = '1'
+            AND customerAttributes.name = 'Customer Birthday'";
+    mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+}
+
+/**
+ * Edits the Customer's Birthday
+ * @param integer $cid - Customer ID
+ * $param integer $date - Date in MMDDYYYY format
+ * @return JSON
+ */
+function editCustomerBirthday($cid, $date){
+    if(empty($date)){
+        return deleteCustomerBirthday($cid);
+    }
+    if(!isInteger($cid) || $cid < 1){
+        return returnJSONError("Customer ID must be a positive integer.");
+    }
+    if(!isInteger($date) || $date < 1){
+        return returnJSONError("Customer ID must be a positive integer.");
+    }
+    $sql = "SELECT *
+            FROM customerAttributes
+            WHERE customer_id = '$cid'
+            AND name = 'Customer Birthday'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        $id = $result['id'];
+        $sql = "UPDATE customerAttributes
+                SET customerAttributes.on = '1', value = '$date'
+                WHERE id = '$id'";
+        $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    } else {
+        $sql = "INSERT INTO customerAttributes
+                VALUES (NULL, '$cid', 'Customer Birthday', '$date', '1', CURRENT_TIMESTAMP)";
+        $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     }
 }
 
