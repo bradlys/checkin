@@ -193,7 +193,7 @@ function eventsPage(){
             name : name,
             organizationID : organizationID,
             checkout : checkout,
-            costs : JSON.stringify(costFields) },
+            costs : costFields },
         function(data){
             if(data){
                 $("#myModal").find("#result").append(makeAlertBox(data));

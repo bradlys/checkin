@@ -148,7 +148,7 @@ function editEvent($args){
             SET name = '$name'
             WHERE organization_id = '$organizationID' AND id = '$eventID'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
-    editEventCosts($costs, $eventID);
+    echo editEventCosts($costs, $eventID);
     return;
 }
 
@@ -163,7 +163,16 @@ function editEventCosts($costs, $eventID){
     if(!isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID needs to be a positive integer.");
     }
-    $JSON = $costs;
+    $JSON = json_encode($costs);
+    if($costs && $costs[0]['item']){
+        $arrayFromJSON = $costs;
+        $arrayFromJSONCount = count($arrayFromJSON);
+        for($i = 0; $i < $arrayFromJSONCount; $i++){
+            $arrayFromJSON[$i]['item'] = mysql_real_escape_string($arrayFromJSON[$i]['item']);
+            $arrayFromJSON[$i]['cost'] = mysql_real_escape_string($arrayFromJSON[$i]['cost']);
+        }
+        $JSON = json_encode($arrayFromJSON);
+    }
     $sql = "SELECT * FROM eventAttributes
             WHERE event_id = '$eventID'
             AND name = 'Event Costs'";
@@ -335,10 +344,11 @@ function getEventCosts($args){
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
     if($result){
-        return $result['value'];
-    } else {
-        return json_encode(array("" => ""));
+        if(!empty($result['value'])){
+            return $result['value'];
+        }
     }
+    return json_encode(array("" => ""));
 }
 
 /**
@@ -421,7 +431,7 @@ function parse_post_arguments(){
     $args = array();
     $keys = array_keys($_POST);
     foreach ($keys as $key){
-        if($key == "costs"){
+        if($key === "costs"){
             $args[$key] = $_POST[$key];
         } else {
             $args[$key] = mysql_real_escape_string($_POST[$key]);
