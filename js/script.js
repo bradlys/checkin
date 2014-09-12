@@ -177,8 +177,24 @@ function eventsPage(){
         var eventID = $("#eventID").val();
         var organizationID = $("#organizationID").val();
         var checkout = false;
+        var costFields = [];
+        $(".costFieldGroup").each(function(e) {
+            var first = $(this).find('input:first').val();
+            var last = $(this).find('input:last').val();
+            if(first === ""){
+            } else {
+                costFields.push({ item : first, cost : last });
+            }
+        });
         $("#myModal").find(".alert").alert('close');
-        $.post("backend/search.php", { purpose : "editEvent", eventid : eventID, name : name, organizationID : organizationID, checkout : checkout}, function(data){
+        $.post("backend/search.php",
+            { purpose : "editEvent",
+            eventid : eventID,
+            name : name,
+            organizationID : organizationID,
+            checkout : checkout,
+            costs : JSON.stringify(costFields) },
+        function(data){
             if(data){
                 $("#myModal").find("#result").append(makeAlertBox(data));
             }
@@ -322,6 +338,9 @@ function loadupEventModal(eventElem){
     else{
         $("#gotoEvent").hide();
     }
+    $.post("backend/search.php",
+        { purpose : "getEventCosts", eventID : $("#eventID").val()},
+        function ( data ) { setupDynamicCostForms(data); });
     $("#myModal").modal('show');
 }
 
@@ -540,6 +559,60 @@ function displayEventSearchResults (data) {
     }
     returnString = returnString + '<div class="eventResultItem col-xs-3" id="newEvent"><div id="eventResultName">Add New Event</div></div>';
     return returnString;
+}
+
+/**
+ * Sets up the cost forms
+ * @param {JSON} formdata
+ * @returns {null}
+ */
+function setupDynamicCostForms( formdata ) {
+    $(".costFieldGroup").each(function(){
+        $(this).remove();
+    });
+    var newElem = '<div class="entry input-group col-sm-6 costFieldGroup"> \n\
+        <input class="costField" name="fields[]" type="text" placeholder="" /> \n\
+        <input class="costField" name="fields[]" type="text" placeholder="" /> \n\
+        <span class="input-group-btn"> \n\
+            <button class="btn btn-success btn-add" type="button"> \n\
+                <span class="glyphicon glyphicon-plus"></span> \n\
+            </button> \n\
+        </span> \n\
+        </div>';
+    $('.controls form:first').append($(newElem));
+    formdata = jQuery.parseJSON(formdata);
+    $(document).on('click', '.btn-add', function(e)
+    {
+        e.preventDefault();
+
+        var controlForm = $('.controls form:first'),
+            currentEntry = $(this).parents('.entry:first'),
+            newEntry = $(currentEntry.clone()).appendTo(controlForm);
+
+        newEntry.find('input').val('');
+        controlForm.find('.entry:not(:last) .btn-add')
+            .removeClass('btn-add').addClass('btn-remove')
+            .removeClass('btn-success').addClass('btn-danger')
+            .html('<span class="glyphicon glyphicon-minus"></span>');
+    }).on('click', '.btn-remove', function(e)
+    {
+        $(this).parents('.entry:first').remove();
+        e.preventDefault();
+        return false;
+    });
+    if(formdata){
+        for(var i = 0; i < formdata.length; i++){
+            var cf = $('.controls form:first'),
+                    ce = $(".btn-add").parents('.entry:first'),
+                    ne = $(ce.clone()).prependTo(cf);
+            ne.find('input:first').val(formdata[i]['item']);
+            ne.find('input:last').val(formdata[i]['cost']);
+            cf.find('.entry:not(:last) .btn-add')
+                .removeClass('btn-add').addClass('btn-remove')
+                .removeClass('btn-success').addClass('btn-danger')
+                .html('<span class="glyphicon glyphicon-minus"></span>');
+        }
+    }
 }
 
 });

@@ -12,7 +12,7 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 require_once "settings.php";
-$functions = array("checkinCustomer", "editEvent", "editOrganization", "getEmail", "getEvent", "getOrganization", "searchCustomers", "searchEvents", "searchOrganizations", );
+$functions = array("checkinCustomer", "editEvent", "editOrganization", "getEmail", "getEvent", "getEventCosts", "getOrganization", "searchCustomers", "searchEvents", "searchOrganizations", );
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
     return '';
@@ -125,6 +125,13 @@ function editEvent($args){
     $eventID = $args['eventid'];
     $name = $args['name'];
     $organizationID = $args['organizationID'];
+    $costs = $args['costs'];
+    if(!isInteger($organizationID) || $organizationID < 1){
+        return returnJSONError("Organization ID needs to be an positive integer.");
+    }
+    if(!isInteger($eventID) || $eventID < 1){
+        return returnJSONError("Event ID needs to be an positive integer.");
+    }
     if(empty($name)){
         return returnJSONError('No name was entered for the event.');
     }
@@ -134,13 +141,46 @@ function editEvent($args){
     if(empty($eventID)){
         $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLError($sql));
+        editEventCosts($costs, mysql_insert_id());
         return;
     }
     $sql = "UPDATE events
             SET name = '$name'
             WHERE organization_id = '$organizationID' AND id = '$eventID'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
+    editEventCosts($costs, $eventID);
     return;
+}
+
+/**
+ * Edits event costs. Stores the events costs as JSON in the database
+ * under eventAttribute name "Event Costs".
+ * @param Array $costs
+ * @param integer $eventID
+ * @throws Exception - when $eventID is not a positive integer
+ */
+function editEventCosts($costs, $eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID needs to be a positive integer.");
+    }
+    $JSON = $costs;
+    $sql = "SELECT * FROM eventAttributes
+            WHERE event_id = '$eventID'
+            AND name = 'Event Costs'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        $id = $result['id'];
+        $sql = "UPDATE eventAttributes
+                SET value = '$JSON'
+                WHERE id = '$id'";
+        $query = mysql_query($sql) or die (returnSQLError($sql));
+    }
+    else{
+        $sql = "INSERT INTO eventAttributes VALUES
+                (NULL, '$eventID', 'Event Costs', '$JSON', '1', CURRENT_TIMESTAMP)";
+        $query = mysql_query($sql) or die (returnSQLError($sql));
+    }
 }
 
 /**
@@ -156,7 +196,11 @@ function editNumberOfFreeEntrances($cid, $number){
     if($cid < 1 || !isInteger($cid)){
         throw new Exception("Customer ID must be a positive integer");
     }
-    $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
+    $sql = "SELECT *
+            FROM customerAttributes
+            WHERE customer_id = '$cid'
+            AND name = 'Free Entrances'
+            AND customerAttributes.on = '1' ";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
     if($result){
@@ -270,6 +314,34 @@ function getEvent($args){
 }
 
 /**
+ * Gets Event Costs as stored in eventAttributes table under Name = 'Event Costs'
+ * @param array $args - must have $args['eventID']
+ * @return JSON
+ * @throws Exception - when $args['eventID'] is not a positive integer
+ */
+function getEventCosts($args){
+    if(isset($args['eventID'])){
+        $eventID = $args['eventID'];
+    } else {
+        return returnJSONError("No eventID found");
+    }
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID must be a positive integer");
+    }
+    $sql = "SELECT * FROM eventAttributes
+            WHERE event_id = '$eventID'
+            AND eventAttributes.on = '1'
+            AND name = 'Event Costs'";
+    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        return $result['value'];
+    } else {
+        return json_encode(array("" => ""));
+    }
+}
+
+/**
  * Gets the number of free entrances the customer has.
  * @param integer $cid - customer ID number
  * @throws Exception - When $cid is not a positive integer.
@@ -278,7 +350,10 @@ function getNumberOfFreeEntrances($cid){
     if(!isInteger($cid) || $cid < 1){
         throw new Exception("Customer ID must be a positive integer");
     }
-    $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
+    $sql = "SELECT * FROM customerAttributes
+            WHERE customer_id = '$cid'
+            AND name = 'Free Entrances'
+            AND customerAttributes.on = '1' ";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $result = mysql_fetch_array($query);
     if($result){
@@ -298,7 +373,10 @@ function getOrganization($args){
     if(!isInteger($organizationID) || $organizationID < 1){
         throw new Exception("Organization ID must be a positive integer");
     }
-    $sql = "SELECT name FROM organizations WHERE id = '$organizationID'";
+    $sql = "SELECT name
+            FROM organizations
+            WHERE id = '$organizationID'
+            AND organizations.on = '1'";
     $query = mysql_query($sql) or die (returnSQLError($sql));
     $result = mysql_fetch_array($query);
     return json_encode(array("name" => $result['name']));
@@ -343,7 +421,11 @@ function parse_post_arguments(){
     $args = array();
     $keys = array_keys($_POST);
     foreach ($keys as $key){
-        $args[$key] = mysql_real_escape_string($_POST[$key]);
+        if($key == "costs"){
+            $args[$key] = $_POST[$key];
+        } else {
+            $args[$key] = mysql_real_escape_string($_POST[$key]);
+        }
     }
     return $args;
 }
@@ -366,6 +448,8 @@ function searchCustomers($args){
     FROM checkins AS ch
     JOIN customers AS cu ON ch.customer_id = cu.id
     WHERE cu.name LIKE '%$name%'
+    AND cu.on = '1'
+    AND ch.on = '1'
     GROUP BY cu.id
     ORDER BY visits DESC
     ";
@@ -382,6 +466,7 @@ function searchCustomers($args){
     JOIN customers
     ON checkins.customer_id = customers.id
     WHERE event_id = '$eventID'
+    AND checkins.on = '1'
     AND customer_id IN (SELECT customer_id 
                         FROM highestVisitsAndLikeName)";
     $alreadycheckedinquery = mysql_query($alreadycheckedinsql) or die (returnSQLError($alreadycheckedinsql));
@@ -449,7 +534,10 @@ function searchEvents($args){
  */
 function searchOrganizations($args){
     $name = mysql_real_escape_string($args['name']);
-    $sql = "SELECT * FROM organizations WHERE name LIKE '%$name%'";
+    $sql = "SELECT * 
+            FROM organizations 
+            WHERE name LIKE '%$name%'
+            AND organizations.on = '1'";
     $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     $organizations = array();
     while($organization = mysql_fetch_array($query)){

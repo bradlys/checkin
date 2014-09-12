@@ -70,6 +70,23 @@ printHeader();
               </div>
             </div>
             <div class="panel-body" id="result">
+            <div class="control-group" id="fields">
+            <div class="controls">
+            <legend>Costs</legend>
+            <form role="form" autocomplete="off">
+                <div class="entry input-group col-sm-6 costFieldGroup">
+                    <input class="costField" name="fields[]" type="text" placeholder="" />
+                    <input class="costField" name="fields[]" type="text" placeholder="" />
+                    <span class="input-group-btn">
+                        <button class="btn btn-success btn-add" type="button">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                    </span>
+                </div>
+            </form>
+            </div>
+            </div>
+            </div>
             </div>
             </div>
             <div class="modal-footer">
@@ -78,7 +95,6 @@ printHeader();
             </div>
           </div>
         </div>
-      </div>
       </div>
 
 <?php
