@@ -30,7 +30,9 @@ if(isset($_POST['purpose'])){
 
 /**
  * Checks in the customer.
- * @param array $args - Parsed arguments
+ * @param array $args - Parsed arguments.
+ * Uses money, eventid, email, name, cid,
+ * useFreeEntrance, and numberOfFreeEntrances.
  * @return JSON
  */
 function checkinCustomer($args){
@@ -137,6 +139,26 @@ function deleteCustomerBirthday($cid){
 }
 
 /**
+ * Sets eventAtrributes.on = '0' for 
+ * eventAtrributes.event_id = '$eventID' AND
+ * eventAtrributes.on = '1' AND
+ * eventAtrributes.name = 'Event Date'
+ * @param integer $eventID - Event ID
+ * @return JSON
+ */
+function deleteEventDate($eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        return returnJSONError("Event ID must be a positive integer.");
+    }
+    $sql = "UPDATE eventAtrributes
+            SET eventAtrributes.on = '0'
+            WHERE eventAtrributes.event_id = '$eventID'
+            AND eventAtrributes.on = '1'
+            AND eventAtrributes.name = 'Event Date'";
+    mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+}
+
+/**
  * Edits the Customer's Birthday
  * @param integer $cid - Customer ID
  * $param integer $date - Date in MMDDYYYY format
@@ -150,7 +172,7 @@ function editCustomerBirthday($cid, $date){
         return returnJSONError("Customer ID must be a positive integer.");
     }
     if(!isInteger($date) || $date < 1){
-        return returnJSONError("Customer ID must be a positive integer.");
+        return returnJSONError("Incorrect Date format");
     }
     $sql = "SELECT *
             FROM customerAttributes
@@ -244,6 +266,41 @@ function editEventCosts($costs, $eventID){
         $sql = "INSERT INTO eventAttributes VALUES
                 (NULL, '$eventID', 'Event Costs', '$JSON', '1', CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLError($sql));
+    }
+}
+
+/**
+ * Edits the Event's Date
+ * @param integer $eventID - Event ID
+ * $param integer $date - Date in MMDDYYYY format
+ * @return JSON
+ */
+function editEventDate($eventID, $date){
+    if(empty($date)){
+        return deleteEventDate($eventID);
+    }
+    if(!isInteger($eventID) || $eventID < 1){
+        return returnJSONError("Event ID must be a positive integer.");
+    }
+    if(!isInteger($date) || $date < 1){
+        return returnJSONError("Incorrect Date format.");
+    }
+    $sql = "SELECT *
+            FROM eventAtrributes
+            WHERE event_id = '$eventID'
+            AND name = 'Event Date'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        $id = $result['id'];
+        $sql = "UPDATE eventAtrributes
+                SET eventAtrributes.on = '1', value = '$date'
+                WHERE id = '$id'";
+        $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    } else {
+        $sql = "INSERT INTO eventAtrributes
+                VALUES (NULL, '$eventID', 'Event Date', '$date', '1', CURRENT_TIMESTAMP)";
+        $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
     }
 }
 
@@ -345,6 +402,30 @@ function getCheckinIDForCustomerAndEvent($cid, $eventID){
 }
 
 /**
+ * Gets the Customer's birthday
+ * @param int $cid - Customer ID
+ * @return int
+ */
+function getCustomerBirthday($cid){
+    if(!isInteger($cid) || $cid < 1){
+        return returnJSONError("Customer ID must be a positive integer.");
+    }
+    $sql = "SELECT *
+            FROM customerAtrributes
+            WHERE customerAtrributes.customer_id = '$cid'
+            AND customerAtrributes.name = 'Event Date'
+            AND customerAtrributes.on = '1'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        return $result['value'];
+    }
+    else {
+        return 0;
+    }
+}
+
+/**
  * Returns the email of the customer given the cid
  * @param array $args - array with cid of customer
  * @return JSON
@@ -404,6 +485,30 @@ function getEventCosts($args){
         }
     }
     return json_encode(array("" => ""));
+}
+
+/**
+ * Gets the Event's Date
+ * @param int $eventID - Customer ID
+ * @return int
+ */
+function getEventDate($eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        return returnJSONError("Event ID must be a positive integer.");
+    }
+    $sql = "SELECT *
+            FROM eventAtrributes
+            WHERE event_id = '$eventID'
+            AND name = 'Event Date'
+            AND eventAttributes.on = '1'";
+    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $result = mysql_fetch_array($query);
+    if($result){
+        return $result['value'];
+    }
+    else {
+        return 0;
+    }
 }
 
 /**
