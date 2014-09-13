@@ -32,7 +32,7 @@ function organizationsPage(){
         updateOrganizationSearchResults($("#organizationSearch").val());
         $("#myModal").find(".alert").alert('close');
     });
-    $("#organizationSearch").each(function() {
+    $("#organizationSearch").each(_.throttle(function() {
         var elem = $(this);
         // Save current value of element
         elem.data('oldVal', elem.val());
@@ -46,7 +46,7 @@ function organizationsPage(){
                 updateOrganizationSearchResults(elem.val());
             }
         });
-    });
+    }, 400));
     $("#save").on("click", function() {
         var name = $("#modalName").val();
         var organizationID = $("#organizationID").val();
@@ -131,7 +131,7 @@ function checkinPage(){
         // Save current value of element
         elem.data('oldVal', elem.val());
         // Look for changes in the value
-        elem.bind("propertychange keyup input paste", function( event ){
+        elem.bind("propertychange keyup input paste", _.throttle(function( event ){
             // If value has changed
             if (elem.data('oldVal') !== elem.val() || elem.val() === '') {
                 // Updated stored value
@@ -139,7 +139,7 @@ function checkinPage(){
                 // Do action
                 updateCheckinSearchResults(elem.val());
             }
-        });
+        }, 400));
     });
     updateCheckinSearchResults("");
 }
@@ -157,7 +157,7 @@ function eventsPage(){
     $("#myModal").on('hide.bs.modal', function(){
         $("#myModal").find(".alert").alert('close');
     });
-    $("#eventSearch").each(function() {
+    $("#eventSearch").each(_.throttle(function() {
         var elem = $(this);
         // Save current value of element
         elem.data('oldVal', elem.val());
@@ -171,7 +171,7 @@ function eventsPage(){
                 updateEventSearchResults(elem.val());
             }
         });
-    });
+    }, 400));
     $("#save").on("click", function() {
         var name = $("#modalName").val();
         var eventID = $("#eventID").val();
