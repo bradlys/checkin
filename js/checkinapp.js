@@ -286,6 +286,7 @@ function loadupCheckinModal(customerElem){
     }
     $("#modalTitle").text(modalTitleText + name);
     $("#modalName").val(name);
+    //var birthdayDate = "";
     
     var cid = customerElem.find(".cid").text();
     if(cid){
@@ -311,12 +312,14 @@ function loadupCheckinModal(customerElem){
         $("#useFreeEntrance").attr("checked", false);
     }
     $("#myModal").modal('show');
+    //$('#modalDate').datetimepicker().data("DateTimePicker").setDate(birthdayDate);
 }
 
 //Loads up the modal for events.php
 function loadupEventModal(eventElem){
     var name = eventElem.find("#eventResultName").text();
     var modalTitleText;
+    var eventDate = "";
     if(name === 'Add New Event'){
         modalTitleText = "Adding";
     }
@@ -338,6 +341,7 @@ function loadupEventModal(eventElem){
     else{
         $("#gotoEvent").hide();
     }
+    $('#modalDate').datetimepicker().data("DateTimePicker").setDate(eventDate);
     $.post("backend/search.php",
         { purpose : "getEventCosts", eventID : $("#eventID").val()},
         function ( data ) { setupDynamicCostForms(data); });

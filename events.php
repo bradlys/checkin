@@ -60,12 +60,18 @@ printHeader();
             <div class="panel-heading">
               <div class="row">
                 <div class="col-sm-6">
-                  <div class="input-group-sm">
-                    <div class="panel-heading modalNameEmail">Name</div>
-                    <input type="text" class="form-control modalNameEmailInput" id="modalName" autofocus="" required="" placeholder="Enter Name" autocomplete="off">
+                  <label for="modalName">Name</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control modalNameEmailInput" id="modalName" autofocus="" required="" placeholder="Enter Name" autocomplete="off" />
+                    <span class="input-group-addon" />
                   </div>
                 </div>
                 <div class="col-sm-6">
+                  <label for="modalDate">Date</label>
+                  <div class='input-group date' id="modalDate">
+                    <input type='text' class="form-control" id="modalDateForm" data-date-pickTime="false" />
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                  </div>
                 </div>
               </div>
             </div>

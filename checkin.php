@@ -14,6 +14,8 @@ if(isset($_GET['id'])){
     }
 }
 
+$isFreeEntranceEnabled = isFreeEntranceEnabled(inferOrganizationID($id));
+
 printHeader();
 ?>
     <div class="container">
@@ -24,7 +26,7 @@ printHeader();
             <div class="panel-heading">
               <div class="row">
                 <div class="col-lg-6">
-                    <input type="text" class="form-control" id="search" placeholder="Enter Name" autocomplete="off">
+                    <input type="text" class="form-control" id="search" placeholder="Enter Name" autocomplete="off" />
                 </div>
               </div>
 
@@ -65,13 +67,13 @@ printHeader();
                 <div class="col-sm-6">
                   <div class="input-group-sm">
                     <div class="panel-heading modalNameEmail">Name</div>
-                    <input type="text" class="form-control modalNameEmailInput" id="modalName" autofocus="" required="" placeholder="Enter Name" autocomplete="off">
+                    <input type="text" class="form-control modalNameEmailInput" id="modalName" autofocus="" required="" placeholder="Enter Name" autocomplete="off" />
                   </div>
                 </div>
                 <div class="col-sm-6">
                   <div class="input-group-sm">
                       <div class="panel-heading modalNameEmail">Email</div>
-                    <input type="email" class="form-control modalNameEmailInput" id="modalEmail" autofocus="" required="" placeholder="Enter Email" autocomplete="off">
+                    <input type="email" class="form-control modalNameEmailInput" id="modalEmail" autofocus="" required="" placeholder="Enter Email" autocomplete="off" />
                   </div>
                 </div>
               </div>
@@ -85,7 +87,7 @@ printHeader();
                     <div class="form-group paymentArea">
                     <div class="btn-group">
                         <div class="col-sm-2 customMoney">
-                        <input type="text" class="form-control" id="modalMoney" placeholder="$XX" autocomplete="off">
+                        <input type="text" class="form-control" id="modalMoney" placeholder="$XX" autocomplete="off" />
                         </div>
                         <button type="button" class="btn btn-default modalMoneyClearer">$0</button>
                         <button type="button" class="btn btn-default modalMoneyClearer">$3</button>
@@ -101,17 +103,17 @@ printHeader();
                     </div>
                 </div>
                 <?php
-                if(isFreeEntranceEnabled(inferOrganizationID($id))){ ?>
+                if($isFreeEntranceEnabled){ ?>
                 <div class="panel panel-default col-sm-3 paymentOptionsBox">
                     <div class="form-group paymentOptionsArea">
                         <div class="checkbox useFreeEntrance">
                             <label>
-                                <input type="checkbox" id="useFreeEntrance"> Use Free Entrance
+                                <input type="checkbox" id="useFreeEntrance" /> Use Free Entrance
                             </label>
                         </div>
                         <div class="numberOfFreeEntrances">
                             <label for="numberOfFreeEntrances">Number Of Free Entrances</label>
-                            <input type="text" class="form-control" id="numberOfFreeEntrances" placeholder="0">
+                            <input type="text" class="form-control" id="numberOfFreeEntrances" placeholder="0" />
                         </div>
                     </div>
                 </div>

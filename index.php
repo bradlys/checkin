@@ -19,7 +19,7 @@ printHeader();
           <div class="panel-heading">
             <div class="row">
               <div class="col-lg-6">
-                  <input type="text" class="form-control" id="organizationSearch" placeholder="Enter Name" autocomplete="off">
+                  <input type="text" class="form-control" id="organizationSearch" placeholder="Enter Name" autocomplete="off" />
               </div>
             </div>
           </div>
@@ -44,7 +44,7 @@ printHeader();
             <div class="col-sm-6">
               <div class="input-group-sm">
                 <div class="panel-heading modalNameEmail">Name</div>
-                <input type="text" class="form-control modalNameEmailInput" id="modalName" autofocus="" required="" placeholder="Enter Name" autocomplete="off">
+                <input type="text" class="form-control modalNameEmailInput" id="modalName" autofocus="" required="" placeholder="Enter Name" autocomplete="off" />
               </div>
             </div>
             <div class="col-sm-6">

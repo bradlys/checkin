@@ -33,7 +33,7 @@ function printHeader(){
     <title>Check-in App</title>
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
-
+    <link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
     <link href="css/starter-template.css" rel="stylesheet">
   </head>
