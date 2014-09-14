@@ -72,7 +72,7 @@ function printFooter() {
 ?>
     <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/underscore.js"></script>
+    <script type="text/javascript" src="js/underscore-min.js"></script>
     <script type="text/javascript" src="js/moment-with-locales.min.js"></script>
     <script type="text/javascript" src="js/bootstrap-datetimepicker.min.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
