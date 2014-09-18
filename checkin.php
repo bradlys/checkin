@@ -102,6 +102,13 @@ printHeader();
                     </form>
                     </div>
                 </div>
+                <div class="col-sm-3">
+                  <label for="modalDate">Birthday</label>
+                  <div class='input-group date' id="modalDate">
+                    <input type='text' class="form-control" id="modalDateForm" data-date-pickTime="false" />
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                  </div>
+                </div>
                 <?php
                 if($isFreeEntranceEnabled){ ?>
                 <div class="panel panel-default col-sm-3 paymentOptionsBox">

@@ -79,7 +79,7 @@ function checkinPage(){
     updateCheckinSearchResults("");
     $("#myModal").on('hide.bs.modal', function(){
         $(".paymentArea").removeClass("has-success has-feedback");
-        $(".glyphicon").remove();
+        $(".customMoney > .glyphicon").remove();
         $("#myModal").find(".alert").alert('close');
     });
     $("#modalMoney").on("propertychange keyup input paste", function( event ){
@@ -103,6 +103,7 @@ function checkinPage(){
         var checkout = false;
         var useFreeEntrance = $("#useFreeEntrance").is(':checked');
         var numberOfFreeEntrances = $("#numberOfFreeEntrances").val();
+        var date = $("#modalDate").data().date;
         money = money.replace('$', '');
         $("#myModal").find(".alert").alert('close');
         $.post("backend/search.php", {
@@ -114,7 +115,8 @@ function checkinPage(){
             cid : cid,
             checkout : checkout,
             useFreeEntrance: useFreeEntrance,
-            numberOfFreeEntrances: numberOfFreeEntrances},
+            numberOfFreeEntrances: numberOfFreeEntrances,
+            date : date},
         function(data){
             if(data){
                 $("#myModal").find("#result").append(makeAlertBox(data));
@@ -178,6 +180,7 @@ function eventsPage(){
         var organizationID = $("#organizationID").val();
         var checkout = false;
         var costFields = [];
+        var date = $("#modalDate").data().date;
         $(".costFieldGroup").each(function(e) {
             var first = $(this).find('input:first').val();
             var last = $(this).find('input:last').val();
@@ -193,7 +196,8 @@ function eventsPage(){
             name : name,
             organizationID : organizationID,
             checkout : checkout,
-            costs : costFields },
+            costs : costFields,
+            date : date},
         function(data){
             if(data){
                 $("#myModal").find("#result").append(makeAlertBox(data));
@@ -286,7 +290,6 @@ function loadupCheckinModal(customerElem){
     }
     $("#modalTitle").text(modalTitleText + name);
     $("#modalName").val(name);
-    //var birthdayDate = "";
     
     var cid = customerElem.find(".cid").text();
     if(cid){
@@ -302,6 +305,9 @@ function loadupCheckinModal(customerElem){
         $("#useFreeEntrance").prop("checked", customerElem.find(".usedFreeEntrance").text() === "true" ? true : false);
         $("#modalMoney").val(payment);
         $("#myModal").find(".cid").val(cid);
+        $.post("backend/search.php", { purpose : "getCustomerBirthday", cid : cid}, function(data) {
+            setupDate(data);
+        });
     }
     else{
         $("#modalEmail").val("");
@@ -310,16 +316,15 @@ function loadupCheckinModal(customerElem){
         $("#myModal").find(".cid").val("");
         $("#numberOfFreeEntrances").val("0");
         $("#useFreeEntrance").attr("checked", false);
+        setupDate();
     }
     $("#myModal").modal('show');
-    //$('#modalDate').datetimepicker().data("DateTimePicker").setDate(birthdayDate);
 }
 
 //Loads up the modal for events.php
 function loadupEventModal(eventElem){
     var name = eventElem.find("#eventResultName").text();
     var modalTitleText;
-    var eventDate = "";
     if(name === 'Add New Event'){
         modalTitleText = "Adding";
     }
@@ -341,7 +346,9 @@ function loadupEventModal(eventElem){
     else{
         $("#gotoEvent").hide();
     }
-    $('#modalDate').datetimepicker().data("DateTimePicker").setDate(eventDate);
+    $.post("backend/search.php",
+        { purpose : "getEventDate", eventID: $("#eventID").val()},
+        function ( data ) { setupDate(data); });
     $.post("backend/search.php",
         { purpose : "getEventCosts", eventID : $("#eventID").val()},
         function ( data ) { setupDynamicCostForms(data); });
@@ -617,6 +624,23 @@ function setupDynamicCostForms( retrievedFormData ) {
                 .html('<span class="glyphicon glyphicon-minus"></span>');
         }
     }
+}
+
+
+/**
+ * Sets up the event date in the event modal
+ * @param {JSON} data - JSON string with date for data['date']
+ * @returns {undefined}
+ */
+function setupDate (data){
+    data = jQuery.parseJSON(data);
+    var date = data['date'];
+    if(!date){
+        date = "";
+    } else {
+        //
+    }
+    $('#modalDate').datetimepicker().data("DateTimePicker").setDate(date);
 }
 
 });
