@@ -67,7 +67,7 @@ function checkinCustomer($args){
         return returnJSONError("Please input a non-negative integer for payment.");
     }
     if(empty($cid)){
-        $sql = "INSERT INTO customers VALUES ('', '$name', '$email', 1, CURRENT_TIMESTAMP)";
+        $sql = "INSERT INTO customers VALUES ('', '$name', '$email', NULL, 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
         $cid = mysql_insert_id();
     }
@@ -612,16 +612,17 @@ function searchCustomers($args){
     $name = $args['name'];
     $limit = $args['limit'];
     $eventID = $args['eventID'];
+    //Removed checkin.on restriction. Get around to correct value of visits
+    //involves counting ch.on rather than all rows.
     $highestVisitsAndLikeName =
     "CREATE TEMPORARY TABLE highestVisitsAndLikeName
-    SELECT COUNT(*) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
+    SELECT COUNT(ch.on) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
     FROM checkins AS ch
-    JOIN customers AS cu ON ch.customer_id = cu.id
+    RIGHT OUTER JOIN customers AS cu ON ch.customer_id = cu.id
     WHERE cu.name LIKE '%$name%'
     AND cu.on = '1'
-    AND ch.on = '1'
     GROUP BY cu.id
-    ORDER BY visits DESC
+    ORDER BY visits DESC, name ASC
     ";
     mysql_query($highestVisitsAndLikeName) or die (returnSQLError($highestVisitsAndLikeName));
     $numInSystemSQL = "SELECT COUNT(*) as count FROM highestVisitsAndLikeName";
@@ -631,7 +632,7 @@ function searchCustomers($args){
     $visitsql = "SELECT * FROM highestVisitsAndLikeName " . ($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
     $visitquery = mysql_query($visitsql) or die (returnSQLError($visitsql));
     $alreadycheckedinsql =
-    "SELECT customers.name AS cname, checkins.customer_id AS customerid, checkins.payment AS payment
+    "SELECT customers.name AS cname, checkins.customer_id AS cid, checkins.payment AS payment
     FROM checkins
     JOIN customers
     ON checkins.customer_id = customers.id
@@ -642,22 +643,23 @@ function searchCustomers($args){
     $alreadycheckedinquery = mysql_query($alreadycheckedinsql) or die (returnSQLError($alreadycheckedinsql));
     $alreadycheckedin = array();
     while($tmp = mysql_fetch_array($alreadycheckedinquery)){
-        $alreadycheckedin[$tmp['cname']] = $tmp['payment'];
+        $alreadycheckedin[$tmp['cid']] = $tmp['payment'];
     }
     $keysAlreadyCheckedIn = array_keys($alreadycheckedin);
     $customerArray = array();
     while($visit = mysql_fetch_array($visitquery)){
+        $cid = $visit['cid'];
         $name = $visit['name'];
         $visits = $visit['visits'];
-        $isCheckedIn = in_array($name, $keysAlreadyCheckedIn);
-        $checkinID = getCheckinIDForCustomerAndEvent($visit['cid'], $eventID);
-        $usedFreeEntrance = $checkinID ? hasUsedFreeEntrance($visit['cid'], $checkinID) : false;
-        $numberOfFreeEntrances = getNumberOfFreeEntrances($visit['cid']);
+        $isCheckedIn = in_array($cid, $keysAlreadyCheckedIn);
+        $checkinID = getCheckinIDForCustomerAndEvent($cid, $eventID);
+        $usedFreeEntrance = $checkinID ? hasUsedFreeEntrance($cid, $checkinID) : false;
+        $numberOfFreeEntrances = getNumberOfFreeEntrances($cid);
         array_push($customerArray, 
             array(
-            "cid" => $visit['cid'],
+            "cid" => $cid,
             "email" => $visit['email'],
-            "payment" => ($isCheckedIn ? $alreadycheckedin[$name] : ''),
+            "payment" => ($isCheckedIn ? $alreadycheckedin[$cid] : ''),
             "name" => $name,
             "visits" => $visits,
             "isCheckedIn" => $isCheckedIn,

@@ -28,7 +28,7 @@ function printHeader(){
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Dance Check-in App">
     <meta name="author" content="Bradly Schlenker">
-    <link rel="shortcut icon" href="/checkin/ico/favicon.ico">
+    <link rel="shortcut icon" href="ico/favicon.ico">
 
     <title>Check-in App</title>
 
