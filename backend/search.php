@@ -612,8 +612,7 @@ function searchCustomers($args){
     $name = $args['name'];
     $limit = $args['limit'];
     $eventID = $args['eventID'];
-    //Removed checkin.on restriction. Get around to correct value of visits
-    //involves counting ch.on rather than all rows.
+    //This SQL statement is very slow and needs a way to be avoided.
     $highestVisitsAndLikeName =
     "CREATE TEMPORARY TABLE highestVisitsAndLikeName
     SELECT COUNT(ch.on) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
@@ -638,6 +637,7 @@ function searchCustomers($args){
     ON checkins.customer_id = customers.id
     WHERE event_id = '$eventID'
     AND checkins.on = '1'
+    AND customers.on = '1'
     AND customer_id IN (SELECT customer_id 
                         FROM highestVisitsAndLikeName)";
     $alreadycheckedinquery = mysql_query($alreadycheckedinsql) or die (returnSQLError($alreadycheckedinsql));
