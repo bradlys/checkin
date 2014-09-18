@@ -3,6 +3,8 @@
 include_once "database.php";
 include_once "misc.php";
 
+define('PRODUCTION_SERVER', false);
+
 /**
  * Infers the organization ID based off the event ID.
  * @param int $eventID - event ID

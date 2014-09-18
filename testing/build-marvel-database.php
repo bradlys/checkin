@@ -1,5 +1,9 @@
 <?php
 /**
+ * No longer correct in functionality.
+ * It used to build a lage database using the names of marvel characters
+ */
+/**
 require_once '../backend/settings.php';
 
 $charactersFile = fopen("AllMarvelCharacters.txt", "r");

@@ -21,7 +21,7 @@ The first step is to just say, "no". CIA is currently not ready for deployment. 
 
 ### Configuring the settings
 
-Open up database.php (backend/database.php) in a text-editor. Fill in the username, password, database name, and host information as necessary. Save. Below is an example of what you could enter in the settings.php file.  
+Open up database.php (backend/database.php) in a text-editor. Fill in the username, password, database name, and host information as necessary. Save. Below is an example of what you could enter in the settings.php file. Also set the variable (PRODUCTION_SERVER) in backend/settings.php to true or false depending on whether this is a production server.  
 
 Example:
 > define('DB\_USER', 'CoolGuyStan');  

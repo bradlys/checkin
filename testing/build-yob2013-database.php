@@ -1,5 +1,10 @@
 <?php
 /**
+ * No longer correct in functionality.
+ * It used to build a lage database using the names of every child born in the year 2013
+ * with an occurrence of the name at least 5 times.
+ */
+/**
 require_once '../backend/settings.php';
 $charactersFile = fopen("yob2013.txt", "r");
 echo "here we are <br/>";

@@ -1,5 +1,7 @@
 <?php
 
+include_once 'settings.php';
+
 /**
  * Prints the HTML Header (And, at this point, some body stuff too)
  */
@@ -32,7 +34,7 @@ function printHeader(){
 
     <title>Check-in App</title>
 
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
     <link href="css/starter-template.css" rel="stylesheet">
@@ -70,12 +72,12 @@ function printHeader(){
 function printFooter() {
 
 ?>
-    <script type="text/javascript" src="js/jquery-2.1.0.min.js"></script>
-    <script type="text/javascript" src="js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/underscore-min.js"></script>
-    <script type="text/javascript" src="js/moment-with-locales.min.js"></script>
-    <script type="text/javascript" src="js/bootstrap-datetimepicker.min.js"></script>
-    <script type="text/javascript" src="js/checkinapp.js"></script>
+    <script type="text/javascript" src="<?= PRODUCTION_SERVER ? "//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js" : "//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js" ?> "></script>
+    <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore<?= PRODUCTION_SERVER ? "-min" : "" ?>.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment-with-locales<?= PRODUCTION_SERVER ? ".min" : "" ?>.js"></script>
+    <script type="text/javascript" src="<?= PRODUCTION_SERVER ? "js/bootstrap-datetimepicker.min.js" : "js/bootstrap-datetimepicker.min.js" ?>"></script>
+    <script type="text/javascript" src="<?= PRODUCTION_SERVER ? "js/checkinapp.js" : "js/checkinapp.js" ?>"></script>
   </body>
 </html>
 <?php
