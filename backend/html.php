@@ -72,12 +72,12 @@ function printHeader(){
 function printFooter() {
 
 ?>
-    <script type="text/javascript" src="<?= PRODUCTION_SERVER ? "//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js" : "//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.js" ?> "></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery<?= PRODUCTION_SERVER ? ".min" : "" ?>.js"></script>
     <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore<?= PRODUCTION_SERVER ? "-min" : "" ?>.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment-with-locales<?= PRODUCTION_SERVER ? ".min" : "" ?>.js"></script>
-    <script type="text/javascript" src="<?= PRODUCTION_SERVER ? "js/bootstrap-datetimepicker.min.js" : "js/bootstrap-datetimepicker.min.js" ?>"></script>
-    <script type="text/javascript" src="<?= PRODUCTION_SERVER ? "js/checkinapp.js" : "js/checkinapp.js" ?>"></script>
+    <script type="text/javascript" src="js/bootstrap-datetimepicker.min.js"></script>
+    <script type="text/javascript" src="js/checkinapp.js"></script>
   </body>
 </html>
 <?php
