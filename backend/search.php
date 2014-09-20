@@ -9,10 +9,9 @@
  * this page will return a string containing the information desired. (Or an error)
  * @author Bradly Schlenker
  */
-error_reporting(E_ALL);
-ini_set('display_errors', 'On');
+
 require_once "settings.php";
-$functions = array("checkinCustomer", "editCustomerBirthday", "editEvent", "editEventDate", "editOrganization", "getCustomerBirthday", "getEmail", "getEvent", "getEventDate", "getEventCosts", "getOrganization", "searchCustomers", "searchEvents", "searchOrganizations", );
+$functions = array("checkinCustomer", "editCustomerBirthday", "editEvent", "editEventDate", "editOrganization", "getCustomerBirthday", "getEmail", "getEvent", "getEventDate", "getEventCosts", "getOrganization", "searchCustomers", "searchCustomersFastestReduxCombo", "searchEvents", "searchOrganizations", );
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
     return '';
@@ -425,6 +424,30 @@ function getCustomerBirthday($args){
 }
 
 /**
+ * gets payment
+ * @param int $cid
+ * @param int $eventID
+ * @return int
+ */
+function getCustomerCheckedInPayment($cid, $eventID){
+    $result = mysql_query("
+        SELECT payment
+        FROM checkins
+        WHERE customer_id = '$cid'
+        AND event_id = '$eventID'
+        AND checkins.on = '1'
+        ORDER BY timestamp DESC
+        LIMIT 1") or die(mysql_error());
+    $result = mysql_fetch_array($result);
+    if($result){
+        return $result['payment'];
+    }
+    else{
+        return null;
+    }
+}
+
+/**
  * Returns the email of the customer given the cid
  * @param array $args - array with cid of customer
  * @return JSON
@@ -663,6 +686,62 @@ function searchCustomers($args){
             "name" => $name,
             "visits" => $visits,
             "isCheckedIn" => $isCheckedIn,
+            "usedFreeEntrance" => $usedFreeEntrance,
+            "numberOfFreeEntrances" => $numberOfFreeEntrances,
+            )
+        );
+    }
+    $returnJSON = array();
+    $returnJSON['customers'] = $customerArray;
+    if($numInSystemNumber > $limit + 1){
+        $returnJSON['numberOfExtra'] = $numInSystemNumber - $limit;
+    } else {
+        $returnJSON['numberOfExtra'] = 0;
+    }
+    return json_encode($returnJSON);
+}
+
+//Faster version temporarily
+function searchCustomersFastestReduxCombo($args){
+    $name = $args['name'];
+    $limit = $args['limit'];
+    $eventID = $args['eventID'];
+    $numInSystemSQL =
+            "SELECT COUNT(*) as count
+            FROM customers
+            WHERE customers.on = '1'
+            AND name LIKE '%$name%'
+            ";
+    $numInSystemQuery = mysql_query($numInSystemSQL) or die (returnSQLError($numInSystemSQL));
+    $numInSystemNumber = mysql_fetch_array($numInSystemQuery);
+    $numInSystemNumber = $numInSystemNumber['count'];
+    $highestVisitsAndLikeName =
+    "SELECT COUNT(ch.on) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
+    FROM checkins AS ch
+    RIGHT OUTER JOIN customers AS cu ON ch.customer_id = cu.id
+    WHERE cu.name LIKE '%$name%'
+    AND cu.on = '1'
+    GROUP BY cu.id
+    ORDER BY visits DESC, name ASC, cu.id DESC
+    " . ($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
+    $visitquery = mysql_query($highestVisitsAndLikeName) or die (returnSQLError(mysql_error()));
+    $customerArray = array();
+    while($visit = mysql_fetch_array($visitquery)){
+        $cid = $visit['cid'];
+        $name = $visit['name'];
+        $visits = $visit['visits'];
+        $isCheckedIn = getCustomerCheckedInPayment($cid, $eventID);
+        $checkinID = getCheckinIDForCustomerAndEvent($cid, $eventID);
+        $usedFreeEntrance = $checkinID ? hasUsedFreeEntrance($cid, $checkinID) : false;
+        $numberOfFreeEntrances = getNumberOfFreeEntrances($cid);
+        array_push($customerArray, 
+            array(
+            "cid" => $cid,
+            "email" => $visit['email'],
+            "payment" => ($isCheckedIn == null ? "" : $isCheckedIn),
+            "name" => $name,
+            "visits" => $visits,
+            "isCheckedIn" => ($isCheckedIn != null),
             "usedFreeEntrance" => $usedFreeEntrance,
             "numberOfFreeEntrances" => $numberOfFreeEntrances,
             )

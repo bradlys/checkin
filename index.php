@@ -63,7 +63,7 @@ printHeader();
   </div>
 </div>
 
-<?
+<?php
 
 printFooter();
 
