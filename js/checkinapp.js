@@ -401,7 +401,7 @@ function updateCheckinSearchResults (name, limit){
         limit = 10;
     }
     $.post("backend/search.php",
-        { purpose : "searchCustomersFastestReduxCombo", name : name, eventID : $("#eventID").val(), limit : limit },
+        { purpose : "searchCustomers2", name : name, eventID : $("#eventID").val(), limit : limit },
         function ( data ) {
             $("#beforefound").hide();
             $(".customer").remove();

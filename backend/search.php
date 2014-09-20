@@ -702,7 +702,7 @@ function searchCustomers($args){
 }
 
 //Faster version temporarily
-function searchCustomersFastestReduxCombo($args){
+function searchCustomers2($args){
     $name = $args['name'];
     $limit = $args['limit'];
     $eventID = $args['eventID'];
@@ -715,15 +715,34 @@ function searchCustomersFastestReduxCombo($args){
     $numInSystemQuery = mysql_query($numInSystemSQL) or die (returnSQLError($numInSystemSQL));
     $numInSystemNumber = mysql_fetch_array($numInSystemQuery);
     $numInSystemNumber = $numInSystemNumber['count'];
-    $highestVisitsAndLikeName =
-    "SELECT COUNT(ch.on) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
-    FROM checkins AS ch
-    RIGHT OUTER JOIN customers AS cu ON ch.customer_id = cu.id
-    WHERE cu.name LIKE '%$name%'
-    AND cu.on = '1'
-    GROUP BY cu.id
-    ORDER BY visits DESC, name ASC, cu.id DESC
-    " . ($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
+    //Turns out that around 14000 results from above,
+    //one query starts to become much faster than the other.
+    if($numInSystemNumber > 14000){
+        $highestVisitsAndLikeName =
+        "SELECT customers.id as cid, customers.name as name, customers.email as email, IFNULL(checkins.visits, 0) as visits
+        FROM customers 
+        LEFT JOIN
+            (SELECT COUNT(checkins.on) AS visits, customer_id 
+            FROM checkins 
+            GROUP BY customer_id)
+        AS checkins 
+        ON checkins.customer_id=customers.id 
+        WHERE customers.name LIKE '%$name%'
+        AND customers.on = '1'
+        ORDER BY checkins.visits DESC, customers.name ASC, customers.id DESC
+        " .($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
+    }
+    else{
+        $highestVisitsAndLikeName =
+        "SELECT COUNT(ch.on) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
+        FROM checkins AS ch
+        RIGHT OUTER JOIN customers AS cu ON ch.customer_id = cu.id
+        WHERE cu.name LIKE '%$name%'
+        AND cu.on = '1'
+        GROUP BY cu.id
+        ORDER BY visits DESC, name ASC, cu.id DESC
+        " . ($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
+    }
     $visitquery = mysql_query($highestVisitsAndLikeName) or die (returnSQLError(mysql_error()));
     $customerArray = array();
     while($visit = mysql_fetch_array($visitquery)){
