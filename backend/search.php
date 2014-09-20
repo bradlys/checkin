@@ -11,7 +11,7 @@
  */
 
 require_once "settings.php";
-$functions = array("checkinCustomer", "editCustomerBirthday", "editEvent", "editEventDate", "editOrganization", "getCustomerBirthday", "getEmail", "getEvent", "getEventDate", "getEventCosts", "getOrganization", "searchCustomers", "searchCustomersFastestReduxCombo", "searchEvents", "searchOrganizations", );
+$functions = array("checkinCustomer", "editCustomerBirthday", "editEvent", "editEventDate", "editOrganization", "getCustomerBirthday", "getEmail", "getEvent", "getEventDate", "getEventCosts", "getOrganization", "searchCustomers", "searchCustomers2", "searchEvents", "searchOrganizations", );
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
     return '';
