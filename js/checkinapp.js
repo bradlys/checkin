@@ -24,7 +24,6 @@ if($("#organizationSearch").length > 0){
 /**
  * Sets up the organizations page.
  * 
- * @returns {null}
  */
 function organizationsPage(){
     updateOrganizationSearchResults("");
@@ -72,11 +71,8 @@ function organizationsPage(){
 
 /**
  * Sets up the check-in page
- * 
- * @returns {null}
  */
 function checkinPage(){
-    updateCheckinSearchResults("");
     $("#myModal").on('hide.bs.modal', function(){
         $(".paymentArea").removeClass("has-success has-feedback");
         $(".customMoney > .glyphicon").remove();
@@ -90,9 +86,6 @@ function checkinPage(){
             $("#modalMoney").val($(this).text());
             $("#paymentAmount").val($(this).text());
         });
-    });
-    $.post("backend/search.php", { purpose : 'getEvent', eventid : $("#eventID").val() }, function(data) {
-        $("#eventName").html(jQuery.parseJSON(data).name);
     });
     $("#save").on("click", function() {
         var money = $("#paymentAmount").val();
@@ -148,14 +141,8 @@ function checkinPage(){
 
 /**
  * Sets up the events page
- * 
- * @returns {null}
  */
 function eventsPage(){
-    updateEventSearchResults("");
-    $.post("backend/search.php", { purpose : 'getOrganization', organizationID : $("#organizationID").val() }, function(data) {
-        $("#organizationName").html(jQuery.parseJSON(data).name);
-    });
     $("#myModal").on('hide.bs.modal', function(){
         $("#myModal").find(".alert").alert('close');
     });
@@ -222,8 +209,8 @@ function eventsPage(){
  * Makes and returns a Bootstrap success box.
  * This is specifically for when you successfully edit/save an organization in the modal.
  * 
- * @param {String} jsontext - a success message, usually in the form of a string
- * @returns {String} - the success box as an HTML String
+ * @param {string} jsontext a success message, usually in the form of a string
+ * @returns {string} the success box as an HTML String
  */
 function makeSaveOrganizationSuccessBox(jsontext){
     var box = '<div class="alert alert-success alert-dismissable" id="modalSuccess"> \n\ \
@@ -237,7 +224,7 @@ function makeSaveOrganizationSuccessBox(jsontext){
  * Makes and returns a Bootstrap success box.
  * This is specifically for when you successfully edit/save an event in the modal.
  * 
- * @returns {String} - the success box as an HTML String
+ * @returns {string} the success box as an HTML String
  */
 function makeSaveEventSuccessBox(){
     var box = '<div class="alert alert-success alert-dismissable" id="modalSuccess"> \n\ \
@@ -250,8 +237,8 @@ function makeSaveEventSuccessBox(){
 /**
  * Makes and returns a Bootstrap alert box.
  * 
- * @param {element} data - an error message, usually in the form of a string
- * @returns {String} - the alert box as an HTML String
+ * @param {string} data - JSON string containing an error message, usually in the form of a string
+ * @returns {string} the alert box as an HTML String
  */
 function makeAlertBox(data){
     var alert = '<div class="alert alert-danger fade in" id="modalProblem">\n\ \
@@ -273,8 +260,7 @@ function makeAlertBox(data){
  * the customer provided in first argument. Allows the customer to be checked-in and
  * have their information modified.
  * 
- * @param {element} customerElem - a customer element that from a search result
- * @returns {null}
+ * @param {object} customerElem jQuery object; a customer element from a search result
  */
 function loadupCheckinModal(customerElem){
     var name = customerElem.find("#username").text();
@@ -321,7 +307,13 @@ function loadupCheckinModal(customerElem){
     $("#myModal").modal('show');
 }
 
-//Loads up the modal for events.php
+/**
+ * Loads up the modal (#myModal on events.php) with information about
+ * the event provided in first argument. Allows for editing of events
+ * and going to them.
+ * 
+ * @param {object} eventElem jQuery object; an event element from a search result
+ */
 function loadupEventModal(eventElem){
     var name = eventElem.find("#eventResultName").text();
     var modalTitleText;
@@ -355,7 +347,13 @@ function loadupEventModal(eventElem){
     $("#myModal").modal('show');
 }
 
-//Loads up the organization modal for index.php
+/**
+ * Loads up the modal (#myModal on index.php) with information about
+ * the organization provided in first argument. Allows for editing of organizations
+ * and loading them for viewing events.
+ * 
+ * @param {object} organizationElem jQuery object; an organization element from a search result
+ */
 function loadupOrganizationModal(organizationElem){
     var name = organizationElem.find("#organizationResultName").text();
     var modalTitleTextBegin;
@@ -393,15 +391,14 @@ function loadupOrganizationModal(organizationElem){
  * 
  * 
  * @param {string} name - The string to search for (based on whether the desired string contains this param)
- * @param {integer} limit - The highest amount of search results to be returned. Defaults to 10.
- * @returns {null}
+ * @param {number} limit - The highest amount of search results to be returned. Defaults to 10.
  */
 function updateCheckinSearchResults (name, limit){
     if(!limit){
         limit = 10;
     }
     $.post("backend/search.php",
-        { purpose : "searchCustomers2", name : name, eventID : $("#eventID").val(), limit : limit },
+        { purpose : "searchCustomers", name : name, eventID : $("#eventID").val(), limit : limit },
         function ( data ) {
             $("#beforefound").hide();
             $(".customer").remove();
@@ -432,8 +429,7 @@ function updateCheckinSearchResults (name, limit){
  * database for events whose name contains the first argument supplied.
  * 
  * 
- * @param {string} name - The string to search for (based on whether the desired string contains this param)
- * @returns {null}
+ * @param {string} name The string to search for (based on whether the desired string contains this param)
  */
 function updateEventSearchResults (name){
     $.post("backend/search.php",
@@ -466,8 +462,7 @@ function updateEventSearchResults (name){
  * database for organizations whose name contains the first argument supplied.
  * 
  * 
- * @param {string} name - The string to search for (based on whether the desired string contains this param)
- * @returns {null}
+ * @param {string} name The string to search for (based on whether the desired string contains this param)
  */
 function updateOrganizationSearchResults (name) {
     $.post("backend/search.php",
@@ -498,8 +493,8 @@ function updateOrganizationSearchResults (name) {
 
 /**
  * Formats data that was returned from searching the customer database into customer divs.
- * @param {JSON} data - JSON string of customer information returned by search
- * @returns {String} - returns customer divs as a string
+ * @param {string} data JSON string of customer information returned by search
+ * @returns {string} returns customer divs as a string
  */
 function displayCheckinSearchResults (data) {
     var returnString = '';
@@ -530,8 +525,8 @@ function displayCheckinSearchResults (data) {
 
 /**
  * Formats data that was returned from searching the organization database into organizationResultItem divs.
- * @param {JSON} data - JSON string of organization information returned by search
- * @returns {String} - returns organization divs as a string
+ * @param {string} data JSON string of organization information returned by search
+ * @returns {string} returns organization divs as a string
  */
 function displayOrganizationSearchResults (data) {
     var returnString = '';
@@ -552,8 +547,8 @@ function displayOrganizationSearchResults (data) {
 
 /**
  * Formats data that was returned from searching the events database into eventResultItem divs.
- * @param {JSON} data - JSON string of event information returned by search
- * @returns {String} - returns event divs as a string
+ * @param {string} data JSON string of event information returned by search
+ * @returns {string} returns event divs as a string
  */
 function displayEventSearchResults (data) {
     var returnString = '';
@@ -573,9 +568,9 @@ function displayEventSearchResults (data) {
 }
 
 /**
- * Sets up the cost forms
- * @param {JSON} retrievedFormData
- * @returns {null}
+ * Sets up the cost forms for event modal
+ * @param {string} retrievedFormData JSON String (encoded JSON)
+ * containing cost form information.
  */
 function setupDynamicCostForms( retrievedFormData ) {
     $(".costFieldGroup").each(function(){
@@ -629,8 +624,7 @@ function setupDynamicCostForms( retrievedFormData ) {
 
 /**
  * Sets up the event date in the event modal
- * @param {JSON} data - JSON string with date for data['date']
- * @returns {undefined}
+ * @param {string} data JSON string with date for data['date']
  */
 function setupDate (data){
     data = jQuery.parseJSON(data);

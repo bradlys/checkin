@@ -7,12 +7,37 @@ include_once 'settings.php';
  */
 function printHeader(){
     $checkinactive = false;
-    $checkinappactive = false;
-    if(basename($_SERVER['PHP_SELF']) == 'checkin.php'){
+    $firstliActive = false;
+    $secondliActive = false;
+    $thirdliActive = false;
+    $indexPage = false;
+    $eventsPage = false;
+    $basename = basename($_SERVER['PHP_SELF']);
+    if($basename == 'checkin.php'){
         $checkinactive = true;
+        $firstliActive = true;
     }
-    if(basename($_SERVER['PHP_SELF']) == 'index.php'){
-        $checkinappactive = true;
+    if($basename == 'checkin-about.php'){
+        $checkinactive = true;
+        $secondliActive = true;
+    }
+    if($basename == 'checkin-contact.php'){
+        $checkinactive = true;
+        $thirdliActive = true;
+    }
+    if($basename == 'organization-about.php'){
+        $secondliActive = true;
+        $eventsPage = true;
+    }
+    if($basename == 'organization-contact.php'){
+        $thirdliActive = true;
+        $eventsPage = true;
+    }
+    if($basename == 'index.php'){
+        $indexPage = true;
+    }
+    if($basename == 'events.php'){
+        $eventsPage = true;
     }
     if(isset($_GET['id'])){
         $id = $_GET['id'];
@@ -55,9 +80,19 @@ function printHeader(){
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li class="<?=$checkinactive ? 'active' : '' ?>"><a href="<?= $checkinappactive ? '' : "checkin.php?id=$id"?>">Check-in</a></li>
-            <li><a href="<?= $checkinappactive ? '' : "about.php?id=$id"?>">About</a></li>
-            <li><a href="<?= $checkinappactive ? '' : "contact.php?id=$id"?>">Contact</a></li>
+            <?php
+            if(!$indexPage){
+                if(!$eventsPage){
+                ?>
+            <li class="<?= $firstliActive ? 'active' : '' ?>"><a href="<?= "checkin.php?id=$id" ?>"><?= "Check-in" ?></a></li>
+            <?php
+                }
+            ?>
+            <li class="<?= $secondliActive ? 'active' : '' ?>"><a href="<?= $indexPage ? 'about.php' : ($checkinactive ? "checkin-about.php?id=$id" : "organization-about.php?id=$id") ?>">About<?= $checkinactive ? " Event" : " Organization" ?></a></li>
+            <li class="<?= $thirdliActive ? 'active' : '' ?>"><a href="<?= $indexPage ?  'contact.php' : ($checkinactive ? "checkin-contact.php?id=$id" : "organization-contact.php?id=$id") ?>">Contact</a></li>
+            <?php
+            }
+            ?>
           </ul>
         </div>
       </div>

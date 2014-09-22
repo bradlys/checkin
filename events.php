@@ -7,10 +7,16 @@
  */
 
 require_once 'backend/html.php';
+require_once 'backend/event.php';
+require_once 'backend/organization.php';
 
-if(isset($_GET['id'])){
-    $id = $_GET['id'];
+if(isset($_GET['id']) && isInteger($_GET['id']) && $_GET['id'] > 0){
+    $id = mysql_real_escape_string($_GET['id']);
+} else {
+    die;
 }
+
+$organizationName = getOrganizationName($id);
 
 printHeader();
 ?>
@@ -18,7 +24,7 @@ printHeader();
     <div class="container">
 
       <div class="starter-template">
-        <h1>Events for <span id="organizationName"></span></h1>
+        <h1>Events for <span id="organizationName"><?=$organizationName?></span></h1>
         <div class="panel panel-default">
             <div class="panel-heading">
               <div class="row">

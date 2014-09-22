@@ -6,9 +6,6 @@ printHeader();
 
 ?>
 
-To Be Developed
-
 <?php
 
 printFooter();
-?>
