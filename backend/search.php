@@ -15,63 +15,30 @@ require_once 'customer.php';
 require_once 'event.php';
 require_once 'organization.php';
 require_once 'checkin.php';
-
-$functions = array("checkinCustomer", "editEvent", "editOrganization", "getCustomerBirthday", "getEventCosts", "getEventDate", "searchCustomers", "searchEvents", "searchOrganizations");
-$method = $_SERVER['REQUEST_METHOD'];
-if( strtolower($method) != 'post'){
-    return;
-}
-
-if(isset($_POST['purpose'])){
-    $jsonarray = array();
-    $args = parse_post_arguments();
-    $purpose = $args['purpose'];
-    if(in_array($purpose, $functions)){
-        echo call_user_func_array($purpose, array($args));
-        return;
-    }
-}
-
-/**
- * Parses post arguments by running post values through
- * mysql_real_escape_string() and then returning
- * them in an associate array in the same key+value
- * pair as they were before.
- * 
- * @return array
- */
-function parse_post_arguments(){
-    $args = array();
-    $keys = array_keys($_POST);
-    foreach ($keys as $key){
-        if($key === "costs"){
-            $args[$key] = $_POST[$key];
-        } else {
-            $args[$key] = mysql_real_escape_string($_POST[$key]);
-        }
-    }
-    return $args;
-}
+require_once 'misc.php';
 
 /**
  * Finds customers whose names match in the databased based upon LIKE %name% and eventID.
  * This function will limit the return of results to whatever limit is set to, or by default 11.
  * @param array $args contains an array with value for keys name, limit, and eventID
- * @return String json_encode() with array['customers'] containing an array of customers with information. 
+ * @return array with array['customers'] containing an array of customers with information. 
  * And array['numberOfExtra'] contains an integer displaying how many customers were not 
  * returned in the search results.
  */
-function searchCustomers($args){
-    $name = $args['name'];
-    $limit = $args['limit'];
-    $eventID = $args['eventID'];
+function searchCustomers($eventID, $limit, $name){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID must be a positive integer.");
+    }
+    if(!isInteger($limit) || $limit < 1){
+        throw new Exception("Limit must be a positive integer.");
+    }
     $numInSystemSQL =
             "SELECT COUNT(*) as count
             FROM customers
             WHERE customers.on = '1'
             AND name LIKE '%$name%'
             ";
-    $numInSystemQuery = mysql_query($numInSystemSQL) or die (returnSQLError($numInSystemSQL));
+    $numInSystemQuery = mysql_query($numInSystemSQL) or die (mysql_error());
     $numInSystemNumber = mysql_fetch_array($numInSystemQuery);
     $numInSystemNumber = $numInSystemNumber['count'];
     //Turns out that around 14000 results from above,
@@ -102,7 +69,7 @@ function searchCustomers($args){
         ORDER BY visits DESC, name ASC, cu.id DESC
         " . ($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
     }
-    $visitquery = mysql_query($highestVisitsAndLikeName) or die (returnSQLError(mysql_error()));
+    $visitquery = mysql_query($highestVisitsAndLikeName) or die (mysql_error());
     $customerArray = array();
     while($visit = mysql_fetch_array($visitquery)){
         $cid = $visit['cid'];
@@ -125,30 +92,33 @@ function searchCustomers($args){
             )
         );
     }
-    $returnJSON = array();
-    $returnJSON['customers'] = $customerArray;
+    $resultsArray = array();
+    $resultsArray['customers'] = $customerArray;
     if($numInSystemNumber > $limit + 1){
-        $returnJSON['numberOfExtra'] = $numInSystemNumber - $limit;
+        $resultsArray['numberOfExtra'] = $numInSystemNumber - $limit;
     } else {
-        $returnJSON['numberOfExtra'] = 0;
+        $resultsArray['numberOfExtra'] = 0;
     }
-    return json_encode($returnJSON);
+    return $resultsArray;
 }
 
 /**
  * Searches the database for events that match LIKE %name% and returns them in JSON format
- * @param array $args Array of arguments: array['name'] being the name of the event
- * @return JSON json_encode string with array of events array[0]['id'] being eventid, and
+ * @param String $name Name of Event
+ * @param int $organizationID Organization ID
+ * @return array with array of events array[0]['id'] being eventid, and
  * array[0]['name'] being the event name
+ * @throws Exception When Organization ID is not a positive integer.
  */
-function searchEvents($args){
-    $name = mysql_real_escape_string($args['name']);
-    $organizationID = mysql_real_escape_string($args['organizationID']);
+function searchEvents($name, $organizationID){
+    if(!isInteger($organizationID) || $organizationID < 1){
+        throw new Exception("Organization ID must be a positive integer.");
+    }
     $sql = "SELECT *
             FROM events
             WHERE organization_id = '$organizationID'
             AND name LIKE '%$name%'";
-    $query = mysql_query($sql) or die (returnSQLError($sql));
+    $query = mysql_query($sql) or die (mysql_error());
     $events = array();
     while($event = mysql_fetch_array($query)){
         array_push($events, array(
@@ -156,23 +126,22 @@ function searchEvents($args){
             "eventResultName" => $event['name']
         ));
     }
-    $returnJSON = json_encode($events);
-    return $returnJSON;
+    return $events;
 }
 
 /**
  * Searches the database for organizations that match LIKE %name% and returns them in JSON format
- * @param array $args Array of arguments: array['name'] being the name of the organization
- * @return String json_encode string with array of organizations array[0]['id'] being organizationid, and
+ * @param String $name Name of Organization
+ * @return array with array of organizations array[0]['id'] being organizationid, and
  * array[0]['name'] being the organization name
+ * @throws 
  */
-function searchOrganizations($args){
-    $name = mysql_real_escape_string($args['name']);
+function searchOrganizations($name){
     $sql = "SELECT * 
             FROM organizations 
             WHERE name LIKE '%$name%'
             AND organizations.on = '1'";
-    $query = mysql_query($sql) or die (returnSQLErrorInJSON($sql));
+    $query = mysql_query($sql) or die (mysql_error());
     $organizations = array();
     while($organization = mysql_fetch_array($query)){
         array_push($organizations, array(
@@ -180,6 +149,5 @@ function searchOrganizations($args){
             "organizationResultName" => $organization['name']
         ));
     }
-    $returnJSON = json_encode($organizations);
-    return $returnJSON;
+    return $organizations;
 }

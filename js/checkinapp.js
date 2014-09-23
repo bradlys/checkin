@@ -21,6 +21,21 @@ if($("#organizationSearch").length > 0){
     organizationsPage();
 }
 
+if($("#eventCheckinsTable").length > 0){
+    checkinAboutPage();
+}
+
+/**
+ * Sets up the event date in the event modal
+ * @param {string} date date string
+ */
+function setupDate(date){
+    if(!date){
+        date = "";
+    }
+    $('#modalDate').datetimepicker().data("DateTimePicker").setDate(date);
+}
+
 /**
  * Sets up the organizations page.
  * 
@@ -49,9 +64,8 @@ function organizationsPage(){
     $("#save").on("click", function() {
         var name = $("#modalName").val();
         var organizationID = $("#organizationID").val();
-        var checkout = false;
         $("#myModal").find(".alert").alert('close');
-        $.post("backend/search.php", { purpose : "editOrganization",  name : name, organizationID : organizationID, checkout : checkout}, function(json){
+        $.post("backend/post.php", { purpose : "editOrganization",  name : name, organizationID : organizationID}, function(json){
             json = $.parseJSON(json);
             if(json.error){
                 $("#myModal").find("#result").append(makeAlertBox(json.error));
@@ -73,54 +87,7 @@ function organizationsPage(){
  * Sets up the check-in page
  */
 function checkinPage(){
-    $("#myModal").on('hide.bs.modal', function(){
-        $(".paymentArea").removeClass("has-success has-feedback");
-        $(".customMoney > .glyphicon").remove();
-        $("#myModal").find(".alert").alert('close');
-    });
-    $("#modalMoney").on("propertychange keyup input paste", function( event ){
-        $("#paymentAmount").val($(this).val());
-    });
-    $(".modalMoneyClearer").each(function() {
-        $(this).on("click select", function( event ) {
-            $("#modalMoney").val($(this).text());
-            $("#paymentAmount").val($(this).text());
-        });
-    });
-    $("#save").on("click", function() {
-        var money = $("#paymentAmount").val();
-        var email = $("#modalEmail").val();
-        var name = $("#modalName").val();
-        var cid = $("#myModal").find(".cid").val();
-        var eventid = $("#eventID").val();
-        var checkout = false;
-        var useFreeEntrance = $("#useFreeEntrance").is(':checked');
-        var numberOfFreeEntrances = $("#numberOfFreeEntrances").val();
-        var date = $("#modalDate").data().date;
-        money = money.replace('$', '');
-        $("#myModal").find(".alert").alert('close');
-        $.post("backend/search.php", {
-            purpose : "checkinCustomer", 
-            eventid : eventid,
-            money : money,
-            email : email,
-            name : name,
-            cid : cid,
-            checkout : checkout,
-            useFreeEntrance: useFreeEntrance,
-            numberOfFreeEntrances: numberOfFreeEntrances,
-            date : date},
-        function(data){
-            if(data){
-                $("#myModal").find("#result").append(makeAlertBox(data));
-            }
-            else{
-                $("#myModal").modal('hide');
-                $("#search").val(name);
-                updateCheckinSearchResults(name);
-            }
-        });
-    });
+    setupCheckinModal();
     $('#search').each(function() {
         var elem = $(this);
         // Save current value of element
@@ -137,6 +104,103 @@ function checkinPage(){
         }, 400));
     });
     updateCheckinSearchResults("");
+}
+/**
+ * Sets up the checkin-about page
+ */
+function checkinAboutPage(){
+    setupCheckinModal();
+    $(".eventCheckinsTableCustomerRow").on("click", function(event) {
+        var rowElem = $(this);
+        loadupCheckinAboutModal(rowElem);
+    });
+}
+
+/**
+ * Sets up the checkin modal for proper usage.
+ */
+function setupCheckinModal(){
+    $("#myModal").on('hide.bs.modal', function(){
+        $(".paymentArea").removeClass("has-success has-feedback");
+        $(".customMoney > .glyphicon").remove();
+        $("#myModal").find(".alert").alert('close');
+    });
+    $("#modalMoney").on("propertychange keyup input paste", function( event ){
+        $("#paymentAmount").val($(this).val());
+    });
+    $(".modalMoneyClearer").each(function() {
+        $(this).on("click select", function( event ) {
+            $("#modalMoney").val($(this).text());
+            $("#paymentAmount").val($(this).text());
+        });
+    });
+    $("#save").on("click", function() {
+        var payment = $("#paymentAmount").val();
+        var email = $("#modalEmail").val();
+        var name = $("#modalName").val();
+        var cid = $("#myModal").find(".cid").val();
+        var eventID = $("#eventID").text();
+        var useFreeEntrance = $("#useFreeEntrance").is(':checked');
+        var numberOfFreeEntrances = $("#numberOfFreeEntrances").val();
+        var date = $("#modalDate").data().date;
+        payment = payment.replace('$', '');
+        $("#myModal").find(".alert").alert('close');
+        $.post("backend/post.php", {
+            cid : cid,
+            date : date,
+            email : email,
+            eventID : eventID,
+            name : name,
+            numberOfFreeEntrances: numberOfFreeEntrances,
+            purpose : "checkinCustomer", 
+            payment : payment,
+            useFreeEntrance: useFreeEntrance
+        },
+        function(data){
+            if(data && data !== "null"){
+                $("#myModal").find("#result").append(makeAlertBox(data));
+            }
+            else{
+                $("#myModal").modal('hide');
+                if($("#search").length){
+                    $("#search").val("");
+                    updateCheckinSearchResults("");
+                }
+            }
+        });
+    });
+    $("#modalCheckout").on("click", function() {
+        var cid = $("#myModal").find(".cid").val();
+        var eventID = $("#eventID").text();
+        $.post("backend/post.php", {
+            purpose : "checkoutCustomer",
+            cid : cid,
+            eventID : eventID
+        },
+        function(data){
+            if(data !== null){
+                $("#myModal").find(".alert").alert('close');
+                data = jQuery.parseJSON(data);
+                if(data.error){
+                    $("#myModal").find("#result").append(makeAlertBox(data.error));
+                } else {
+                    $("#myModal").find("#result").append(makeSaveEventSuccessBox());
+                    $("#numberOfFreeEntrances").val(data['numberOfFreeEntrances']);
+                    $("#useFreeEntrance").attr('checked', false);
+                    $("#paymentAmount").val("");
+                    $(".paymentArea").removeClass("has-success has-feedback");
+                    $(".customMoney > .glyphicon").remove();
+                    if($("#search").length){
+                        $("#search").val("");
+                        updateCheckinSearchResults("");
+                    } else {
+                        $("#" + data.checkinID + "").addClass("danger");
+                    }
+                    $("#myModal").modal('hide');
+                }
+            }
+        });
+    });
 }
 
 /**
@@ -163,9 +227,8 @@ function eventsPage(){
     }, 400));
     $("#save").on("click", function() {
         var name = $("#modalName").val();
-        var eventID = $("#eventID").val();
+        var eventID = $("#eventID").text();
         var organizationID = $("#organizationID").val();
-        var checkout = false;
         var costFields = [];
         var date = $("#modalDate").data().date;
         $(".costFieldGroup").each(function(e) {
@@ -177,12 +240,11 @@ function eventsPage(){
             }
         });
         $("#myModal").find(".alert").alert('close');
-        $.post("backend/search.php",
+        $.post("backend/post.php",
             { purpose : "editEvent",
-            eventid : eventID,
+            eventID : eventID,
             name : name,
             organizationID : organizationID,
-            checkout : checkout,
             costs : costFields,
             date : date},
         function(data){
@@ -291,9 +353,15 @@ function loadupCheckinModal(customerElem){
         $("#useFreeEntrance").prop("checked", customerElem.find(".usedFreeEntrance").text() === "true" ? true : false);
         $("#modalMoney").val(payment);
         $("#myModal").find(".cid").val(cid);
-        $.post("backend/search.php", { purpose : "getCustomerBirthday", cid : cid}, function(data) {
-            setupDate(data);
-        });
+        $.post("backend/post.php",
+            { purpose : "getCustomerBirthday", cid : cid}, 
+            function(data) {
+                if(data === '""'){
+                    setupDate('');
+                } else {
+                    setupDate(data);
+                }
+            });
     }
     else{
         $("#modalEmail").val("");
@@ -302,9 +370,52 @@ function loadupCheckinModal(customerElem){
         $("#myModal").find(".cid").val("");
         $("#numberOfFreeEntrances").val("0");
         $("#useFreeEntrance").attr("checked", false);
-        setupDate();
+        setupDate("");
     }
     $("#myModal").modal('show');
+}
+
+/**
+ * Loads up the modal (#myModal on checkin-about.php) with information about
+ * the customer provided in first argument. Allows the customer to be checked-out and
+ * have their information modified.
+ * 
+ * @param {object} rowElem jQuery object; a customer row element from a checkin table
+ */
+function loadupCheckinAboutModal(rowElem){
+    var name = rowElem.find(".customerName").text();
+    var modalTitleText = "Editing user " + name;
+    $("#modalTitle").text(modalTitleText);
+    $("#modalName").val(name);
+    
+    var checkinID = rowElem.find(".checkinID").text();
+    if(checkinID){
+        $.post("backend/post.php", { purpose : "getCustomerByCheckinID", checkinID : checkinID}, function(data) {
+            if(data){
+                data = jQuery.parseJSON(data);
+            } else {
+                console.log("No data returned for " + checkinID);
+                return;
+            }
+            var email = data.email;
+            var payment = data.payment;
+            var usedFreeEntrance = data.usedFreeEntrance;
+            var numberOfFreeEntrances = data.numberOfFreeEntrances;
+            var cid = data.cid;
+            $("#modalEmail").val(email);
+            $("#paymentAmount").val(payment);
+            if(payment){
+                $(".customMoney").append('<span class="glyphicon glyphicon-ok form-control-feedback" style="right:0px;"></span>');
+                $(".paymentArea").addClass("has-success has-feedback");
+            }
+            $("#numberOfFreeEntrances").val(numberOfFreeEntrances);
+            $("#useFreeEntrance").prop("checked", usedFreeEntrance === "true" ? true : false);
+            $("#modalMoney").val(payment);
+            $("#myModal").find(".cid").val(cid);
+            setupDate(data.birthday);
+            $("#myModal").modal('show');
+        });
+    }
 }
 
 /**
@@ -331,18 +442,24 @@ function loadupEventModal(eventElem){
     
     var eventResultID = eventElem.find(".eventResultID").text();
     if(eventResultID){
-        $("#eventID").val(eventResultID);
+        $("#eventID").text(eventResultID);
         $("#gotoEvent").show();
         $("#gotoEvent").attr("href", "checkin.php?id=" + eventResultID);
     }
     else{
         $("#gotoEvent").hide();
     }
-    $.post("backend/search.php",
-        { purpose : "getEventDate", eventID: $("#eventID").val()},
-        function ( data ) { setupDate(data); });
-    $.post("backend/search.php",
-        { purpose : "getEventCosts", eventID : $("#eventID").val()},
+    $.post("backend/post.php",
+        { purpose : "getEventDate", eventID: $("#eventID").text()},
+        function ( data ) { 
+            if(data === '""'){
+                setupDate('');
+            } else {
+                setupDate(data);
+            } 
+        });
+    $.post("backend/post.php",
+        { purpose : "getEventCosts", eventID : $("#eventID").text()},
         function ( data ) { setupDynamicCostForms(data); });
     $("#myModal").modal('show');
 }
@@ -397,8 +514,8 @@ function updateCheckinSearchResults (name, limit){
     if(!limit){
         limit = 10;
     }
-    $.post("backend/search.php",
-        { purpose : "searchCustomers", name : name, eventID : $("#eventID").val(), limit : limit },
+    $.post("backend/post.php",
+        { purpose : "searchCustomers", name : name, eventID : $("#eventID").text(), limit : limit },
         function ( data ) {
             $("#beforefound").hide();
             $(".customer").remove();
@@ -432,7 +549,7 @@ function updateCheckinSearchResults (name, limit){
  * @param {string} name The string to search for (based on whether the desired string contains this param)
  */
 function updateEventSearchResults (name){
-    $.post("backend/search.php",
+    $.post("backend/post.php",
         { purpose : "searchEvents", name : name, organizationID : $("#organizationID").val() },
         function ( data ) {
             $("#beforefound").hide();
@@ -465,7 +582,7 @@ function updateEventSearchResults (name){
  * @param {string} name The string to search for (based on whether the desired string contains this param)
  */
 function updateOrganizationSearchResults (name) {
-    $.post("backend/search.php",
+    $.post("backend/post.php",
         { purpose : "searchOrganizations", name : name },
         function ( data ) {
             $("#beforefound").hide();
@@ -619,22 +736,6 @@ function setupDynamicCostForms( retrievedFormData ) {
                 .html('<span class="glyphicon glyphicon-minus"></span>');
         }
     }
-}
-
-
-/**
- * Sets up the event date in the event modal
- * @param {string} data JSON string with date for data['date']
- */
-function setupDate (data){
-    data = jQuery.parseJSON(data);
-    var date = data['date'];
-    if(!date){
-        date = "";
-    } else {
-        //
-    }
-    $('#modalDate').datetimepicker().data("DateTimePicker").setDate(date);
 }
 
 });

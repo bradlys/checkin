@@ -1,6 +1,10 @@
 <?php
 
 require_once 'backend/html.php';
+require_once 'backend/organization.php';
+require_once 'backend/checkin.php';
+require_once 'backend/settings.php';
+require_once 'backend/event.php';
 
 printHeader();
 

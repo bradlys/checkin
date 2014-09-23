@@ -38,7 +38,7 @@ printHeader();
             <div class="panel-body" id="result">
                 <p class="lead" id="beforefound">Go ahead and try searching for a user!</p>
                 <p class="lead" id="nonefound">No users were found!</p>
-                <input type='hidden' id='eventID' value='<?=$id?>'>
+                <span type='hidden' id='eventID'><?=$id?></span>
             </div>
         </div>
       </div>
@@ -131,6 +131,7 @@ printHeader();
             </div>
             </div>
             <div class="modal-footer">
+              <button type="button" id="modalCheckout" class="btn btn-danger">Checkout</button>
               <button type="button" id ="modalCloseBot" class="btn btn-default" data-dismiss="modal">Close</button>
               <button type="button" class="btn btn-primary" id="save">Save & Checkin</button>
             </div>
