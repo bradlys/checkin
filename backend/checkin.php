@@ -8,7 +8,7 @@ require_once 'misc.php';
 /**
  * Checks in the customer.
  */
-function checkinCustomer($cid, $date, $email, $eventID, $name, $numberOfFreeEntrances, $payment, $useFreeEntrance){
+function checkinCustomer($checkinID, $cid, $date, $email, $eventID, $name, $numberOfFreeEntrances, $payment, $useFreeEntrance){
     $organizationID = inferOrganizationID($eventID);
     $isFreeEntranceEnabled = isFreeEntranceEnabled($organizationID);
     if(empty($name)){
@@ -19,6 +19,10 @@ function checkinCustomer($cid, $date, $email, $eventID, $name, $numberOfFreeEntr
     }
     if(!isInteger($payment) || $payment < 0){
         throw new Exception("Please input a non-negative integer for payment.");
+    }
+    if(!isInteger($checkinID) || $checkinID < 0){
+        //0 is not positive but it's a special value for this method.
+        throw new Exception("CheckinID must be a positive integer.");
     }
     if(empty($cid)){
         $sql = "INSERT INTO customers VALUES ('', '$name', '$email', NULL, 1, CURRENT_TIMESTAMP)";
@@ -33,7 +37,9 @@ function checkinCustomer($cid, $date, $email, $eventID, $name, $numberOfFreeEntr
             AND ch.event_id = '$eventID'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
-    $checkinID = $result['checkin_id'];
+    if($checkinID == 0){
+        $checkinID = $result['checkin_id'];
+    }
     if($isFreeEntranceEnabled){
         if($useFreeEntrance == "false"){
             $useFreeEntrance = false;
@@ -68,11 +74,11 @@ function checkinCustomer($cid, $date, $email, $eventID, $name, $numberOfFreeEntr
         }
     } else {
         $sql = "UPDATE checkins
-                SET payment = '$payment'
-                WHERE customer_id = '$cid' AND event_id = '$eventID'";
+                SET payment = '$payment', checkins.on = '1'
+                WHERE id = '$checkinID'";
         $query = mysql_query($sql) or die (mysql_error());
         $sql = "UPDATE customers
-                SET name = '$name', email = '$email'
+                SET name = '$name', email = '$email', customers.on = '1'
                 WHERE id = '$cid'";
         $query = mysql_query($sql) or die (mysql_error());
         if($isFreeEntranceEnabled && $hasUsedFreeEntrance && !$useFreeEntrance && $checkinID){
@@ -85,16 +91,20 @@ function checkinCustomer($cid, $date, $email, $eventID, $name, $numberOfFreeEntr
     if($date){
         editCustomerBirthday($cid, $date);
     }
+    $toReturn = array();
+    $toReturn['checkinID'] = $checkinID;
+    return $toReturn;
 }
 
 /**
  * Checks out the customer.
+ * @param int $checkinID Checkin ID
  * @param int $cid Customer ID
  * @param int $eventID Event ID
  * @throws Exception When Customer ID or Event ID are not positive integers.
  * When trying to checkout a customer who is not checked in.
  */
-function checkoutCustomer($cid, $eventID){
+function checkoutCustomer($checkinID, $cid, $eventID){
     if(!isInteger($eventID) || intval($eventID) < 1){
         throw new Exception("Event ID must be a positive integer.");
     }
@@ -102,9 +112,11 @@ function checkoutCustomer($cid, $eventID){
         throw new Exception("Customer ID must be a positive integer.");
     }
     $hasCheckedIn = hasCustomerCheckedIn($cid, $eventID);
-    $checkinID = getCustomerCheckinID($cid, $eventID);
-    if(!$hasCheckedIn || !$checkinID){
+    if(!$hasCheckedIn){
         throw new Exception("Cannot checkout a customer who is not checked in.");
+    }
+    if(!isInteger($checkinID) || intval($checkinID) < 1){
+        throw new Exception("Checkin ID must be a positive integer.");
     }
     $checkoutCustomerSQL =
         "UPDATE checkins

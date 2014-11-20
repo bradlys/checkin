@@ -81,6 +81,7 @@ function searchCustomers($eventID, $limit, $name){
         $numberOfFreeEntrances = getCustomerNumberOfFreeEntrances($cid);
         array_push($customerArray, 
             array(
+            "checkinID" => $checkinID,
             "cid" => $cid,
             "email" => $visit['email'],
             "payment" => ($isCheckedIn == null ? "" : $isCheckedIn),

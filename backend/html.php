@@ -111,6 +111,7 @@ function printFooter() {
     <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore<?= PRODUCTION_SERVER ? "-min" : "" ?>.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment-with-locales<?= PRODUCTION_SERVER ? ".min" : "" ?>.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3<?= PRODUCTION_SERVER ? ".min" : "" ?>.js"></script>
     <script type="text/javascript" src="js/bootstrap-datetimepicker.min.js"></script>
     <script type="text/javascript" src="js/checkinapp.js"></script>
   </body>

@@ -25,6 +25,10 @@ if($("#eventCheckinsTable").length > 0){
     checkinAboutPage();
 }
 
+if($("#organizationStatistics").length > 0){
+    organizationAboutPage();
+}
+
 /**
  * Sets up the event date in the event modal
  * @param {string} date date string
@@ -125,17 +129,13 @@ function setupCheckinModal(){
         $(".customMoney > .glyphicon").remove();
         $("#myModal").find(".alert").alert('close');
     });
-    $("#modalMoney").on("propertychange keyup input paste", function( event ){
-        $("#paymentAmount").val($(this).val());
-    });
     $(".modalMoneyClearer").each(function() {
         $(this).on("click select", function( event ) {
             $("#modalMoney").val($(this).text());
-            $("#paymentAmount").val($(this).text());
         });
     });
     $("#save").on("click", function() {
-        var payment = $("#paymentAmount").val();
+        var payment = $("#modalMoney").val();
         var email = $("#modalEmail").val();
         var name = $("#modalName").val();
         var cid = $("#myModal").find(".cid").val();
@@ -143,9 +143,16 @@ function setupCheckinModal(){
         var useFreeEntrance = $("#useFreeEntrance").is(':checked');
         var numberOfFreeEntrances = $("#numberOfFreeEntrances").val();
         var date = $("#modalDate").data().date;
+        var checkinID;
+        if($("#search").length > 0){
+            checkinID = 0;
+        } else {
+            checkinID = $("#modalCheckinID").text();
+        }
         payment = payment.replace('$', '');
         $("#myModal").find(".alert").alert('close');
         $.post("backend/post.php", {
+            checkinID : checkinID,
             cid : cid,
             date : date,
             email : email,
@@ -157,23 +164,41 @@ function setupCheckinModal(){
             useFreeEntrance: useFreeEntrance
         },
         function(data){
-            if(data && data !== "null"){
-                $("#myModal").find("#result").append(makeAlertBox(data));
+            data = jQuery.parseJSON(data);
+            if(data !== "null" && data.error){
+                $("#myModal").find("#result").append(makeAlertBox(data.error));
             }
             else{
                 $("#myModal").modal('hide');
-                if($("#search").length){
+                if($("#search").length > 0){
                     $("#search").val("");
                     updateCheckinSearchResults("");
+                } else {
+                    $("#" + data.checkinID + "").removeClass("danger");
                 }
+                setupModalCheckout();
             }
         });
     });
+    setupModalCheckout();
+}
+
+/**
+ * Sets up the Checkout Modal. (#modalCheckout)
+ * @returns {undefined}
+ */
+function setupModalCheckout(){
+    $("#modalCheckedout").removeClass("btn-success")
+                        .addClass("btn-danger").text("Checkout")
+                        .attr("id", "modalCheckout").unbind();
+    $("#modalCheckout").unbind();
     $("#modalCheckout").on("click", function() {
         var cid = $("#myModal").find(".cid").val();
         var eventID = $("#eventID").text();
+        var checkinID = $("#modalCheckinID").text();
         $.post("backend/post.php", {
             purpose : "checkoutCustomer",
+            checkinID : checkinID,
             cid : cid,
             eventID : eventID
         },
@@ -187,20 +212,31 @@ function setupCheckinModal(){
                     $("#myModal").find("#result").append(makeSaveEventSuccessBox());
                     $("#numberOfFreeEntrances").val(data['numberOfFreeEntrances']);
                     $("#useFreeEntrance").attr('checked', false);
-                    $("#paymentAmount").val("");
-                    $(".paymentArea").removeClass("has-success has-feedback");
-                    $(".customMoney > .glyphicon").remove();
                     if($("#search").length){
                         $("#search").val("");
                         updateCheckinSearchResults("");
                     } else {
                         $("#" + data.checkinID + "").addClass("danger");
                     }
-                    $("#myModal").modal('hide');
+                    setupModalCheckedout();
                 }
             }
         });
     });
+}
+
+/**
+ * When the modal is used to checkout a customer,
+ * the modal needs to be setup to know that a
+ * customer has been checked out. So, it changes
+ * the button from "Checkout" to "Checked-out"
+ * @returns {undefined}
+ */
+function setupModalCheckedout(){
+    $("#modalCheckedout").unbind();
+    $("#modalCheckout").removeClass("btn-danger")
+                        .addClass("btn-success").text("Checked-out")
+                        .attr("id", "modalCheckedout").unbind();
 }
 
 /**
@@ -248,8 +284,9 @@ function eventsPage(){
             costs : costFields,
             date : date},
         function(data){
-            if(data){
-                $("#myModal").find("#result").append(makeAlertBox(data));
+            data = jQuery.parseJSON(data);
+            if(data.error){
+                $("#myModal").find("#result").append(makeAlertBox(data.error));
             }
             else{
                 if(eventID){
@@ -271,13 +308,13 @@ function eventsPage(){
  * Makes and returns a Bootstrap success box.
  * This is specifically for when you successfully edit/save an organization in the modal.
  * 
- * @param {string} jsontext a success message, usually in the form of a string
+ * @param {string} text a success message
  * @returns {string} the success box as an HTML String
  */
-function makeSaveOrganizationSuccessBox(jsontext){
+function makeSaveOrganizationSuccessBox(text){
     var box = '<div class="alert alert-success alert-dismissable" id="modalSuccess"> \n\ \
                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> \n\ \
-               <strong>Success!</strong> ' + jsontext + ' \n\ \
+               <strong>Success!</strong> ' + text + ' \n\ \
                </div>';
     return box;
 }
@@ -299,10 +336,10 @@ function makeSaveEventSuccessBox(){
 /**
  * Makes and returns a Bootstrap alert box.
  * 
- * @param {string} data - JSON string containing an error message, usually in the form of a string
+ * @param {string} string error message
  * @returns {string} the alert box as an HTML String
  */
-function makeAlertBox(data){
+function makeAlertBox(string){
     var alert = '<div class="alert alert-danger fade in" id="modalProblem">\n\ \
                 <button class="close" aria-hidden="true" data-dismiss="alert" type="button">\n\ \
                 ×\n\ \
@@ -310,7 +347,7 @@ function makeAlertBox(data){
                 <h4>\n\ \
                 Oh snap! You got an error!\n\ \
                 </h4>\n\ \
-                <p>\n\ ' + jQuery.parseJSON(data).error +
+                <p>\n\ ' + string +
                 '\n\ \
                 </p>\n\ \
                 </div>';
@@ -338,13 +375,13 @@ function loadupCheckinModal(customerElem){
     }
     $("#modalTitle").text(modalTitleText + name);
     $("#modalName").val(name);
-    
+    $("#modalCheckinID").text(customerElem.find(".checkinID").text());
     var cid = customerElem.find(".cid").text();
+    setupModalCheckout();
     if(cid){
         var email = customerElem.find(".email").text();
         $("#modalEmail").val(email);
         var payment = customerElem.find(".payment").text();
-        $("#paymentAmount").val(payment);
         if(payment){
             $(".customMoney").append('<span class="glyphicon glyphicon-ok form-control-feedback" style="right:0px;"></span>');
             $(".paymentArea").addClass("has-success has-feedback");
@@ -365,7 +402,6 @@ function loadupCheckinModal(customerElem){
     }
     else{
         $("#modalEmail").val("");
-        $("#paymentAmount").val("");
         $("#modalMoney").val("");
         $("#myModal").find(".cid").val("");
         $("#numberOfFreeEntrances").val("0");
@@ -389,6 +425,7 @@ function loadupCheckinAboutModal(rowElem){
     $("#modalName").val(name);
     
     var checkinID = rowElem.find(".checkinID").text();
+    $("#modalCheckinID").text(checkinID);
     if(checkinID){
         $.post("backend/post.php", { purpose : "getCustomerByCheckinID", checkinID : checkinID}, function(data) {
             if(data){
@@ -402,8 +439,13 @@ function loadupCheckinAboutModal(rowElem){
             var usedFreeEntrance = data.usedFreeEntrance;
             var numberOfFreeEntrances = data.numberOfFreeEntrances;
             var cid = data.cid;
+            var isCheckedIn = data.isCheckedIn;
+            if(isCheckedIn){
+                setupModalCheckout();
+            } else {
+                setupModalCheckedout();
+            }
             $("#modalEmail").val(email);
-            $("#paymentAmount").val(payment);
             if(payment){
                 $(".customMoney").append('<span class="glyphicon glyphicon-ok form-control-feedback" style="right:0px;"></span>');
                 $(".paymentArea").addClass("has-success has-feedback");
@@ -413,6 +455,7 @@ function loadupCheckinAboutModal(rowElem){
             $("#modalMoney").val(payment);
             $("#myModal").find(".cid").val(cid);
             setupDate(data.birthday);
+            
             $("#myModal").modal('show');
         });
     }
@@ -622,6 +665,7 @@ function displayCheckinSearchResults (data) {
         var customer = customers[i];
         tmpString =
             '<div class="customer col-xs-3">' +
+            '<span class="checkinID">' + customer['checkinID'] + '</span>' + 
             '<span class="cid">' + customer['cid'] + '</span>' +
             '<span class="email">' + customer['email'] + '</span>' +
             '<span class="payment">' + customer['payment'] + '</span>' +
@@ -738,4 +782,13 @@ function setupDynamicCostForms( retrievedFormData ) {
     }
 }
 
+/**
+ * Sets up the organization-about.php page
+ * Currently full of filler
+ */
+function organizationAboutPage(){
+    //This used to have d3.js material.
+    //I'm waiting on implementing this.
+    //Back-end comes first.
+}
 });

@@ -139,7 +139,7 @@ function editEventDate($eventID, $date){
  * customer_id, event_id, on, and timestamp.
  * @param int $eventID event ID
  * @return array
- * @throws Exception
+ * @throws Exception When Event ID is not a positive integer.
  */
 function getEventCheckins($eventID){
     if(!isInteger($eventID) || $eventID < 1){

@@ -16,14 +16,29 @@ if(isset($_GET['id'])){
     }
 }
 
-$isFreeEntranceEnabled = isFreeEntranceEnabled(inferOrganizationID($id));
+$organizationID = $id;
+
+$isFreeEntranceEnabled = isFreeEntranceEnabled($organizationID);
 
 ?>
+<style type="text/css">
+
+svg {
+    font-family: "Helvetica Neue", Helvetica;
+}
+
+.line {
+    fill: none;
+    stroke: #000;
+    stroke-width: 2px;
+}
+
+</style>
 <div class="container">
     <div class="starter-template">
-        <h1><span id="eventName"></span></h1>
-        
-        
+        <h1><span id="organizationName"></span></h1>
+        <span id="organizationID"><?=$organizationID?></span>
+        <span id="organizationStatistics"></span>
         
         
         

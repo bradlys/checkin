@@ -61,7 +61,7 @@ printHeader();
               <h4 class="modal-title" id="modalTitle"></h4>
             </div>
             <div class="modal-body">
-            <span class="cid"></span>
+            <span class="cid"></span><span id="modalCheckinID"></span>
             <div class="panel panel-default">
             <div class="panel-heading">
               <div class="row">
@@ -81,7 +81,6 @@ printHeader();
             </div>
             <div class="panel-body" id="result">
                 <div class="panel panel-default col-sm-3 paymentBox">
-                    <span id="paymentAmount"></span>
                     <div class="panel-heading">Payment</div>
                     <div class="panel-footer">
                     <form class="form-horizontal" role="form">

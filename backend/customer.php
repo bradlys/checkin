@@ -110,7 +110,7 @@ function getCheckinIDForCustomerAndEvent($cid, $eventID){
     if($result){
         return $result['id'];
     }
-    return null;
+    return 0;
 }
 
 /**
@@ -145,7 +145,7 @@ function getCustomerByCheckinID($checkinID){
     $sql =
         "SELECT checkins.id as checkinID, customers.id as cid, 
         customers.name as name, customers.email as email, 
-        checkins.payment as payment 
+        checkins.payment as payment, checkins.on as status
         FROM checkins
         LEFT JOIN customers
         ON checkins.customer_id = customers.id
@@ -154,6 +154,7 @@ function getCustomerByCheckinID($checkinID){
     $result = mysql_fetch_array($query);
     if($result){
         $cid = $result['cid'];
+        $result['isCheckedIn'] = $result['status'] == 1 ? true : false;
         $result['birthday'] = getCustomerBirthday($cid);
         $result['numberOfFreeEntrances'] = getCustomerNumberOfFreeEntrances($cid);
         $result['usedFreeEntrance'] = hasCustomerUsedFreeEntrance($cid, $checkinID);
