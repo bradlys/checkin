@@ -134,6 +134,177 @@ function editEventDate($eventID, $date){
 }
 
 /**
+ * Gets the provided event's average payment
+ * from each checkin. e.g. If an event has checkins
+ * with payments 0, 5, 10, and 10. This method would
+ * return 6.25.
+ * @param int $eventID An existing Event ID
+ * @return float -1 if empty result, average payment otherwise
+ * @throws Exception When $eventID is not a positive integer
+ */
+function getEventAveragePay($eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID must be a positive integer");
+    }
+    $getEventAveragePaySQL =
+    "SELECT AVG(checkins.payment) as avgpay
+    FROM checkins
+    WHERE checkins.event_id = '$eventID'
+    AND checkins.on = '1'";
+    $query = mysql_query($getEventAveragePaySQL) or die(mysql_error());
+    $query = mysql_fetch_array($query);
+    if($query){
+        return floatval($query['avgpay']);
+    }
+    return -1;
+}
+
+/**
+ * Gets the provided event's total payment
+ * from each checkin. e.g. If an event has checkins
+ * with payments 0, 5, 10, and 10. This method would
+ * return 25.
+ * @param int $eventID An existing Event ID
+ * @return float -1 if empty result, total payment otherwise
+ * @throws Exception When $eventID is not a positive integer
+ */
+function getEventTotalPay($eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID must be a positive integer");
+    }
+    $getEventTotalPaySQL =
+    "SELECT SUM(checkins.payment) as totalpay
+    FROM checkins
+    WHERE checkins.event_id = '$eventID'
+    AND checkins.on = '1'";
+    $query = mysql_query($getEventTotalPaySQL) or die(mysql_error());
+    $query = mysql_fetch_array($query);
+    if($query){
+        return floatval($query['totalpay']);
+    }
+    return -1;
+}
+
+/**
+ * Gets the provided event's total number of free
+ * entrances used. e.g. If five customers checkin,
+ * and two use a free entrance during their checkin
+ * then this method will return 2.
+ * @param int $eventID An existing Event ID
+ * @return int the total number of free checkins used
+ * @throws Exception When $eventID is not a positive integer
+ */
+function getEventNumberOfFreeEntrancesUsed($eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID must be a positive integer");
+    }
+    /*This SQL sucks. The alternative I thought about is about 50 lines longer
+     * and bordering on impossible to decipher. It's also questionable
+     * in performance because it's so heavy handed. (Joins,
+     * subqueries, coalesce, wishing it never existed, 
+     * why was I born into this world, et cetera et cetera etc...)
+     * 
+     * When this becomes a fucking issue, I'll deal with it then or
+     * cry in a corner.
+     */
+    $getEventNumberOfFreeEntrancesUsedSQL =
+    "SELECT COUNT(*) as totalused
+    FROM customerattributes
+    WHERE customerattributes.value = '$eventID'
+    AND customerattributes.name = 'Used Free Entrance'
+    AND customerattributes.on = '1'";
+    $query = mysql_query($getEventNumberOfFreeEntrancesUsedSQL) or die(mysql_error());
+    $query = mysql_fetch_array($query);
+    if($query){
+        return intval($query['totalused']);
+    }
+    return 0;
+}
+
+
+function getEventNumberOfNewCustomers($eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID must be a positive integer");
+    }
+    //Method 1:
+    //Get customers who checked into this event (checkins table)
+    //Get events before this event (events and eventAttributes table)
+    //See if those customers have checked into those events (checkins cross correlation)
+    //If not, they're a new customer. (+1 to tally)
+    //Method 2:
+    //Get to this line
+    //???
+    //Profit!
+}
+
+/**
+ * Gets the number of checkins for the event ID provided.
+ * e.g. If twenty five people checkin then this function
+ * will return 25.
+ * @param int $eventID Event ID
+ * @return int Total number of checkins for the event ID provided
+ * @throws Exception When $eventID is not a positive integer
+ */
+function getEventNumberOfCheckins($eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID must be a positive integer");
+    }
+    $getEventNumberOfCheckinsSQL =
+    "SELECT SUM(*) as totalCheckins
+    FROM checkins
+    WHERE checkins.event_id = '$eventID'
+    AND checkins.on = '1'";
+    $query = mysql_query($getEventNumberOfCheckinsSQL) or die(mysql_error());
+    $query = mysql_fetch_array($query);
+    if($query){
+        return intval($query['totalCheckins']);
+    }
+    return 0;
+}
+
+/**
+ * Gets the median time between checkins for an event in
+ * seconds.
+ * e.g. If four people checkin at 1:00PM, 1:05PM, 1:06PM,
+ * and 1:08PM then this method would return 120 since
+ * the median for 300(1:05-1:00), 60(1:06-1:05), and
+ * 120(1:08-1:06) is 120 when sorted from smallest to 
+ * largest.
+ * @param int $eventID Event ID
+ * @return float Returns the amount of time in seconds
+ * @throws Exception When $eventID is not a positive integer
+ */
+function getEventMedianTimeBetweenCheckins($eventID){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID must be a positive integer");
+    }
+    $getEventMedianTimeBetweenCheckinsSQL =
+    "SELECT checkins.id as id, checkins.timestamp as timestamp
+    FROM checkins
+    WHERE checkins.on = '1'
+    AND checkins.event_id = '$eventID'
+    ORDER BY checkins.timestamp DESC";
+    $query = mysql_query($getEventMedianTimeBetweenCheckinsSQL) or die(mysql_error());
+    $results = array();
+    $time1 = mysql_fetch_array();
+    $time1 = $time1['timestamp'];
+    $time2 = 0;
+    $len = 0;
+    while($result = mysql_fetch_array($query)){
+        $time2 = $result['timestamp'];
+        $results[] = strtotime($time1) - strtotime($time2);
+        $time1 = $time2;
+        $len++;
+    }
+    asort($results);
+    if($len % 2 == 0){
+        return ($results[$len/2] + $results[$len/2 + 1])/2.0;
+    } else {
+        return floatval($results[$len/2]);
+    }
+}
+
+/**
  * Gets all checkins for the $eventID provided.
  * Returns them in an array with checkin id, 
  * customer_id, event_id, on, and timestamp.
