@@ -91,13 +91,12 @@ function editEventCosts($costs, $eventID){
         $sql = "UPDATE eventAttributes
                 SET value = '$JSON'
                 WHERE id = '$id'";
-        $query = mysql_query($sql) or die (mysql_error());
     }
     else{
         $sql = "INSERT INTO eventAttributes VALUES
                 (NULL, '$eventID', 'Event Costs', '$JSON', '1', CURRENT_TIMESTAMP)";
-        $query = mysql_query($sql) or die (mysql_error());
     }
+    $query = mysql_query($sql) or die (mysql_error());
 }
 
 /**
@@ -125,12 +124,11 @@ function editEventDate($eventID, $date){
         $sql = "UPDATE eventAttributes
                 SET eventAttributes.on = '1', value = '$date'
                 WHERE id = '$id'";
-        $query = mysql_query($sql) or die (mysql_error());
     } else {
         $sql = "INSERT INTO eventAttributes
                 VALUES (NULL, '$eventID', 'Event Date', '$date', '1', CURRENT_TIMESTAMP)";
-        $query = mysql_query($sql) or die (mysql_error());
     }
+    $query = mysql_query($sql) or die (mysql_error());
 }
 
 /**
@@ -139,7 +137,7 @@ function editEventDate($eventID, $date){
  * with payments 0, 5, 10, and 10. This method would
  * return 6.25.
  * @param int $eventID An existing Event ID
- * @return float -1 if empty result, average payment otherwise
+ * @return float null if empty result, average payment otherwise
  * @throws Exception When $eventID is not a positive integer
  */
 function getEventAveragePay($eventID){
@@ -156,7 +154,7 @@ function getEventAveragePay($eventID){
     if($query){
         return floatval($query['avgpay']);
     }
-    return -1;
+    return null;
 }
 
 /**
@@ -165,7 +163,7 @@ function getEventAveragePay($eventID){
  * with payments 0, 5, 10, and 10. This method would
  * return 25.
  * @param int $eventID An existing Event ID
- * @return float -1 if empty result, total payment otherwise
+ * @return float null if empty result, total payment otherwise
  * @throws Exception When $eventID is not a positive integer
  */
 function getEventTotalPay($eventID){
@@ -182,7 +180,7 @@ function getEventTotalPay($eventID){
     if($query){
         return floatval($query['totalpay']);
     }
-    return -1;
+    return null;
 }
 
 /**
@@ -299,9 +297,8 @@ function getEventMedianTimeBetweenCheckins($eventID){
     asort($results);
     if($len % 2 == 0){
         return ($results[$len/2] + $results[$len/2 + 1])/2.0;
-    } else {
-        return floatval($results[$len/2]);
     }
+    return floatval($results[$len/2]);
 }
 
 /**
@@ -377,9 +374,7 @@ function getEventDate($eventID){
     if($result){
         return $result['value'];
     }
-    else {
-        return '';
-    }
+    return '';
 }
 
 /**
