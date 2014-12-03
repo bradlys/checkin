@@ -270,18 +270,21 @@ function eventsPage(){
         $(".costFieldGroup").each(function(e) {
             var first = $(this).find('input:first').val();
             var last = $(this).find('input:last').val();
-            if(first === ""){
-            } else {
+            if(first !== ""){
                 costFields.push({ item : first, cost : last });
             }
         });
         $("#myModal").find(".alert").alert('close');
+        //jQuery won't send an empty array
+        if(costFields.length === 0){
+            costFields = "";
+        }
         $.post("backend/post.php",
             { purpose : "editEvent",
             eventID : eventID,
             name : name,
-            organizationID : organizationID,
             costs : costFields,
+            organizationID : organizationID,
             date : date},
         function(data){
             data = jQuery.parseJSON(data);

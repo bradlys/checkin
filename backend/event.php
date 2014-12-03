@@ -3,10 +3,10 @@
 require_once 'settings.php';
 
 /**
- * Sets eventAtrributes.status = '0' for 
- * eventAtrributes.event_id = '$eventID' AND
- * eventAtrributes.status = '1' AND
- * eventAtrributes.name = 'Event Date'
+ * Sets eventAttributes.status = '0' for 
+ * eventAttributes.event_id = '$eventID' AND
+ * eventAttributes.status = '1' AND
+ * eventAttributes.name = 'Event Date'
  * @param integer $eventID - Event ID
  * @throws Exception When Event ID is not a positive integer.
  */
@@ -14,11 +14,11 @@ function deleteEventDate($eventID){
     if(!isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID must be a positive integer.");
     }
-    $sql = "UPDATE eventAtrributes
-            SET eventAtrributes.status = '0'
-            WHERE eventAtrributes.event_id = '$eventID'
-            AND eventAtrributes.status = '1'
-            AND eventAtrributes.name = 'Event Date'";
+    $sql = "UPDATE eventAttributes
+            SET eventAttributes.status = '0'
+            WHERE eventAttributes.event_id = '$eventID'
+            AND eventAttributes.status = '1'
+            AND eventAttributes.name = 'Event Date'";
     mysql_query($sql) or die (mysql_error());
 }
 

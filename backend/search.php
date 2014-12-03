@@ -111,7 +111,7 @@ function searchOrganizations($name){
     $sql = "SELECT * 
             FROM organizations 
             WHERE name LIKE '%$name%'
-            AND organizations.status = '1'";
+            AND status = '1'";
     $query = mysql_query($sql) or die (mysql_error());
     $organizations = array();
     while($organization = mysql_fetch_array($query)){
