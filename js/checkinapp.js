@@ -32,19 +32,25 @@ if($("#organizationStatistics").length > 0){
 /**
  * Sets up the event date in the event modal
  * @param {string} date date string
+ * @param {boolean} showTime Show time or not.
  */
-function setupDate(date){
-    console.log(date);
+function setupDate(date, showTime){
+    showTime = typeof showTime !== 'undefined' ? showTime : false;
     if(!date || date === "0000-00-00 00:00:00"){
         date = "";
-    } else {
-        //Convert format from YYYY-MM-DD 00:00:00 to YYYY-MM-DD
-        //DateTimePicker accepts that format without problem
-        //No need to convert dashes to slashes, fortunately.
-        date = date.split("\"").join("");
-        date = date.substring(0, 10);
     }
-    $('#modalDate').datetimepicker().data("DateTimePicker").setDate(date);
+    if(showTime){
+        $('#modalDate').datetimepicker().data("DateTimePicker").setDate(date);
+    } else {
+        if(date){
+            date = date.substring(0, 10);
+        }
+        $('#modalDate').datetimepicker({
+            pickTime: true,
+            useMinutes: true,
+            useSeconds: true
+        }).data("DateTimePicker").setDate(date);
+    }
 }
 
 /**
@@ -142,8 +148,12 @@ function setupCheckinModal(){
         });
     });
     $("#save").on("click", function() {
-        //Convert format from YYYY/MM/DD to YYYY-MM-DD 00:00:00
-        var birthday = $("#modalDate").data().date.split("/").join("-") + " 00:00:00";
+        //Convert format from YYYY-MM-DD to YYYY-MM-DD 00:00:00
+        var birthday = $("#modalDate").data().date + " 00:00:00";
+        //Modal date doesn't update when you clear the box
+        if($("input#modalDateForm.form-control").val() === ""){
+            birthday = "";
+        }
         var checkinID;
         var cid = $("#myModal").find(".cid").val();
         var email = $("#modalEmail").val();
@@ -274,8 +284,11 @@ function eventsPage(){
         var eventID = $("#eventID").text();
         var organizationID = $("#organizationID").val();
         var costFields = [];
-        //Convert format from YYYY/MM/DD to YYYY-MM-DD 00:00:00
-        var date = $("#modalDate").data().date.split("/").join("-") + " 00:00:00";
+        var date = $("#modalDate").data().date;
+        //Modal date doesn't update when you clear the box
+        if($("input#modalDateForm.form-control").val() === ""){
+            date = "";
+        }
         $(".costFieldGroup").each(function(e) {
             var first = $(this).find('input:first').val();
             var last = $(this).find('input:last').val();
@@ -499,16 +512,16 @@ function loadupEventModal(eventElem){
         { purpose : "getEventDate", eventID: eventID},
         function ( data ) {
             if(data === '""'){
-                setupDate('');
+                setupDate('', true);
             } else {
-                setupDate(data);
+                setupDate(data, true);
             }
         });
     }
     else{
         $("#eventID").text("");
         $("#gotoEvent").hide();
-        setupDate('');
+        setupDate('', true);
     }
     $.post("backend/post.php",
         { purpose : "getEventCosts", eventID : eventID},
@@ -727,10 +740,15 @@ function displayEventSearchResults (data) {
     var tmpString = '';
     for (var i = 0; i < events.length; i++){
         var event = events[i];
+        var eventDate = event['eventResultDate'];
+        if(eventDate === "0000-00-00 00:00:00" || eventDate === ""){
+            eventDate = "";
+        }
         tmpString =
                 '<div class="eventResultItem col-xs-3">' +
                 '<span class="eventResultID">' + event['eventResultID'] + '</span>' +
                 '<div id="eventResultName">' + event['eventResultName'] + '</div>' +
+                '<span class="eventResultDate">' + eventDate + '</span>' +
                 '</div>';
         returnString = returnString + tmpString;
     }

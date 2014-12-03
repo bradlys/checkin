@@ -94,6 +94,7 @@ function searchEvents($name, $organizationID){
     $events = array();
     while($event = mysql_fetch_array($query)){
         array_push($events, array(
+            "eventResultDate" => $event['date'],
             "eventResultID" => $event['id'],
             "eventResultName" => $event['name']
         ));

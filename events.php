@@ -75,7 +75,7 @@ printHeader();
                 <div class="col-sm-6">
                   <label for="modalDate">Date</label>
                   <div class='input-group date' id="modalDate">
-                    <input type='text' class="form-control" id="modalDateForm" data-date-pickTime="false" data-date-format="YYYY/MM/DD" />
+                    <input type='text' class="form-control" id="modalDateForm" data-date-format="YYYY-MM-DD HH:mm:ss" />
                     <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
                   </div>
                 </div>

@@ -27,7 +27,7 @@ function deleteCustomerBirthday($cid){
  * or when date format is incorrect
  */
 function editCustomerBirthday($cid, $birthday){
-    if(empty($$birthday)){
+    if(empty($birthday)){
         return deleteCustomerBirthday($cid);
     }
     if(!isInteger($cid) || $cid < 1){
@@ -44,7 +44,7 @@ function editCustomerBirthday($cid, $birthday){
     $result = mysql_fetch_array($query);
     if($result && $result['birthday'] != 'NULL'){
         $sql = "UPDATE customers
-                SET customers.birthday = '$$birthday'
+                SET customers.birthday = '$birthday'
                 WHERE id = '$cid'";
         $query = mysql_query($sql) or die (mysql_error());
     } else {

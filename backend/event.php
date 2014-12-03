@@ -104,6 +104,10 @@ function editEventCosts($costs, $eventID){
  * or date format is incorrect
  */
 function editEventDate($eventID, $date){
+    if(empty($date)){
+        deleteEventDate($eventID);
+        return;
+    }
     if(!isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID must be a positive integer.");
     }
@@ -114,7 +118,7 @@ function editEventDate($eventID, $date){
     $result = mysql_fetch_array($query);
     if($result){
         $dt = DateTime::createFromFormat("Y-m-d H:i:s", $date);
-        if($dt === false || array_sum($dt->getLastErrors())){
+        if($dt === false || array_sum($dt->getLastErrors()) > 0){
             throw new Exception("Date format is incorrect.");
         }
         if(empty($date)){
