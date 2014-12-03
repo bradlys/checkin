@@ -288,7 +288,8 @@ function eventsPage(){
             date : date},
         function(data){
             data = jQuery.parseJSON(data);
-            if(data.error){
+            if(data){
+            if(typeof data.error !== "undefined"){
                 $("#myModal").find("#result").append(makeAlertBox(data.error));
             }
             else{
@@ -299,6 +300,7 @@ function eventsPage(){
                     $("#myModal").modal('hide');
                     updateEventSearchResults($("#eventSearch").val());
                 }
+            }
             }
         });
     });
