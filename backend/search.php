@@ -89,7 +89,8 @@ function searchEvents($name, $organizationID){
     $sql = "SELECT *
             FROM events
             WHERE organization_id = '$organizationID'
-            AND name LIKE '%$name%'";
+            AND name LIKE '%$name%'
+            ORDER BY date DESC";
     $query = mysql_query($sql) or die (mysql_error());
     $events = array();
     while($event = mysql_fetch_array($query)){

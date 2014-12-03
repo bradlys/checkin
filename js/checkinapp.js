@@ -263,6 +263,7 @@ function setupModalCheckedout(){
 function eventsPage(){
     $("#myModal").on('hide.bs.modal', function(){
         $("#myModal").find(".alert").alert('close');
+        updateEventSearchResults($("#eventSearch").val());
     });
     $("#eventSearch").each(_.throttle(function() {
         var elem = $(this);
@@ -299,7 +300,9 @@ function eventsPage(){
         $("#myModal").find(".alert").alert('close');
         //jQuery won't send an empty array
         if(costFields.length === 0){
-            costFields = "";
+            costFields = '';
+        } else {
+            costFields = JSON.stringify(costFields);
         }
         $.post("backend/post.php",
             { purpose : "editEvent",
@@ -309,20 +312,20 @@ function eventsPage(){
             name : name,
             organizationID : organizationID},
         function(data){
-            data = jQuery.parseJSON(data);
             if(data){
-            if(typeof data.error !== "undefined"){
-                $("#myModal").find("#result").append(makeAlertBox(data.error));
-            }
-            else{
-                if(eventID){
-                    $("#myModal").find("#result").append(makeSaveEventSuccessBox());
+                var parsedData = jQuery.parseJSON(data);
+                if(typeof parsedData.error !== "undefined"){
+                    $("#myModal").find("#result").append(makeAlertBox(parsedData.error));
                 }
                 else{
-                    $("#myModal").modal('hide');
-                    updateEventSearchResults($("#eventSearch").val());
+                    if(data){
+                        $("#myModal").find("#result").append(makeSaveEventSuccessBox());
+                    }
+                    else{
+                        $("#myModal").modal('hide');
+                        updateEventSearchResults($("#eventSearch").val());
+                    }
                 }
-            }
             }
         });
     });
@@ -389,7 +392,7 @@ function makeAlertBox(string){
  * @param {object} customerElem jQuery object; a customer element from a search result
  */
 function loadupCheckinModal(customerElem){
-    var name = customerElem.find("#username").text();
+    var name = customerElem.find(".username").text();
     var modalTitleText;
     if(name === 'Add New User'){
         modalTitleText = "Adding user ";
@@ -489,7 +492,7 @@ function loadupCheckinAboutModal(rowElem){
  * @param {object} eventElem jQuery object; an event element from a search result
  */
 function loadupEventModal(eventElem){
-    var name = eventElem.find("#eventResultName").text();
+    var name = eventElem.find(".eventResultName").text();
     var modalTitleText;
     if(name === 'Add New Event'){
         modalTitleText = "Adding";
@@ -508,15 +511,8 @@ function loadupEventModal(eventElem){
         $("#eventID").text(eventID);
         $("#gotoEvent").show();
         $("#gotoEvent").attr("href", "checkin.php?id=" + eventID);
-        $.post("backend/post.php",
-        { purpose : "getEventDate", eventID: eventID},
-        function ( data ) {
-            if(data === '""'){
-                setupDate('', true);
-            } else {
-                setupDate(data, true);
-            }
-        });
+        var date = eventElem.find(".eventResultDate").text();
+        setupDate(date, true);
     }
     else{
         $("#eventID").text("");
@@ -537,7 +533,7 @@ function loadupEventModal(eventElem){
  * @param {object} organizationElem jQuery object; an organization element from a search result
  */
 function loadupOrganizationModal(organizationElem){
-    var name = organizationElem.find("#organizationResultName").text();
+    var name = organizationElem.find(".organizationResultName").text();
     var modalTitleTextBegin;
     if(name === 'Add New Organization'){
         modalTitleTextBegin = "Adding New Organization";
@@ -694,16 +690,16 @@ function displayCheckinSearchResults (data) {
             '<span class="payment">' + customer['payment'] + '</span>' +
             '<span class="usedFreeEntrance">' + customer['usedFreeEntrance'] + '</span>' +
             '<span class="numberOfFreeEntrances">' + customer['numberOfFreeEntrances'] + '</span>' +
-            '<div id="username">' + customer['name'] + '</div>' + 
-            '<div id="visits">' + customer['visits'] + ' visits</div>' +
+            '<span class="username">' + customer['name'] + '</span>' + 
+            '<div class="visits">' + customer['visits'] + ' visits</div>' +
             (customer['isCheckedIn'] ? '<small>Already Checked In</small>' : '') +
             '</div>';
         returnString = returnString + tmpString;
     }
     if(parsedData['numberOfExtra'] > 0){
-        returnString = returnString + '<div class="customer col-xs-3" id="seemore"><div id="username">' + (parsedData['numberOfExtra']) + ' more...</div></div>';
+        returnString = returnString + '<div class="customer col-xs-3" id="seemore"><span class="username">' + (parsedData['numberOfExtra']) + ' more...</span></div>';
     }
-    returnString = returnString + '<div class="customer col-xs-3" id="newuser"><div id="username">Add New User</div></div>';
+    returnString = returnString + '<div class="customer col-xs-3" id="newuser"><div span="username">Add New User</span></div>';
     return returnString;
 }
 
@@ -721,11 +717,11 @@ function displayOrganizationSearchResults (data) {
         tmpString =
                 '<div class="organizationResultItem col-xs-3">' + 
                 '<span class="organizationResultID">' + organization['organizationResultID'] + '</span>' +
-                '<div id="organizationResultName">' + organization['organizationResultName'] + '</div>' +
+                '<div class="organizationResultName">' + organization['organizationResultName'] + '</div>' +
                 '</div>';
         returnString = returnString + tmpString;
     }
-    returnString = returnString + '<div class="organizationResultItem col-xs-3" id="newEvent"><div id="organizationResultName">Add New Organization</div></div>';
+    returnString = returnString + '<div class="organizationResultItem col-xs-3" id="newEvent"><div class="organizationResultName">Add New Organization</div></div>';
     return returnString;
 }
 
@@ -747,12 +743,12 @@ function displayEventSearchResults (data) {
         tmpString =
                 '<div class="eventResultItem col-xs-3">' +
                 '<span class="eventResultID">' + event['eventResultID'] + '</span>' +
-                '<div id="eventResultName">' + event['eventResultName'] + '</div>' +
-                '<span class="eventResultDate">' + eventDate + '</span>' +
+                '<div class="eventResultName">' + event['eventResultName'] + '</div>' +
+                '<div class="eventResultDate">' + eventDate + '</div>' +
                 '</div>';
         returnString = returnString + tmpString;
     }
-    returnString = returnString + '<div class="eventResultItem col-xs-3" id="newEvent"><div id="eventResultName">Add New Event</div></div>';
+    returnString = returnString + '<div class="eventResultItem col-xs-3" id="newEvent"><div class="eventResultName">Add New Event</div></div>';
     return returnString;
 }
 

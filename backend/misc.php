@@ -23,8 +23,18 @@ function parse_post_arguments(){
     unset($_POST['purpose']);
     $keys = array_keys($_POST);
     foreach ($keys as $key){
-        if($key === "costs"){
-            $args[$key] = $_POST[$key];
+        if($key == "costs"){
+            if(!empty($_POST[$key])){
+                $args[$key] = json_decode($_POST[$key], true);
+                for($i = 0; $i < count($args[$key]); $i++){
+                    $costKeys = array_keys($args[$key][$i]);
+                    foreach($costKeys as $costKey){
+                        $args[$key][$i][$costKey] = mysql_real_escape_string($args[$key][$i][$costKey]);
+                    }
+                }
+            } else {
+                $args[$key] = $_POST[$key];
+            }
         } else {
             $args[$key] = mysql_real_escape_string($_POST[$key]);
         }

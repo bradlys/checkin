@@ -7,7 +7,7 @@ body .border-highlight {
 }
 
 .customer > .birthday, .customer > .checkinID, .customer > .cid, .customer > .email, .customer > .payment, 
-#eventID, .eventResultID,#modalCheckinID, #organizationID, .organizationResultID {
+#eventID, .eventResultID, #modalCheckinID, #organizationID, .organizationResultID {
     display: none;
 }
 

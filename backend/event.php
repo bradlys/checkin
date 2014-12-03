@@ -19,11 +19,12 @@ function deleteEventDate($eventID){
 
 /**
  * Edits event information, with the provided event ID
- * @param String $costs JSON encoded string of costs
+ * @param Array $costs array of costs
  * @param String $date Date of Event
  * @param int $eventID Event ID
  * @param String $name Name of Event
  * @param int $organizationID Organization ID
+ * @returns int Event ID of the newly created event or the existing event
  */
 function editEvent($costs, $date, $eventID, $name, $organizationID){
     if(!isInteger($organizationID) || $organizationID < 1){
@@ -38,7 +39,6 @@ function editEvent($costs, $date, $eventID, $name, $organizationID){
     if(empty($organizationID)){
         throw new Exception('No organization ID.');
     }
-    $costs = json_decode($costs);
     if(empty($eventID) || $eventID == 0){
         $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', 'NULL', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (mysql_error());
@@ -52,6 +52,7 @@ function editEvent($costs, $date, $eventID, $name, $organizationID){
         editEventCosts($costs, $eventID);
     }
     editEventDate($eventID, $date);
+    return intval($eventID);
 }
 
 /**
