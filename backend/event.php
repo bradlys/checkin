@@ -106,10 +106,6 @@ function editEventCosts($costs, $eventID){
  * @param String $date Date in MM/DD/YYYY format
  */
 function editEventDate($eventID, $date){
-    if(empty($date)){
-        deleteEventDate($eventID);
-        return;
-    }
     if(!isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID must be a positive integer.");
     }
@@ -120,11 +116,15 @@ function editEventDate($eventID, $date){
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
+        if(empty($date)){
+            deleteEventDate($eventID);
+            return;
+        }
         $id = $result['id'];
         $sql = "UPDATE eventAttributes
                 SET eventAttributes.status = '1', value = '$date'
                 WHERE id = '$id'";
-    } else {
+    } else if (!empty($date)){
         $sql = "INSERT INTO eventAttributes
                 VALUES (NULL, '$eventID', 'Event Date', '$date', '1', CURRENT_TIMESTAMP)";
     }
