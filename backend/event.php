@@ -48,14 +48,14 @@ function editEvent($costs, $date, $eventID, $name, $organizationID){
         $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (mysql_error());
         editEventCosts($costs, mysql_insert_id());
-        return;
+    } else {
+        $sql = "UPDATE events
+                SET name = '$name'
+                WHERE organization_id = '$organizationID' AND id = '$eventID'";
+        $query = mysql_query($sql) or die (mysql_error());
+        editEventDate($eventID, $date);
+        editEventCosts($costs, $eventID);
     }
-    $sql = "UPDATE events
-            SET name = '$name'
-            WHERE organization_id = '$organizationID' AND id = '$eventID'";
-    $query = mysql_query($sql) or die (mysql_error());
-    editEventDate($eventID, $date);
-    editEventCosts($costs, $eventID);
 }
 
 /**
