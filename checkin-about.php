@@ -28,7 +28,7 @@ if($eventCheckins){
     echo "<div class='table-responsive'><table class='table table-striped table-hover' id='eventCheckinsTable'>";
     echo "<thead><tr><th>Checkin ID</th><th>Name</th><th>Payment</th><th>Timestamp</th><th>Customer ID</th></tr></thead>";
     echo "<tbody>";
-    for($i = 0; $i < $eventCheckinsCount; $i++){
+    for($i = 0; $i < $eventCheckinsCount && $i < 500; $i++){
         echo "<tr class='eventCheckinsTableCustomerRow"
         . ($eventCheckins[$i]['status'] == "1" ? "" : " danger") . "' id='"
         . $eventCheckins[$i]['id'] . "'><td class='checkinID'>"

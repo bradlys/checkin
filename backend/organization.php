@@ -55,7 +55,7 @@ function getOrganizationName($organizationID){
     $sql = "SELECT name
             FROM organizations
             WHERE id = '$organizationID'
-            AND organizations.on = '1'";
+            AND organizations.status = '1'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
@@ -102,7 +102,7 @@ function isFreeEntranceEnabled($organizationID){
             AND name = 'Free Entrances Feature On'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
-    if(!empty($result) && $result['on'] == "1" && $result['value'] == "true"){
+    if(!empty($result) && $result['status'] == "1" && $result['value'] == "true"){
         return true;
     }
     return false;

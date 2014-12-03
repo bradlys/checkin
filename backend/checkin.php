@@ -25,7 +25,7 @@ function checkinCustomer($checkinID, $cid, $date, $email, $eventID, $name, $numb
         throw new Exception("CheckinID must be a positive integer.");
     }
     if(empty($cid)){
-        $sql = "INSERT INTO customers VALUES ('', '$name', '$email', NULL, 1, CURRENT_TIMESTAMP)";
+        $sql = "INSERT INTO customers VALUES ('', '$name', '$email', NULL, NULL, 0, 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (mysql_error());
         $cid = mysql_insert_id();
     }
@@ -72,13 +72,18 @@ function checkinCustomer($checkinID, $cid, $date, $email, $eventID, $name, $numb
         if($isFreeEntranceEnabled && $useFreeEntrance){
             useFreeEntrance($cid, mysql_insert_id());
         }
+        $incrementCustomerVisitsSQL =
+            "UPDATE customers
+            SET customers.visits = customers.visits + 1
+            WHERE customers.id = '$cid'";
+        mysql_query($incrementCustomerVisitsSQL) or die (mysql_error());
     } else {
         $sql = "UPDATE checkins
-                SET payment = '$payment', checkins.on = '1'
+                SET payment = '$payment', checkins.status = '1'
                 WHERE id = '$checkinID'";
         $query = mysql_query($sql) or die (mysql_error());
         $sql = "UPDATE customers
-                SET name = '$name', email = '$email', customers.on = '1'
+                SET name = '$name', email = '$email', customers.status = '1'
                 WHERE id = '$cid'";
         $query = mysql_query($sql) or die (mysql_error());
         if($isFreeEntranceEnabled && $hasUsedFreeEntrance && !$useFreeEntrance && $checkinID){
@@ -120,9 +125,14 @@ function checkoutCustomer($checkinID, $cid, $eventID){
     }
     $checkoutCustomerSQL =
         "UPDATE checkins
-        SET checkins.on = '0'
+        SET checkins.status = '0'
         WHERE checkins.id = '$checkinID'";
     mysql_query($checkoutCustomerSQL) or die (mysql_error());
+    $decrementCustomerVisitsSQL =
+        "UPDATE customers
+        SET customers.visits = customers.visits - 1
+        WHERE customers.id = '$cid'";
+    mysql_query($decrementCustomerVisitsSQL) or die (mysql_error());
     $hasCustomerUsedFreeEntrance = hasCustomerUsedFreeEntrance($cid, $checkinID);
     if($hasCustomerUsedFreeEntrance){
         unuseFreeEntrance($cid, $checkinID);

@@ -3,9 +3,9 @@
 require_once 'settings.php';
 
 /**
- * Sets eventAtrributes.on = '0' for 
+ * Sets eventAtrributes.status = '0' for 
  * eventAtrributes.event_id = '$eventID' AND
- * eventAtrributes.on = '1' AND
+ * eventAtrributes.status = '1' AND
  * eventAtrributes.name = 'Event Date'
  * @param integer $eventID - Event ID
  * @throws Exception When Event ID is not a positive integer.
@@ -15,9 +15,9 @@ function deleteEventDate($eventID){
         throw new Exception("Event ID must be a positive integer.");
     }
     $sql = "UPDATE eventAtrributes
-            SET eventAtrributes.on = '0'
+            SET eventAtrributes.status = '0'
             WHERE eventAtrributes.event_id = '$eventID'
-            AND eventAtrributes.on = '1'
+            AND eventAtrributes.status = '1'
             AND eventAtrributes.name = 'Event Date'";
     mysql_query($sql) or die (mysql_error());
 }
@@ -34,8 +34,8 @@ function editEvent($costs, $date, $eventID, $name, $organizationID){
     if(!isInteger($organizationID) || $organizationID < 1){
         throw new Exception("Organization ID needs to be an positive integer.");
     }
-    if(!isInteger($eventID) || $eventID < 1){
-        throw new Exception("Event ID needs to be an positive integer.");
+    if($eventID != "" && (!isInteger($eventID) || $eventID < 0)){
+        throw new Exception("Event ID needs to be a non-negative integer.");
     }
     if(empty($name)){
         throw new Exception('No name was entered for the event.');
@@ -44,7 +44,7 @@ function editEvent($costs, $date, $eventID, $name, $organizationID){
         throw new Exception('No organization ID.');
     }
     $costs = json_decode($costs);
-    if(empty($eventID)){
+    if(empty($eventID) || $eventID == 0){
         $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (mysql_error());
         editEventCosts($costs, mysql_insert_id());
@@ -122,7 +122,7 @@ function editEventDate($eventID, $date){
     if($result){
         $id = $result['id'];
         $sql = "UPDATE eventAttributes
-                SET eventAttributes.on = '1', value = '$date'
+                SET eventAttributes.status = '1', value = '$date'
                 WHERE id = '$id'";
     } else {
         $sql = "INSERT INTO eventAttributes
@@ -148,7 +148,7 @@ function getEventAveragePay($eventID){
     "SELECT AVG(checkins.payment) as avgpay
     FROM checkins
     WHERE checkins.event_id = '$eventID'
-    AND checkins.on = '1'";
+    AND checkins.status = '1'";
     $query = mysql_query($getEventAveragePaySQL) or die(mysql_error());
     $query = mysql_fetch_array($query);
     if($query){
@@ -174,7 +174,7 @@ function getEventTotalPay($eventID){
     "SELECT SUM(checkins.payment) as totalpay
     FROM checkins
     WHERE checkins.event_id = '$eventID'
-    AND checkins.on = '1'";
+    AND checkins.status = '1'";
     $query = mysql_query($getEventTotalPaySQL) or die(mysql_error());
     $query = mysql_fetch_array($query);
     if($query){
@@ -210,7 +210,7 @@ function getEventNumberOfFreeEntrancesUsed($eventID){
     FROM customerattributes
     WHERE customerattributes.value = '$eventID'
     AND customerattributes.name = 'Used Free Entrance'
-    AND customerattributes.on = '1'";
+    AND customerattributes.status = '1'";
     $query = mysql_query($getEventNumberOfFreeEntrancesUsedSQL) or die(mysql_error());
     $query = mysql_fetch_array($query);
     if($query){
@@ -251,7 +251,7 @@ function getEventNumberOfCheckins($eventID){
     "SELECT SUM(*) as totalCheckins
     FROM checkins
     WHERE checkins.event_id = '$eventID'
-    AND checkins.on = '1'";
+    AND checkins.status = '1'";
     $query = mysql_query($getEventNumberOfCheckinsSQL) or die(mysql_error());
     $query = mysql_fetch_array($query);
     if($query){
@@ -279,7 +279,7 @@ function getEventMedianTimeBetweenCheckins($eventID){
     $getEventMedianTimeBetweenCheckinsSQL =
     "SELECT checkins.id as id, checkins.timestamp as timestamp
     FROM checkins
-    WHERE checkins.on = '1'
+    WHERE checkins.status = '1'
     AND checkins.event_id = '$eventID'
     ORDER BY checkins.timestamp DESC";
     $query = mysql_query($getEventMedianTimeBetweenCheckinsSQL) or die(mysql_error());
@@ -315,7 +315,7 @@ function getEventCheckins($eventID){
     }
     $getEventCheckinsSQL =
     "SELECT checkins.id as id, checkins.customer_id as cid, name,
-    payment, checkins.timestamp, checkins.on as status
+    payment, checkins.timestamp, checkins.status as status
     FROM checkins
     LEFT JOIN customers
     on customers.id = checkins.customer_id
@@ -342,7 +342,7 @@ function getEventCosts($eventID){
     }
     $sql = "SELECT * FROM eventAttributes
             WHERE event_id = '$eventID'
-            AND eventAttributes.on = '1'
+            AND eventAttributes.status = '1'
             AND name = 'Event Costs'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
@@ -368,7 +368,7 @@ function getEventDate($eventID){
             FROM eventAttributes
             WHERE eventAttributes.event_id = '$eventID'
             AND eventAttributes.name = 'Event Date'
-            AND eventAttributes.on = '1'";
+            AND eventAttributes.status = '1'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){

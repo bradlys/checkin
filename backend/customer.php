@@ -5,10 +5,7 @@ require_once 'settings.php';
 
 
 /**
- * Sets customerAttributes.on = '0' for 
- * customerAttributes.customer_id = '$cid' AND
- * customerAttributes.on = '1' AND
- * customerAttributes.name = 'Customer Birthday'
+ * Sets customer birthday to NULL
  * @param int $cid Customer ID
  * @throws Exception When Customer ID is not a positive integer.
  */
@@ -16,11 +13,9 @@ function deleteCustomerBirthday($cid){
     if(!isInteger($cid) || $cid < 1){
         throw new Exception("Customer ID must be a positive integer.");
     }
-    $sql = "UPDATE customerAttributes
-            SET customerAttributes.on = '0'
-            WHERE customerAttributes.customer_id = '$cid'
-            AND customerAttributes.on = '1'
-            AND customerAttributes.name = 'Customer Birthday'";
+    $sql = "UPDATE customers
+            SET customers.birthday = 'NULL'
+            WHERE customers.id = '$cid'";
     mysql_query($sql) or die (mysql_error());
 }
 
@@ -36,22 +31,18 @@ function editCustomerBirthday($cid, $date){
     if(!isInteger($cid) || $cid < 1){
         throw new Exception("Customer ID must be a positive integer.");
     }
-    $sql = "SELECT *
-            FROM customerAttributes
-            WHERE customer_id = '$cid'
-            AND name = 'Customer Birthday'";
+    $sql = "SELECT birthday
+            FROM customers
+            WHERE id = '$cid'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
-    if($result){
-        $id = $result['id'];
-        $sql = "UPDATE customerAttributes
-                SET customerAttributes.on = '1', value = '$date'
-                WHERE id = '$id'";
+    if($result && $result['birthday'] != 'NULL'){
+        $sql = "UPDATE customers
+                SET customers.birthday = '$date'
+                WHERE id = '$cid'";
         $query = mysql_query($sql) or die (mysql_error());
     } else {
-        $sql = "INSERT INTO customerAttributes
-                VALUES (NULL, '$cid', 'Customer Birthday', '$date', '1', CURRENT_TIMESTAMP)";
-        $query = mysql_query($sql) or die (mysql_error());
+        throw new Exception("Invalid Customer ID");
     }
 }
 
@@ -72,7 +63,7 @@ function editCustomerNumberOfFreeEntrances($cid, $number){
             FROM customerAttributes
             WHERE customer_id = '$cid'
             AND name = 'Free Entrances'
-            AND customerAttributes.on = '1' ";
+            AND customerAttributes.status = '1' ";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
@@ -104,7 +95,7 @@ function getCheckinIDForCustomerAndEvent($cid, $eventID){
             FROM checkins
             WHERE customer_id = '$cid' 
             AND event_id = '$eventID'
-            AND checkins.on = '1'";
+            AND checkins.status = '1'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
@@ -116,22 +107,20 @@ function getCheckinIDForCustomerAndEvent($cid, $eventID){
 /**
  * Gets the Customer's birthday
  * @param int $cid Customer ID
- * @return String
+ * @return String Customer Birthday
  * @throws Exception When Customer ID is not a positive integer.
  */
 function getCustomerBirthday($cid){
     if(!isInteger($cid) || $cid < 1){
         throw new Exception("Customer ID must be a positive integer.");
     }
-    $sql = "SELECT *
-            FROM customerAttributes
-            WHERE customerAttributes.customer_id = '$cid'
-            AND customerAttributes.name = 'Customer Birthday'
-            AND customerAttributes.on = '1'";
+    $sql = "SELECT birthday
+            FROM customers
+            WHERE customers.id = '$cid'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
-        return $result['value'];
+        return $result['birthday'];
     }
     else {
         return "";
@@ -145,7 +134,7 @@ function getCustomerByCheckinID($checkinID){
     $sql =
         "SELECT checkins.id as checkinID, customers.id as cid, 
         customers.name as name, customers.email as email, 
-        checkins.payment as payment, checkins.on as status
+        checkins.payment as payment, checkins.status as status
         FROM checkins
         LEFT JOIN customers
         ON checkins.customer_id = customers.id
@@ -183,7 +172,7 @@ function getCustomerCheckinID($cid, $eventID){
         FROM checkins
         WHERE checkins.customer_id = '$cid'
         AND checkins.event_id = '$eventID'
-        AND checkins.on = '1'
+        AND checkins.status = '1'
         ORDER BY timestamp DESC";
     $query = mysql_query($SQL) or die (mysql_error());
     $result = mysql_fetch_array($query);
@@ -212,7 +201,7 @@ function getCustomerCheckedInPayment($cid, $eventID){
         FROM checkins
         WHERE customer_id = '$cid'
         AND event_id = '$eventID'
-        AND checkins.on = '1'
+        AND checkins.status = '1'
         ORDER BY timestamp DESC
         LIMIT 1") or die(mysql_error());
     $result = mysql_fetch_array($result);
@@ -252,7 +241,7 @@ function getCustomerNumberOfFreeEntrances($cid){
     $sql = "SELECT * FROM customerAttributes
             WHERE customer_id = '$cid'
             AND name = 'Free Entrances'
-            AND customerAttributes.on = '1' ";
+            AND customerAttributes.status = '1' ";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
@@ -282,7 +271,7 @@ function hasCustomerCheckedIn($cid, $eventID){
         FROM checkins
         WHERE checkins.customer_id = '$cid'
         AND checkins.event_id = '$eventID'
-        AND checkins.on = '1'";
+        AND checkins.status = '1'";
     $query = mysql_query($SQL) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
@@ -312,7 +301,7 @@ function hasCustomerUsedFreeEntrance($cid, $checkinID){
             WHERE customer_id = '$cid'
             AND name = 'Used Free Entrance'
             AND value = '$checkinID'
-            AND customerAttributes.on = '1'";
+            AND customerAttributes.status = '1'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
@@ -342,12 +331,12 @@ function unuseFreeEntrance($cid, $checkinID){
            WHERE customer_id = '$cid'
            AND name = 'Used Free Entrance'
            AND value = '$checkinID'
-           AND customerAttributes.on = '1'";
+           AND customerAttributes.status = '1'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
         $id = $result['id'];
-        $sql = "UPDATE customerAttributes SET customerAttributes.on = '0' WHERE id = '$id'";
+        $sql = "UPDATE customerAttributes SET customerAttributes.status = '0' WHERE id = '$id'";
         $query = mysql_query($sql) or die (mysql_error());
         $databaseNumberOfFreeEntrances = getCustomerNumberOfFreeEntrances($cid);
         editCustomerNumberOfFreeEntrances($cid, $databaseNumberOfFreeEntrances + 1);

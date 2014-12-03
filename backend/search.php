@@ -23,42 +23,22 @@ function searchCustomers($eventID, $limit, $name){
         throw new Exception("Limit must be a positive integer.");
     }
     $numInSystemSQL =
-            "SELECT COUNT(*) as count
-            FROM customers
-            WHERE customers.on = '1'
-            AND name LIKE '%$name%'
-            ";
+        "SELECT COUNT(*) as count
+        FROM customers
+        WHERE status = '1'
+        AND name LIKE '%$name%'
+        ";
     $numInSystemQuery = mysql_query($numInSystemSQL) or die (mysql_error());
     $numInSystemNumber = mysql_fetch_array($numInSystemQuery);
     $numInSystemNumber = $numInSystemNumber['count'];
-    //Turns out that around 14000 results from above,
-    //one query starts to become much faster than the other.
-    if($numInSystemNumber > 14000){
-        $highestVisitsAndLikeName =
-        "SELECT customers.id as cid, customers.name as name, customers.email as email, IFNULL(checkins.visits, 0) as visits
-        FROM customers 
-        LEFT JOIN
-            (SELECT COUNT(checkins.on) AS visits, customer_id 
-            FROM checkins 
-            GROUP BY customer_id)
-        AS checkins 
-        ON checkins.customer_id=customers.id 
-        WHERE customers.name LIKE '%$name%'
-        AND customers.on = '1'
-        ORDER BY checkins.visits DESC, customers.name ASC, customers.id DESC
-        " .($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
-    }
-    else{
-        $highestVisitsAndLikeName =
-        "SELECT COUNT(ch.on) AS visits, cu.id AS cid, cu.name AS name, cu.email AS email
-        FROM checkins AS ch
-        RIGHT OUTER JOIN customers AS cu ON ch.customer_id = cu.id
-        WHERE cu.name LIKE '%$name%'
-        AND cu.on = '1'
-        GROUP BY cu.id
-        ORDER BY visits DESC, name ASC, cu.id DESC
+    $highestVisitsAndLikeName =
+        "SELECT id as cid, name, visits, email
+        FROM customers
+        WHERE name LIKE '%$name%'
+        AND status = '1'
+        GROUP BY id
+        ORDER BY visits DESC, name ASC, id DESC
         " . ($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
-    }
     $visitquery = mysql_query($highestVisitsAndLikeName) or die (mysql_error());
     $customerArray = array();
     while($visit = mysql_fetch_array($visitquery)){
@@ -131,7 +111,7 @@ function searchOrganizations($name){
     $sql = "SELECT * 
             FROM organizations 
             WHERE name LIKE '%$name%'
-            AND organizations.on = '1'";
+            AND organizations.status = '1'";
     $query = mysql_query($sql) or die (mysql_error());
     $organizations = array();
     while($organization = mysql_fetch_array($query)){
