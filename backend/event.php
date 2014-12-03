@@ -53,9 +53,9 @@ function editEvent($costs, $date, $eventID, $name, $organizationID){
                 SET name = '$name'
                 WHERE organization_id = '$organizationID' AND id = '$eventID'";
         $query = mysql_query($sql) or die (mysql_error());
-        editEventDate($eventID, $date);
         editEventCosts($costs, $eventID);
     }
+    editEventDate($eventID, $date);
 }
 
 /**
