@@ -490,17 +490,13 @@ function loadupEventModal(eventElem){
     $("#modalTitle").text(modalTitleText + " event " + name);
     $("#modalName").val(name);
     
-    var eventResultID = eventElem.find(".eventResultID").text();
-    if(eventResultID){
-        $("#eventID").text(eventResultID);
+    var eventID = eventElem.find(".eventResultID").text();
+    if(eventID){
+        $("#eventID").text(eventID);
         $("#gotoEvent").show();
-        $("#gotoEvent").attr("href", "checkin.php?id=" + eventResultID);
-    }
-    else{
-        $("#gotoEvent").hide();
-    }
-    $.post("backend/post.php",
-        { purpose : "getEventDate", eventID: $("#eventID").text()},
+        $("#gotoEvent").attr("href", "checkin.php?id=" + eventID);
+        $.post("backend/post.php",
+        { purpose : "getEventDate", eventID: eventID},
         function ( data ) {
             if(data === '""'){
                 setupDate('');
@@ -508,8 +504,14 @@ function loadupEventModal(eventElem){
                 setupDate(data);
             }
         });
+    }
+    else{
+        $("#eventID").text("");
+        $("#gotoEvent").hide();
+        setupDate('');
+    }
     $.post("backend/post.php",
-        { purpose : "getEventCosts", eventID : $("#eventID").text()},
+        { purpose : "getEventCosts", eventID : eventID},
         function ( data ) { setupDynamicCostForms(data); });
     $("#myModal").modal('show');
 }
