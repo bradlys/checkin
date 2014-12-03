@@ -1,6 +1,7 @@
 <?php
 
 require_once '../backend/checkin.php';
+PRODUCTION_SERVER ? die() : "";
 
 $ignite = isset($_GET['ignite']);
 $buildCustomers = isset($_GET['buildCustomers']) && isInteger($_GET['buildCustomers']);

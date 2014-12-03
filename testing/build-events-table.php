@@ -2,6 +2,7 @@
 
 require_once '../backend/event.php';
 require_once '../backend/misc.php';
+PRODUCTION_SERVER ? die() : "";
 
 $id = isInteger($_GET['id']) ? $_GET['id'] : 0;
 $date = time()-31536000;
