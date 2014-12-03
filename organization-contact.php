@@ -16,7 +16,7 @@ if(isset($_GET['id'])){
     }
 }
 
-$isFreeEntranceEnabled = isFreeEntranceEnabled(inferOrganizationID($id));
+$isFreeEntranceEnabled = isFreeEntranceEnabled($id);
 
 ?>
 <div class="container">
