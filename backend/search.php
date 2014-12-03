@@ -32,7 +32,7 @@ function searchCustomers($eventID, $limit, $name){
     $numInSystemNumber = mysql_fetch_array($numInSystemQuery);
     $numInSystemNumber = $numInSystemNumber['count'];
     $highestVisitsAndLikeName =
-        "SELECT id as cid, name, visits, email
+        "SELECT id as cid, name, visits, email, birthday
         FROM customers
         WHERE name LIKE '%$name%'
         AND status = '1'
@@ -51,6 +51,7 @@ function searchCustomers($eventID, $limit, $name){
         $numberOfFreeEntrances = getCustomerNumberOfFreeEntrances($cid);
         array_push($customerArray, 
             array(
+            "birthday" => $visit['birthday'],
             "checkinID" => $checkinID,
             "cid" => $cid,
             "email" => $visit['email'],

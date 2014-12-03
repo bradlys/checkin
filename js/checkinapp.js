@@ -34,8 +34,15 @@ if($("#organizationStatistics").length > 0){
  * @param {string} date date string
  */
 function setupDate(date){
-    if(!date){
+    console.log(date);
+    if(!date || date === "0000-00-00 00:00:00"){
         date = "";
+    } else {
+        //Convert format from YYYY-MM-DD 00:00:00 to YYYY-MM-DD
+        //DateTimePicker accepts that format without problem
+        //No need to convert dashes to slashes, fortunately.
+        date = date.split("\"").join("");
+        date = date.substring(0, 10);
     }
     $('#modalDate').datetimepicker().data("DateTimePicker").setDate(date);
 }
@@ -135,15 +142,16 @@ function setupCheckinModal(){
         });
     });
     $("#save").on("click", function() {
-        var payment = $("#modalMoney").val();
-        var email = $("#modalEmail").val();
-        var name = $("#modalName").val();
-        var cid = $("#myModal").find(".cid").val();
-        var eventID = $("#eventID").text();
-        var useFreeEntrance = $("#useFreeEntrance").is(':checked');
-        var numberOfFreeEntrances = $("#numberOfFreeEntrances").val();
-        var date = $("#modalDate").data().date;
+        //Convert format from YYYY/MM/DD to YYYY-MM-DD 00:00:00
+        var birthday = $("#modalDate").data().date.split("/").join("-") + " 00:00:00";
         var checkinID;
+        var cid = $("#myModal").find(".cid").val();
+        var email = $("#modalEmail").val();
+        var eventID = $("#eventID").text();
+        var name = $("#modalName").val();
+        var numberOfFreeEntrances = $("#numberOfFreeEntrances").val();
+        var payment = $("#modalMoney").val();
+        var useFreeEntrance = $("#useFreeEntrance").is(':checked');
         if($("#search").length > 0){
             checkinID = 0;
         } else {
@@ -152,9 +160,9 @@ function setupCheckinModal(){
         payment = payment.replace('$', '');
         $("#myModal").find(".alert").alert('close');
         $.post("backend/post.php", {
+            birthday : birthday,
             checkinID : checkinID,
             cid : cid,
-            date : date,
             email : email,
             eventID : eventID,
             name : name,
@@ -266,7 +274,8 @@ function eventsPage(){
         var eventID = $("#eventID").text();
         var organizationID = $("#organizationID").val();
         var costFields = [];
-        var date = $("#modalDate").data().date;
+        //Convert format from YYYY/MM/DD to YYYY-MM-DD 00:00:00
+        var date = $("#modalDate").data().date.split("/").join("-") + " 00:00:00";
         $(".costFieldGroup").each(function(e) {
             var first = $(this).find('input:first').val();
             var last = $(this).find('input:last').val();
@@ -281,11 +290,11 @@ function eventsPage(){
         }
         $.post("backend/post.php",
             { purpose : "editEvent",
+            costs : costFields,
+            date : date,
             eventID : eventID,
             name : name,
-            costs : costFields,
-            organizationID : organizationID,
-            date : date},
+            organizationID : organizationID},
         function(data){
             data = jQuery.parseJSON(data);
             if(data){
@@ -385,8 +394,9 @@ function loadupCheckinModal(customerElem){
     setupModalCheckout();
     if(cid){
         var email = customerElem.find(".email").text();
-        $("#modalEmail").val(email);
         var payment = customerElem.find(".payment").text();
+        var birthday = customerElem.find(".birthday").text();
+        $("#modalEmail").val(email);
         if(payment){
             $(".customMoney").append('<span class="glyphicon glyphicon-ok form-control-feedback" style="right:0px;"></span>');
             $(".paymentArea").addClass("has-success has-feedback");
@@ -395,15 +405,7 @@ function loadupCheckinModal(customerElem){
         $("#useFreeEntrance").prop("checked", customerElem.find(".usedFreeEntrance").text() === "true" ? true : false);
         $("#modalMoney").val(payment);
         $("#myModal").find(".cid").val(cid);
-        $.post("backend/post.php",
-            { purpose : "getCustomerBirthday", cid : cid}, 
-            function(data) {
-                if(data === '""'){
-                    setupDate('');
-                } else {
-                    setupDate(data);
-                }
-            });
+        setupDate(birthday);
     }
     else{
         $("#modalEmail").val("");
@@ -499,12 +501,12 @@ function loadupEventModal(eventElem){
     }
     $.post("backend/post.php",
         { purpose : "getEventDate", eventID: $("#eventID").text()},
-        function ( data ) { 
+        function ( data ) {
             if(data === '""'){
                 setupDate('');
             } else {
                 setupDate(data);
-            } 
+            }
         });
     $.post("backend/post.php",
         { purpose : "getEventCosts", eventID : $("#eventID").text()},
@@ -670,6 +672,7 @@ function displayCheckinSearchResults (data) {
         var customer = customers[i];
         tmpString =
             '<div class="customer col-xs-3">' +
+            '<span class="birthday">' + customer['birthday'] + '</span>' + 
             '<span class="checkinID">' + customer['checkinID'] + '</span>' + 
             '<span class="cid">' + customer['cid'] + '</span>' +
             '<span class="email">' + customer['email'] + '</span>' +

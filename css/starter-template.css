@@ -6,7 +6,7 @@ body .border-highlight {
     border-color: #428bca;
 }
 
-.customer > .checkinID, .cid, .email, #eventID, .eventResultID, #modalCheckinID, #organizationID, .organizationResultID, .payment {
+.customer > .birthday, .checkinID, .cid, .email, #eventID, .eventResultID, #modalCheckinID, #organizationID, .organizationResultID, .payment {
     display: none;
 }
 

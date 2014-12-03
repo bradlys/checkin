@@ -8,7 +8,7 @@ require_once 'misc.php';
 /**
  * Checks in the customer.
  */
-function checkinCustomer($checkinID, $cid, $date, $email, $eventID, $name, $numberOfFreeEntrances, $payment, $useFreeEntrance){
+function checkinCustomer($birthday, $checkinID, $cid, $email, $eventID, $name, $numberOfFreeEntrances, $payment, $useFreeEntrance){
     $organizationID = inferOrganizationID($eventID);
     $isFreeEntranceEnabled = isFreeEntranceEnabled($organizationID);
     if(empty($name)){
@@ -93,9 +93,7 @@ function checkinCustomer($checkinID, $cid, $date, $email, $eventID, $name, $numb
             useFreeEntrance($cid, $checkinID);
         }
     }
-    if($date){
-        editCustomerBirthday($cid, $date);
-    }
+    editCustomerBirthday($cid, $birthday);
     $toReturn = array();
     $toReturn['checkinID'] = $checkinID;
     return $toReturn;

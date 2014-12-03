@@ -22,14 +22,20 @@ function deleteCustomerBirthday($cid){
 /**
  * Edits the Customer's Birthday
  * @param int $cid Customer ID
- * $param String $date Customer's Birthday
+ * $param String $date Customer's Birthday in YYYY-MM-DD H:i:s format
+ * @throws Exception When Customer ID is not a positive integer
+ * or when date format is incorrect
  */
-function editCustomerBirthday($cid, $date){
-    if(empty($date)){
+function editCustomerBirthday($cid, $birthday){
+    if(empty($$birthday)){
         return deleteCustomerBirthday($cid);
     }
     if(!isInteger($cid) || $cid < 1){
         throw new Exception("Customer ID must be a positive integer.");
+    }
+    $dt = DateTime::createFromFormat("Y-m-d H:i:s", $birthday);
+    if($dt === false || array_sum($dt->getLastErrors())){
+        throw new Exception("Date format is incorrect.");
     }
     $sql = "SELECT birthday
             FROM customers
@@ -38,7 +44,7 @@ function editCustomerBirthday($cid, $date){
     $result = mysql_fetch_array($query);
     if($result && $result['birthday'] != 'NULL'){
         $sql = "UPDATE customers
-                SET customers.birthday = '$date'
+                SET customers.birthday = '$$birthday'
                 WHERE id = '$cid'";
         $query = mysql_query($sql) or die (mysql_error());
     } else {
@@ -134,7 +140,8 @@ function getCustomerByCheckinID($checkinID){
     $sql =
         "SELECT checkins.id as checkinID, customers.id as cid, 
         customers.name as name, customers.email as email, 
-        checkins.payment as payment, checkins.status as status
+        checkins.payment as payment, checkins.status as status,
+        customers.birthday as birthday
         FROM checkins
         LEFT JOIN customers
         ON checkins.customer_id = customers.id
@@ -144,7 +151,6 @@ function getCustomerByCheckinID($checkinID){
     if($result){
         $cid = $result['cid'];
         $result['isCheckedIn'] = $result['status'] == 1 ? true : false;
-        $result['birthday'] = getCustomerBirthday($cid);
         $result['numberOfFreeEntrances'] = getCustomerNumberOfFreeEntrances($cid);
         $result['usedFreeEntrance'] = hasCustomerUsedFreeEntrance($cid, $checkinID);
     } else {

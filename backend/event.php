@@ -3,10 +3,7 @@
 require_once 'settings.php';
 
 /**
- * Sets eventAttributes.status = '0' for 
- * eventAttributes.event_id = '$eventID' AND
- * eventAttributes.status = '1' AND
- * eventAttributes.name = 'Event Date'
+ * Sets event date to null
  * @param integer $eventID - Event ID
  * @throws Exception When Event ID is not a positive integer.
  */
@@ -14,11 +11,9 @@ function deleteEventDate($eventID){
     if(!isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID must be a positive integer.");
     }
-    $sql = "UPDATE eventAttributes
-            SET eventAttributes.status = '0'
-            WHERE eventAttributes.event_id = '$eventID'
-            AND eventAttributes.status = '1'
-            AND eventAttributes.name = 'Event Date'";
+    $sql = "UPDATE events
+            SET date = 'NULL'
+            WHERE id = '$eventID'";
     mysql_query($sql) or die (mysql_error());
 }
 
@@ -45,9 +40,10 @@ function editEvent($costs, $date, $eventID, $name, $organizationID){
     }
     $costs = json_decode($costs);
     if(empty($eventID) || $eventID == 0){
-        $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', 1, CURRENT_TIMESTAMP)";
+        $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', 'NULL', 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (mysql_error());
-        editEventCosts($costs, mysql_insert_id());
+        $eventID = mysql_insert_id();
+        editEventCosts($costs, $eventID);
     } else {
         $sql = "UPDATE events
                 SET name = '$name'
@@ -103,30 +99,35 @@ function editEventCosts($costs, $eventID){
  * Edits the Event's Date, turns it off when empty string
  * for $date
  * @param int $eventID Event ID
- * @param String $date Date in MM/DD/YYYY format
+ * @param String $date Date in YYYY-MM-DD H:i:s format
+ * @throws Exception When Event ID is not a positive integer, invalid event ID,
+ * or date format is incorrect
  */
 function editEventDate($eventID, $date){
     if(!isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID must be a positive integer.");
     }
     $sql = "SELECT *
-            FROM eventAttributes
-            WHERE event_id = '$eventID'
-            AND name = 'Event Date'";
+            FROM events
+            WHERE id = '$eventID'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
-        if(empty($date)){
-            deleteEventDate($eventID);
-            return;
+        $dt = DateTime::createFromFormat("Y-m-d H:i:s", $date);
+        if($dt === false || array_sum($dt->getLastErrors())){
+            throw new Exception("Date format is incorrect.");
         }
-        $id = $result['id'];
-        $sql = "UPDATE eventAttributes
-                SET eventAttributes.status = '1', value = '$date'
-                WHERE id = '$id'";
-    } else if (!empty($date)){
-        $sql = "INSERT INTO eventAttributes
-                VALUES (NULL, '$eventID', 'Event Date', '$date', '1', CURRENT_TIMESTAMP)";
+        if(empty($date)){
+            $sql = "UPDATE events
+                    SET date = 'NULL'
+                    WHERE id = '$eventID'";
+        } else {
+            $sql = "UPDATE events
+                    SET date = '$date'
+                    WHERE id = '$eventID'";
+        }
+    } else {
+        throw new Exception("Invalid Event ID");
     }
     $query = mysql_query($sql) or die (mysql_error());
 }
@@ -358,21 +359,22 @@ function getEventCosts($eventID){
  * Gets the Event's Date
  * @param int $eventID Event ID
  * @return String
- * @throws Exception When Event ID is not a positive integer.
+ * @throws Exception When Event ID is not a positive integer or
+ * the Event ID doesn't have an event correlated with it.
  */
 function getEventDate($eventID){
     if(!isInteger($eventID) || intval($eventID) < 1){
         throw new Exception("Event ID must be a positive integer.");
     }
-    $sql = "SELECT *
-            FROM eventAttributes
-            WHERE eventAttributes.event_id = '$eventID'
-            AND eventAttributes.name = 'Event Date'
-            AND eventAttributes.status = '1'";
+    $sql = "SELECT date
+            FROM events
+            WHERE id = '$eventID'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
-        return $result['value'];
+        return $result['date'];
+    } else {
+        throw new Exception("Invalid Event ID");
     }
     return '';
 }
