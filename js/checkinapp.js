@@ -160,6 +160,9 @@ function setupCheckinModal(){
         var eventID = $("#eventID").text();
         var name = $("#modalName").val();
         var numberOfFreeEntrances = $("#numberOfFreeEntrances").val();
+        if(typeof numberOfFreeEntrances === "undefined"){
+            numberOfFreeEntrances = 0;
+        }
         var payment = $("#modalMoney").val();
         var useFreeEntrance = $("#useFreeEntrance").is(':checked');
         if($("#search").length > 0){
