@@ -78,19 +78,19 @@ function editEventCosts($costs, $eventID){
     } else {
         $JSON = json_encode($costs);
     }
-    $sql = "SELECT * FROM eventAttributes
+    $sql = "SELECT * FROM eventattributes
             WHERE event_id = '$eventID'
             AND name = 'Event Costs'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
         $id = $result['id'];
-        $sql = "UPDATE eventAttributes
+        $sql = "UPDATE eventattributes
                 SET value = '$JSON'
                 WHERE id = '$id'";
     }
     else{
-        $sql = "INSERT INTO eventAttributes VALUES
+        $sql = "INSERT INTO eventattributes VALUES
                 (NULL, '$eventID', 'Event Costs', '$JSON', '1', CURRENT_TIMESTAMP)";
     }
     $query = mysql_query($sql) or die (mysql_error());
@@ -232,7 +232,7 @@ function getEventNumberOfNewCustomers($eventID){
     }
     //Method 1:
     //Get customers who checked into this event (checkins table)
-    //Get events before this event (events and eventAttributes table)
+    //Get events before this event (events and eventattributes table)
     //See if those customers have checked into those events (checkins cross correlation)
     //If not, they're a new customer. (+1 to tally)
     //Method 2:
@@ -337,7 +337,7 @@ function getEventCheckins($eventID){
 }
 
 /**
- * Gets Event Costs as stored in eventAttributes table under Name = 'Event Costs'
+ * Gets Event Costs as stored in eventattributes table under Name = 'Event Costs'
  * @param int $eventID Event ID
  * @return array
  * @throws Exception When Event ID is not a positive integer
@@ -346,9 +346,9 @@ function getEventCosts($eventID){
     if(!isset($eventID) || !isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID must be a positive integer");
     }
-    $sql = "SELECT * FROM eventAttributes
+    $sql = "SELECT * FROM eventattributes
             WHERE event_id = '$eventID'
-            AND eventAttributes.status = '1'
+            AND eventattributes.status = '1'
             AND name = 'Event Costs'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);

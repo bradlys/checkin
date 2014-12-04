@@ -87,7 +87,7 @@ function inferOrganizationID($eventID){
 /**
  * Returns true/false based on whether a value of
  * (id, $organizationID, 'Free Entrances Feature On', 'true', '1', TIMESTAMP)
- * is in organizationAttributes.
+ * is in organizationattributes.
  * @param int $organizationID Organization ID
  * @return boolean
  * @throws Exception When Organization ID is not a positive integer.
@@ -97,7 +97,7 @@ function isFreeEntranceEnabled($organizationID){
         throw new Exception("organizationID in isFreeEntranceEnabled must be a positive integer");
     }
     $sql = "SELECT *
-            FROM organizationAttributes
+            FROM organizationattributes
             WHERE organization_id = '$organizationID'
             AND name = 'Free Entrances Feature On'";
     $query = mysql_query($sql) or die (mysql_error());

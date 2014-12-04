@@ -66,19 +66,19 @@ function editCustomerNumberOfFreeEntrances($cid, $number){
         throw new Exception("Customer ID must be a positive integer");
     }
     $sql = "SELECT *
-            FROM customerAttributes
+            FROM customerattributes
             WHERE customer_id = '$cid'
             AND name = 'Free Entrances'
-            AND customerAttributes.status = '1' ";
+            AND customerattributes.status = '1' ";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
         $id = $result['id'];
-        $sql = "UPDATE customerAttributes SET value = '$number' WHERE id = '$id'";
+        $sql = "UPDATE customerattributes SET value = '$number' WHERE id = '$id'";
         $query = mysql_query($sql) or die (mysql_error());
     }
     else{
-        $sql = "INSERT INTO customerAttributes VALUES(NULL, '$cid', 'Free Entrances', '$number', '1', CURRENT_TIMESTAMP)";
+        $sql = "INSERT INTO customerattributes VALUES(NULL, '$cid', 'Free Entrances', '$number', '1', CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (mysql_error());
     }
 }
@@ -244,10 +244,10 @@ function getCustomerNumberOfFreeEntrances($cid){
     if(!isInteger($cid) || $cid < 1){
         throw new Exception("Customer ID must be a positive integer");
     }
-    $sql = "SELECT * FROM customerAttributes
+    $sql = "SELECT * FROM customerattributes
             WHERE customer_id = '$cid'
             AND name = 'Free Entrances'
-            AND customerAttributes.status = '1' ";
+            AND customerattributes.status = '1' ";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
@@ -303,11 +303,11 @@ function hasCustomerUsedFreeEntrance($cid, $checkinID){
     if(!isInteger($checkinID) || $checkinID < 1){
         throw new Exception("Checkin ID must be a positive integer");
     }
-    $sql = "SELECT * FROM customerAttributes
+    $sql = "SELECT * FROM customerattributes
             WHERE customer_id = '$cid'
             AND name = 'Used Free Entrance'
             AND value = '$checkinID'
-            AND customerAttributes.status = '1'";
+            AND customerattributes.status = '1'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
@@ -333,16 +333,16 @@ function unuseFreeEntrance($cid, $checkinID){
         throw new Exception("Checkin ID must be a positive integer");
     }
     $sql = "SELECT *
-           FROM customerAttributes
+           FROM customerattributes
            WHERE customer_id = '$cid'
            AND name = 'Used Free Entrance'
            AND value = '$checkinID'
-           AND customerAttributes.status = '1'";
+           AND customerattributes.status = '1'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
         $id = $result['id'];
-        $sql = "UPDATE customerAttributes SET customerAttributes.status = '0' WHERE id = '$id'";
+        $sql = "UPDATE customerattributes SET customerattributes.status = '0' WHERE id = '$id'";
         $query = mysql_query($sql) or die (mysql_error());
         $databaseNumberOfFreeEntrances = getCustomerNumberOfFreeEntrances($cid);
         editCustomerNumberOfFreeEntrances($cid, $databaseNumberOfFreeEntrances + 1);
@@ -365,16 +365,16 @@ function useFreeEntrance($cid, $checkinID){
     if(!isInteger($checkinID) || $checkinID < 1){
         throw new Exception("Checkin ID must be a positive integer");
     }
-    $sql = "SELECT * FROM customerAttributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
+    $sql = "SELECT * FROM customerattributes WHERE customer_id = '$cid' AND name = 'Free Entrances'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){
         if($result['value'] > 0){
             $newFreeEntrancesAmount = $result['value'] - 1;
             $id = $result['id'];
-            $sql = "UPDATE customerAttributes SET value = '$newFreeEntrancesAmount' WHERE id = '$id'";
+            $sql = "UPDATE customerattributes SET value = '$newFreeEntrancesAmount' WHERE id = '$id'";
             $query = mysql_query($sql) or die (mysql_error());
-            $sql = "INSERT INTO customerAttributes VALUES (NULL, '$cid', 'Used Free Entrance', '$checkinID', 1, CURRENT_TIMESTAMP)";
+            $sql = "INSERT INTO customerattributes VALUES (NULL, '$cid', 'Used Free Entrance', '$checkinID', 1, CURRENT_TIMESTAMP)";
             $query = mysql_query($sql) or die (mysql_error());
             return null;
         }

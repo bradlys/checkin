@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `checkins` (
   KEY `customer_id, event_id` (`customer_id`,`event_id`),
   KEY `customer_id` (`customer_id`),
   KEY `event_id` (`event_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=827340 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `customerattributes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `customers` (
   KEY `name` (`name`),
   KEY `email` (`email`),
   KEY `visits` (`visits`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=100002 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `eventattributes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS `eventattributes` (
   `status` tinyint(1) NOT NULL DEFAULT '1',
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=55 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS `events` (
   PRIMARY KEY (`id`),
   KEY `organization_id` (`organization_id`),
   KEY `date` (`date`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=55 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `organizationattributes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS `organizations` (
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `name` (`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=8 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 CREATE TABLE IF NOT EXISTS `userattributes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
