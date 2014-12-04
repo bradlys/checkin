@@ -2,10 +2,11 @@
 
 require_once '../backend/checkin.php';
 PRODUCTION_SERVER ? die() : "";
-
 $ignite = isset($_GET['ignite']);
 $buildCustomers = isset($_GET['buildCustomers']) && isInteger($_GET['buildCustomers']);
 $buildCheckins = isset($_GET['buildCheckins']) && isInteger($_GET['buildCheckins']);
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
 
 if(!$ignite){
     echo "No go!";
@@ -39,7 +40,7 @@ if($buildCustomers){
         if($buildCustomersLimit < 5000){
             echo "<tr><td>".$name."</td><td>".$email."</td><td>".$birthday."</td><td>".$randomPay."</td><td>".$randomEvent."</td></tr>";
         }
-        checkinCustomer(0, 0, $birthday, $email, $randomEvent, $name, 0, $randomPay, false);
+        checkinCustomer($birthday, 0, 0, $email, $randomEvent, $name, 0, $randomPay, false);
     }
     if($buildCustomersLimit < 5000){
         echo "</table>";
@@ -66,7 +67,7 @@ if($buildCheckins){
             if($buildCheckinsLimit < 5000){
                 echo "<tr><td>".$i."</td><td>".$randomCustomer['id']."</td><td>".$randomCustomer['name']."</td><td>".$randomCustomer['email']."</td><td>".$randomCustomer['birthday']."</td><td>".$randomPay."</td><td>".$randomEvent."</td></tr>";
             }
-            checkinCustomer(0, $randomCustomer['id'], $randomCustomer['birthday'], $randomCustomer['email'], $randomEvent, $randomCustomer['name'], 0, $randomPay, false);
+            checkinCustomer($randomCustomer['birthday'], 0, $randomCustomer['id'], $randomCustomer['email'], $randomEvent, $randomCustomer['name'], 0, $randomPay, false);
         }
     }
     if($buildCheckinsLimit < 5000){
