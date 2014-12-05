@@ -4,22 +4,28 @@ require_once 'settings.php';
 
 
 /**
- * Method for editing the organization information
+ * Method for editing the organization information and creating organizations
  * 
- * @param String $name Name of the organization
+ * @param string $name Name of the organization
  * @param int $organizationID Organization ID
- * @return array 
+ * @return array $array['success'] with string saying editing was successful,
+ * otherwise $array['success'] with string saying event creation was successful
+ * with correlated $array['organizationID'] and $array['neworganization'] = true.
+ * @throws Exception if $organizationID is not a non-negative integer
+ * @throws Exception if no organization exists under $organizationID
+ * @throws Exception if $name is empty
  */
 function editOrganization($name, $organizationID){
     $name = isset($name) ? $name : "";
+    //will add email later
     $email = "";
-    if((!isInteger($organizationID) || $organizationID < 1) && $organizationID != ""){
-        throw new Exception("Organization ID must be a positive integer");
+    if((!isInteger($organizationID) || $organizationID < 0)){
+        throw new Exception("Organization ID must be a non-negative integer");
     }
     $array['organizationID'] = $organizationID;
     $array['neworganization'] = false;
     if(!$name){
-        throw new Exception("Name is required to edit an organization.");
+        throw new Exception("Name cannot be empty.");
     }
     if(!$organizationID){
         //create new organization
@@ -30,6 +36,7 @@ function editOrganization($name, $organizationID){
         $array['neworganization'] = true;
         return $array;
     }
+    //edit existing organization
     $sql = "SELECT * FROM organizations WHERE id = '$organizationID'";
     $query = mysql_query($sql) or die (mysql_error());
     if(!mysql_fetch_array($query)){
@@ -45,8 +52,9 @@ function editOrganization($name, $organizationID){
 
 /**
  * Gets the organization name provided the ID.
- * @param int $organizationID organization ID number
- * @return String name of the event
+ * @param int $organizationID Organization ID
+ * @return string name of the event
+ * @throws Exception if $organizationID is not a positive integer
  */
 function getOrganizationName($organizationID){
     if(!isInteger($organizationID) || $organizationID < 1){
@@ -66,9 +74,10 @@ function getOrganizationName($organizationID){
 
 /**
  * Infers the organization ID based off the event ID.
- * @param int $eventID event ID
+ * @param int $eventID Event ID
  * @return int
- * @throws Exception When event ID is not a positive integer or refers to a non-existent event.
+ * @throws Exception if $eventID is not a positive integer
+ * @throws Exception if $eventID refers to a non-existent event
  */
 function inferOrganizationID($eventID){
     if(!isInteger($eventID) || $eventID < 1){
@@ -90,7 +99,7 @@ function inferOrganizationID($eventID){
  * is in organizationattributes.
  * @param int $organizationID Organization ID
  * @return boolean
- * @throws Exception When Organization ID is not a positive integer.
+ * @throws Exception if $organizationID is not a positive integer
  */
 function isFreeEntranceEnabled($organizationID){
     if(!isInteger($organizationID) || $organizationID < 1){

@@ -11,7 +11,7 @@ function isInteger($input){
 }
 
 /**
- * Parses post arguments by running post values through
+ * Parses $_POST arguments by running post values through
  * mysql_real_escape_string() and then returning
  * them in an associate array in the same key+value
  * pair as they were before.

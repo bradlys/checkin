@@ -23,8 +23,8 @@ function deleteCustomerBirthday($cid){
  * Edits the Customer's Birthday
  * @param int $cid Customer ID
  * $param String $date Customer's Birthday in YYYY-MM-DD H:i:s format
- * @throws Exception When Customer ID is not a positive integer
- * or when date format is incorrect
+ * @throws Exception if $cid is not a positive integer
+ * @throws Exception if $birthday is not in YYYY-MM-DD H:i:s format
  */
 function editCustomerBirthday($cid, $birthday){
     if(empty($birthday)){
@@ -56,7 +56,8 @@ function editCustomerBirthday($cid, $birthday){
  * Edits the number of free entrances the customer has to the newly provided number
  * @param int $cid customer id number
  * @param int $number number of free entrances
- * @throws Exception When $cid is not a positive integer. When $number is not a non-negative integer.
+ * @throws Exception if $cid is not a positive integer 
+ * @throws Exception if $number is not a non-negative integer
  */
 function editCustomerNumberOfFreeEntrances($cid, $number){
     if($number < 0 || !isInteger($number)){
@@ -85,10 +86,11 @@ function editCustomerNumberOfFreeEntrances($cid, $number){
 
 /**
  * Gets checkin ID based off the event ID and customer ID
- * @param int $cid  customer ID
- * @param int $eventID  event ID
+ * @param int $cid Customer ID
+ * @param int $eventID Event ID
  * @return int
- * @throws Exception  When $cid or $checkinID is not a positive integer.
+ * @throws Exception if $cid is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function getCheckinIDForCustomerAndEvent($cid, $eventID){
     if($cid < 1 || !isInteger($cid)){
@@ -113,8 +115,8 @@ function getCheckinIDForCustomerAndEvent($cid, $eventID){
 /**
  * Gets the Customer's birthday
  * @param int $cid Customer ID
- * @return String Customer Birthday
- * @throws Exception When Customer ID is not a positive integer.
+ * @return string Customer Birthday
+ * @throws Exception if $cid is not a positive integer
  */
 function getCustomerBirthday($cid){
     if(!isInteger($cid) || $cid < 1){
@@ -161,10 +163,11 @@ function getCustomerByCheckinID($checkinID){
 
 /**
  * Gets Customer Checkin ID for Event ID provided
- * @param int $cid
- * @param int $eventID
- * @throws Exception When $cid or $eventID is not a positive integer
+ * @param int $cid Customer ID
+ * @param int $eventID Event ID
  * @return int
+ * @throws Exception if $cid is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function getCustomerCheckinID($cid, $eventID){
     if(!isInteger($cid) || $cid < 1){
@@ -193,7 +196,8 @@ function getCustomerCheckinID($cid, $eventID){
  * @param int $cid Customer ID
  * @param int $eventID Event ID
  * @return int
- * @throws Exception When $cid or $eventID is not a positive integer
+ * @throws Exception if $cid is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function getCustomerCheckedInPayment($cid, $eventID){
     if(!isInteger($cid) || $cid < 1){
@@ -223,7 +227,7 @@ function getCustomerCheckedInPayment($cid, $eventID){
  * Returns the email of the customer given the cid
  * @param int $cid Customer ID
  * @return String
- * @throws Exception When Customer ID is not a positive integer.
+ * @throws Exception if $cid is not a positive integer
  */
 function getCustomerEmail($cid){
     if(!isInteger($cid) || $cid < 1){
@@ -238,7 +242,7 @@ function getCustomerEmail($cid){
 /**
  * Gets the number of free entrances the customer has.
  * @param int $cid customer ID number
- * @throws Exception When $cid is not a positive integer.
+ * @throws Exception if $cid is not a positive integer
  */
 function getCustomerNumberOfFreeEntrances($cid){
     if(!isInteger($cid) || $cid < 1){
@@ -260,10 +264,11 @@ function getCustomerNumberOfFreeEntrances($cid){
 /**
  * Returns whether the customer has checked in
  * for the event ID provided.
- * @param int $cid customer ID
- * @param int $eventID event ID
+ * @param int $cid Customer ID
+ * @param int $eventID Event ID
  * @return boolean
- * @throws Exception when $cid or $eventID is not a positive integer
+ * @throws Exception if $cid is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function hasCustomerCheckedIn($cid, $eventID){
     if(!isInteger($cid) || $cid < 1){
@@ -291,10 +296,11 @@ function hasCustomerCheckedIn($cid, $eventID){
 /**
  * Returns true or false as to whether the customer has used a free
  * entrance for the given event ID
- * @param int $cid customer ID
- * @param int $checkinID checkin ID
+ * @param int $cid Customer ID
+ * @param int $checkinID Checkin ID
  * @return boolean
- * @throws Exception When $cid or $checkinID is not a positive integer.
+ * @throws Exception if $cid is not a positive integer
+ * @throws Exception if $checkinID is not a positive integer
  */
 function hasCustomerUsedFreeEntrance($cid, $checkinID){
     if(!isInteger($cid) || $cid < 1){
@@ -320,10 +326,11 @@ function hasCustomerUsedFreeEntrance($cid, $checkinID){
 
 /**
  * Unuses a Free Entrance.
- * @param int $cid customer id
- * @param int $checkinID customers check-in ID
- * @throws Exception When trying to remove a used free entrance value when no used free entrance exists.
- * When $cid or $checkinID is not a positive integer.
+ * @param int $cid Customer ID
+ * @param int $checkinID Checkin ID
+ * @throws Exception if trying to unuse a free entrance when no used free entrance exists
+ * @throws Exception if $cid is not a positive integer
+ * @throws Exception if $checkinID is not a positive integer
  */
 function unuseFreeEntrance($cid, $checkinID){
     if(!isInteger($cid) || $cid < 1){
@@ -353,10 +360,11 @@ function unuseFreeEntrance($cid, $checkinID){
 
 /**
  * Uses a Free Entrance
- * @param int $cid customer id
- * @param int $checkinID customers check-in ID
- * @throws Exception When trying to use a free entrance credit when no credit exists.
- * When $cid or $checkinID is not a positive integer.
+ * @param int $cid Customer ID
+ * @param int $checkinID Checkin ID
+ * @throws Exception if trying to use a free entrance credit when no credit exists
+ * @throws Exception if $cid is not a positive integer
+ * @throws Exception if $checkinID is not a positive integer
  */
 function useFreeEntrance($cid, $checkinID){
     if(!isInteger($cid) || $cid < 1){

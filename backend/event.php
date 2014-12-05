@@ -4,8 +4,8 @@ require_once 'settings.php';
 
 /**
  * Sets event date to null
- * @param integer $eventID - Event ID
- * @throws Exception When Event ID is not a positive integer.
+ * @param int $eventID Event ID
+ * @throws Exception if $eventID is not a positive integer
  */
 function deleteEventDate($eventID){
     if(!isInteger($eventID) || $eventID < 1){
@@ -19,25 +19,26 @@ function deleteEventDate($eventID){
 
 /**
  * Edits event information, with the provided event ID
- * @param Array $costs array of costs
- * @param String $date Date of Event
+ * @param array $costs Array with various costs in form of array[0]['item'],
+ * array[0]['cost'], array[1]['item'], array[1]['cost'], etc.
+ * @param string $date Date of Event
  * @param int $eventID Event ID
- * @param String $name Name of Event
+ * @param string $name Name of Event
  * @param int $organizationID Organization ID
  * @returns int Event ID of the newly created event or the existing event
+ * @throws Exception if $organizationID is not a positive integer
+ * @throws Exception if $eventID is not a non-negative integer
+ * @throws Exception if $name is empty
  */
 function editEvent($costs, $date, $eventID, $name, $organizationID){
-    if(!isInteger($organizationID) || $organizationID < 1){
-        throw new Exception("Organization ID needs to be an positive integer.");
+    if(!isInteger($organizationID) || $organizationID < 1 || empty($organizationID)){
+        throw new Exception("Organization ID needs to be a positive integer.");
     }
     if($eventID != "" && (!isInteger($eventID) || $eventID < 0)){
         throw new Exception("Event ID needs to be a non-negative integer.");
     }
     if(empty($name)){
         throw new Exception('No name was entered for the event.');
-    }
-    if(empty($organizationID)){
-        throw new Exception('No organization ID.');
     }
     if(empty($eventID) || $eventID == 0){
         $sql = "INSERT INTO events VALUES('', '$organizationID', '$name', 'NULL', 1, CURRENT_TIMESTAMP)";
@@ -58,10 +59,10 @@ function editEvent($costs, $date, $eventID, $name, $organizationID){
 /**
  * Edits event costs. Stores the events costs as JSON in the database
  * under eventAttribute name "Event Costs".
- * @param Array $costs Array with various costs in form of array[0]['item'],
+ * @param array $costs Array with various costs in form of array[0]['item'],
  * array[0]['cost'], array[1]['item'], array[1]['cost'], etc.
- * @param integer $eventID Event ID
- * @throws Exception When Event ID is not a positive integer
+ * @param int $eventID Event ID
+ * @throws Exception if $eventID is not a positive integer
  */
 function editEventCosts($costs, $eventID){
     if(!isInteger($eventID) || $eventID < 1){
@@ -100,9 +101,10 @@ function editEventCosts($costs, $eventID){
  * Edits the Event's Date, turns it off when empty string
  * for $date
  * @param int $eventID Event ID
- * @param String $date Date in YYYY-MM-DD H:i:s format
- * @throws Exception When Event ID is not a positive integer, invalid event ID,
- * or date format is incorrect
+ * @param string $date Date in YYYY-MM-DD H:i:s format
+ * @throws Exception if $eventID is not a positive integer
+ * @throws Exception if $date is in invalid format
+ * @throws Exception if $eventID is an invalid Event ID (event doesn't exist)
  */
 function editEventDate($eventID, $date){
     if(empty($date)){
@@ -142,9 +144,9 @@ function editEventDate($eventID, $date){
  * from each checkin. e.g. If an event has checkins
  * with payments 0, 5, 10, and 10. This method would
  * return 6.25.
- * @param int $eventID An existing Event ID
+ * @param int $eventID Event ID
  * @return float null if empty result, average payment otherwise
- * @throws Exception When $eventID is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function getEventAveragePay($eventID){
     if(!isInteger($eventID) || $eventID < 1){
@@ -168,9 +170,9 @@ function getEventAveragePay($eventID){
  * from each checkin. e.g. If an event has checkins
  * with payments 0, 5, 10, and 10. This method would
  * return 25.
- * @param int $eventID An existing Event ID
+ * @param int $eventID  Event ID
  * @return float null if empty result, total payment otherwise
- * @throws Exception When $eventID is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function getEventTotalPay($eventID){
     if(!isInteger($eventID) || $eventID < 1){
@@ -194,9 +196,9 @@ function getEventTotalPay($eventID){
  * entrances used. e.g. If five customers checkin,
  * and two use a free entrance during their checkin
  * then this method will return 2.
- * @param int $eventID An existing Event ID
+ * @param int $eventID Event ID
  * @return int the total number of free checkins used
- * @throws Exception When $eventID is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function getEventNumberOfFreeEntrancesUsed($eventID){
     if(!isInteger($eventID) || $eventID < 1){
@@ -247,7 +249,7 @@ function getEventNumberOfNewCustomers($eventID){
  * will return 25.
  * @param int $eventID Event ID
  * @return int Total number of checkins for the event ID provided
- * @throws Exception When $eventID is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function getEventNumberOfCheckins($eventID){
     if(!isInteger($eventID) || $eventID < 1){
@@ -276,7 +278,7 @@ function getEventNumberOfCheckins($eventID){
  * largest.
  * @param int $eventID Event ID
  * @return float Returns the amount of time in seconds
- * @throws Exception When $eventID is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function getEventMedianTimeBetweenCheckins($eventID){
     if(!isInteger($eventID) || $eventID < 1){
@@ -313,7 +315,7 @@ function getEventMedianTimeBetweenCheckins($eventID){
  * customer_id, event_id, on, and timestamp.
  * @param int $eventID event ID
  * @return array
- * @throws Exception When Event ID is not a positive integer.
+ * @throws Exception if $eventID is not a positive integer.
  */
 function getEventCheckins($eventID){
     if(!isInteger($eventID) || $eventID < 1){
@@ -340,7 +342,7 @@ function getEventCheckins($eventID){
  * Gets Event Costs as stored in eventattributes table under Name = 'Event Costs'
  * @param int $eventID Event ID
  * @return array
- * @throws Exception When Event ID is not a positive integer
+ * @throws Exception if $eventID is not a positive integer
  */
 function getEventCosts($eventID){
     if(!isset($eventID) || !isInteger($eventID) || $eventID < 1){
@@ -364,8 +366,8 @@ function getEventCosts($eventID){
  * Gets the Event's Date
  * @param int $eventID Event ID
  * @return String
- * @throws Exception When Event ID is not a positive integer or
- * the Event ID doesn't have an event correlated with it.
+ * @throws Exception if $eventID is not a positive integer
+ * @throws Exception if $eventID is an invalid Event ID (event doesn't exist)
  */
 function getEventDate($eventID){
     if(!isInteger($eventID) || intval($eventID) < 1){
@@ -387,8 +389,8 @@ function getEventDate($eventID){
 /**
  * Returns the name of the event given the event ID
  * @param int $eventID event ID number
- * @return String name of the event
- * @throws Exception When $eventID is not a positive integer.
+ * @return string name of the event
+ * @throws Exception if $eventID is not a positive integer
  */
 function getEventName($eventID){
     if(!isInteger($eventID) || $eventID < 1){

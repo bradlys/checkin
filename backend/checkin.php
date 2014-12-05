@@ -3,10 +3,37 @@
 require_once 'settings.php';
 require_once 'customer.php';
 require_once 'organization.php';
-require_once 'misc.php';
 
 /**
- * Checks in the customer.
+ * This file handles checking in and checking out customers for events.
+ */
+
+/**
+ * Checks in the customer
+ * @param string $birthday Customer's birthday in YYYY-MM-DD H:i:s format
+ * @param int $checkinID Customer's previous checkin ID, if applicable. This is
+ * used to update the previous checkin. (Say you changed the payment amount or
+ * the customer birthday, etc.) Put in 0 if a new checkin.
+ * @param int $cid Customer ID number
+ * @param string $email Customer's email address
+ * @param int $eventID Event ID that the customer is being checked into
+ * @param string $name Customer name
+ * @param int $numberOfFreeEntrances Number of free entrances they have currently
+ * @param int $payment Amount they paid for this checkin
+ * @param boolean $useFreeEntrance Whether or not to use a free entrance for this
+ * checkin
+ * @return int Returns the checkin ID number of the current checkin. If the 
+ * checkin is a new one then it returns that. If it is an old one then it returns
+ * the checkin ID you gave for $checkinID.
+ * @throws Exception if $name is empty
+ * @throws Exception if $eventID is not a non-negative integer
+ * @throws Exception if $payment is not a non-negative integer
+ * @throws Exception if $checkinID is not a non-negative integer
+ * @throws Exception if $numberOfFreeEntrances is not a non-negative integer
+ * @throws Exception if $numberOfFreeEntrances is 0, the checkin hasn't already used
+ * a free entrance, and you try to use a free entrance for the current checkin
+ * @throws Exception if $payment is 0, a free entrance hasn't already been used
+ * for the current checkin, and you don't use a free entrance to get in.
  */
 function checkinCustomer($birthday, $checkinID, $cid, $email, $eventID, $name, $numberOfFreeEntrances, $payment, $useFreeEntrance){
     $organizationID = inferOrganizationID($eventID);
@@ -104,8 +131,10 @@ function checkinCustomer($birthday, $checkinID, $cid, $email, $eventID, $name, $
  * @param int $checkinID Checkin ID
  * @param int $cid Customer ID
  * @param int $eventID Event ID
- * @throws Exception When Customer ID or Event ID are not positive integers.
- * When trying to checkout a customer who is not checked in.
+ * @throws Exception if $eventID is not a non-negative integer
+ * @throws Exception if $cid is not a non-negative integer
+ * @throws Exception if $checkinID is not a non-negative integer
+ * @throws Exception if customer is not checked in
  */
 function checkoutCustomer($checkinID, $cid, $eventID){
     if(!isInteger($eventID) || intval($eventID) < 1){

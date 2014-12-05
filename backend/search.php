@@ -2,18 +2,22 @@
 
 require_once 'settings.php';
 require_once 'customer.php';
-require_once 'event.php';
-require_once 'organization.php';
-require_once 'checkin.php';
-require_once 'misc.php';
 
 /**
- * Finds customers whose names match in the databased based upon LIKE %name% and eventID.
- * This function will limit the return of results to whatever limit is set to, or by default 11.
- * @param array $args contains an array with value for keys name, limit, and eventID
- * @return array with array['customers'] containing an array of customers with information. 
- * And array['numberOfExtra'] contains an integer displaying how many customers were not 
- * returned in the search results.
+ * Searches the customers table and returns the results
+ * for a specific event (this is function is used for the 
+ * front-end events.php page)
+ * @param int $eventID Event ID
+ * @param int $limit Limit the returned search results to a specific amount
+ * @param string $name Name of the customer
+ * @returns array Where $array['customers'] contains an array of customers
+ * from index 0 up to $limit with keys such as birthday, checkinID, cid,
+ * email, payment, name, visits, isCheckedIn, usedFreeEntrance, and
+ * numberOfFreeEntrances. It also contains a second key called 
+ * $array['numberOfExtra'] which specifies how many people were not included
+ * in the returned result but matched the criteon of LIKE %$name%
+ * @throws Exception if $eventID is not a positive integer
+ * @throws Exception if $limit is not a positive integer
  */
 function searchCustomers($eventID, $limit, $name){
     if(!isInteger($eventID) || $eventID < 1){
@@ -75,11 +79,16 @@ function searchCustomers($eventID, $limit, $name){
 }
 
 /**
- * Searches the database for events that match LIKE %name% and returns them in JSON format
- * @param String $name Name of Event
+ * Searches the database for events that match LIKE %name% and returns 
+ * them in an array. Results are returned in order by events.date descending.
+ * @param string $name Name of Event
  * @param int $organizationID Organization ID
- * @return array with array of events array[0]['id'] being eventid, and
- * array[0]['name'] being the event name
+ * @return array with keys $array[a] to $array[b] where a = 0 and b = infinite
+ * each containing an event. An event contains keys date, id, and name. So,
+ * $array[0]['date'] would give me the date of the most recent event and
+ * $array[0]['name'] would give me the name of the most recent event and
+ * $array[2]['id'] would give me the ID number of the third most recent event
+ * and so on.
  * @throws Exception When Organization ID is not a positive integer.
  */
 function searchEvents($name, $organizationID){
@@ -104,11 +113,13 @@ function searchEvents($name, $organizationID){
 }
 
 /**
- * Searches the database for organizations that match LIKE %name% and returns them in JSON format
- * @param String $name Name of Organization
- * @return array with array of organizations array[0]['id'] being organizationid, and
- * array[0]['name'] being the organization name
- * @throws 
+ * Searches the database for organizations that match LIKE %name%
+ * and returns them in an array
+ * @param string $name name to search for
+ * @return array with array of organizations $array[0]['id'] being the
+ * organization's id number and $array[0]['name'] being the organization name.
+ * $array[2] would give me the array of the 3rd organization that matched the
+ * search result.
  */
 function searchOrganizations($name){
     $sql = "SELECT * 
