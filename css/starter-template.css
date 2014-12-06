@@ -97,6 +97,13 @@ body .border-highlight {
     width: 50%;
     float: right;
 }
+
+.no-gutter > [class*='col-'] {
+    padding-right:0;
+    padding-left:0;
+}
+
+
 /*
 .paymentArea {
     padding-left: 10px;
