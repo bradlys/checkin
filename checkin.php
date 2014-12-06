@@ -137,9 +137,10 @@ printHeader();
             </div>
           </div>
           <div class="col-sm-6 col-md-3"></div>
+          <div class="col-sm-6 col-md-3">
           <?php
           if($isFreeEntranceEnabled){ ?>
-          <div class="panel panel-default col-sm-6  col-md-3 payment-options-box">
+          <div class="panel panel-default payment-options-box">
               <div class="form-group payment-options-area">
                   <div class="checkbox useFreeEntrance">
                       <label>
@@ -153,11 +154,9 @@ printHeader();
               </div>
           </div>
           <?php
-          } else { ?>
-          <div class="col-sm-6 col-md-3"></div>
-          <?php
           }
           ?>
+          </div>
       </div>
       </div>
       </div>
