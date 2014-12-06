@@ -80,39 +80,67 @@ printHeader();
               </div>
             </div>
             <div class="panel-body" id="result">
-                <div class="panel panel-default col-sm-3 paymentBox">
-                    <div class="panel-heading">Payment</div>
+              <div class="row">
+                <div class="panel panel-default col-sm-6 col-md-3 payment-box">
+                    <div class="panel-heading">
+                        Payment
+                    </div>
                     <div class="panel-footer">
-                    <form class="form-horizontal" role="form">
-                    <div class="form-group paymentArea">
-                    <div class="btn-group">
-                        <div class="col-sm-2 customMoney">
-                        <input type="text" class="form-control" id="modalMoney" placeholder="$XX" autocomplete="off" />
-                        </div>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$0</button>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$3</button>
-                    </div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-default modalMoneyClearer">$5</button>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$6</button>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$7</button>
-                        <button type="button" class="btn btn-default modalMoneyClearer">$8</button>
-                    </div>
-                    </div>
-                    </form>
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group paymentArea">
+                                <div class="row">
+                                    <div class="col-xs-3"></div>
+                                    <div class="btn-group col-xs-6 money-btn-row">
+                                        <div class="row">
+                                        <div class="col-xs-6 customMoney">
+                                            <input type="text" class="form-control" id="modalMoney" placeholder="$XX" autocomplete="off" />
+                                        </div>
+                                        <div class="col-xs-3 money-btn">
+                                            <button type="button" class="btn btn-default modalMoneyClearer">$0</button>
+                                        </div>
+                                        <div class="col-xs-3 money-btn">
+                                            <button type="button" class="btn btn-default modalMoneyClearer">$3</button>
+                                        </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-xs-3"></div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-xs-3"></div>
+                                    <div class="btn-group col-xs-6 money-btn-row">
+                                    <div class="row">
+                                        <div class="col-xs-3 money-btn">
+                                            <button type="button" class="btn btn-default modalMoneyClearer">$5</button>
+                                        </div>
+                                        <div class="col-xs-3 money-btn">
+                                            <button type="button" class="btn btn-default modalMoneyClearer">$6</button>
+                                        </div>
+                                        <div class="col-xs-3 money-btn">
+                                            <button type="button" class="btn btn-default modalMoneyClearer">$7</button>
+                                        </div>
+                                        <div class="col-xs-3 money-btn">
+                                            <button type="button" class="btn btn-default modalMoneyClearer">$8</button>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    <div class="col-xs-3"></div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-6 col-md-3 birthday-box">
                   <label for="modalDate">Birthday</label>
                   <div class='input-group date' id="modalDate">
                     <input type='text' class="form-control" id="modalDateForm" data-date-pickTime="false" data-date-format="YYYY-MM-DD" />
                     <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
                   </div>
                 </div>
+                <div class="col-sm-6 col-md-3"></div>
                 <?php
                 if($isFreeEntranceEnabled){ ?>
-                <div class="panel panel-default col-sm-3 paymentOptionsBox">
-                    <div class="form-group paymentOptionsArea">
+                <div class="panel panel-default col-sm-6  col-md-3 payment-options-box">
+                    <div class="form-group payment-options-area">
                         <div class="checkbox useFreeEntrance">
                             <label>
                                 <input type="checkbox" id="useFreeEntrance" /> Use Free Entrance
@@ -125,8 +153,12 @@ printHeader();
                     </div>
                 </div>
                 <?php
+                } else { ?>
+                <div class="col-sm-6 col-md-3"></div>
+                <?php
                 }
                 ?>
+            </div>
             </div>
             </div>
             <div class="modal-footer">

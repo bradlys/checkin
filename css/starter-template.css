@@ -1,8 +1,13 @@
+.birthday-box{
+    height:80px;
+    width:220px;
+}
+
 body {
     padding-top: 50px;
-    min-width:1000px;        /* suppose you want minimun width of 1000px */
-    width: auto !important;  /* Firefox will set width as auto */
-    width:1000px;            /* As IE ignores !important it will set width as 1000px; */
+    //min-width:1000px;        /* suppose you want minimun width of 1000px */
+    //width: auto !important;  /* Firefox will set width as auto */
+    //width:1000px;            /* As IE ignores !important it will set width as 1000px; */
 }
 
 body .border-highlight {
@@ -71,8 +76,7 @@ body .border-highlight {
     display: none;
 }
 
-.customMoney {
-    width: 42%;
+.customMoney, .money-btn, .money-btn-row {
     padding-left: 0px;
     padding-right: 0px;
 }
@@ -93,21 +97,34 @@ body .border-highlight {
     width: 50%;
     float: right;
 }
-
+/*
 .paymentArea {
     padding-left: 10px;
 }
-
-.paymentBox {
+*/
+.payment-box {
     padding-left: 0px;
     padding-right: 0px;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    width: 220px;
+    height: 140px;
 }
 
-.paymentOptionsArea {
+.payment-options-area {
+    padding-left:10px;
+    padding-right:10px;
 }
 
-.paymentOptionsBox {
-    float: right;
+.payment-options-box {
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    width: 220px;
+    height: 140px;
 }
 
 .paymentAmount {
