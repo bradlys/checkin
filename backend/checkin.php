@@ -33,7 +33,7 @@ require_once 'organization.php';
  * @throws Exception if $numberOfFreeEntrances is 0, the checkin hasn't already used
  * a free entrance, and you try to use a free entrance for the current checkin
  * @throws Exception if $payment is 0, a free entrance hasn't already been used
- * for the current checkin, and you don't use a free entrance to get in.
+ * for the current checkin and you don't use a free entrance to get in.
  */
 function checkinCustomer($birthday, $checkinID, $cid, $email, $eventID, $name, $numberOfFreeEntrances, $payment, $useFreeEntrance){
     $organizationID = inferOrganizationID($eventID);
@@ -48,15 +48,15 @@ function checkinCustomer($birthday, $checkinID, $cid, $email, $eventID, $name, $
         throw new Exception("Please input a non-negative integer for payment.");
     }
     if(!isInteger($checkinID) || $checkinID < 0){
-        //0 is not positive but it's a special value for this method.
-        throw new Exception("CheckinID must be a positive integer.");
+        throw new Exception("CheckinID must be a non-negative integer.");
     }
+    //if Customer doesn't exist then make them
     if(empty($cid)){
         $sql = "INSERT INTO customers VALUES ('', '$name', '$email', NULL, NULL, 0, 1, CURRENT_TIMESTAMP)";
         $query = mysql_query($sql) or die (mysql_error());
         $cid = mysql_insert_id();
     }
-    $sql = "SELECT ch.id as checkin_id
+    $sql = "SELECT ch.id as checkin_id, ch.status as checkin_status
             FROM checkins AS ch
             JOIN customers AS cu
             ON ch.customer_id = cu.id
@@ -99,12 +99,11 @@ function checkinCustomer($birthday, $checkinID, $cid, $email, $eventID, $name, $
         if($isFreeEntranceEnabled && $useFreeEntrance){
             useFreeEntrance($cid, mysql_insert_id());
         }
-        $incrementCustomerVisitsSQL =
-            "UPDATE customers
-            SET customers.visits = customers.visits + 1
-            WHERE customers.id = '$cid'";
-        mysql_query($incrementCustomerVisitsSQL) or die (mysql_error());
+        incrementCustomerVisits($cid);
     } else {
+        if($result['checkin_status'] == 0){
+            incrementCustomerVisits($cid);
+        }
         $sql = "UPDATE checkins
                 SET payment = '$payment', checkins.status = '1'
                 WHERE id = '$checkinID'";
@@ -150,6 +149,10 @@ function checkoutCustomer($checkinID, $cid, $eventID){
     if(!isInteger($checkinID) || intval($checkinID) < 1){
         throw new Exception("Checkin ID must be a positive integer.");
     }
+    $hasCustomerUsedFreeEntrance = hasCustomerUsedFreeEntrance($cid, $checkinID);
+    if($hasCustomerUsedFreeEntrance){
+        unuseFreeEntrance($cid, $checkinID);
+    }
     $checkoutCustomerSQL =
         "UPDATE checkins
         SET checkins.status = '0'
@@ -160,10 +163,6 @@ function checkoutCustomer($checkinID, $cid, $eventID){
         SET customers.visits = customers.visits - 1
         WHERE customers.id = '$cid'";
     mysql_query($decrementCustomerVisitsSQL) or die (mysql_error());
-    $hasCustomerUsedFreeEntrance = hasCustomerUsedFreeEntrance($cid, $checkinID);
-    if($hasCustomerUsedFreeEntrance){
-        unuseFreeEntrance($cid, $checkinID);
-    }
     $toReturn = array();
     $toReturn['checkinID'] = $checkinID;
     $toReturn['numberOfFreeEntrances'] = getCustomerNumberOfFreeEntrances($cid);

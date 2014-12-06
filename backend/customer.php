@@ -5,6 +5,32 @@ require_once 'settings.php';
 
 
 /**
+ * Decrements the number of visits for provided customer by 1
+ * @param int $cid Customer ID
+ * @throws Exception if $cid is not a positive integer
+ * @throws Exception if number of customer visits is less than 1
+ */
+function decrementCustomerVisits($cid){
+    if(!isInteger($cid) || $cid < 1){
+        throw new Exception("Customer ID must be a positive integer");
+    }
+    $getCustomerVisitsSQL =
+            "SELECT visits
+            FROM customers
+            WHERE customers.id = '$cid'";
+    $visits = mysql_query($getCustomerVisitsSQL) or die(mysql_error());
+    $visits = mysql_fetch_array($visits);
+    if($visits['visits'] < 1){
+        throw new Exception("Customer visits is less than 1 and cannot decrement.");
+    }
+    $decrementCustomerVisitsSQL =
+            "UPDATE customers
+            SET customers.visits = customers.visits - 1
+            WHERE customers.id = '$cid'";
+    mysql_query($decrementCustomerVisitsSQL) or die (mysql_error());
+}
+
+/**
  * Sets customer birthday to NULL
  * @param int $cid Customer ID
  * @throws Exception When Customer ID is not a positive integer.
@@ -322,6 +348,22 @@ function hasCustomerUsedFreeEntrance($cid, $checkinID){
     else{
         return false;
     }
+}
+
+/**
+ * Increments the number of visits for provided customer by 1
+ * @param int $cid Customer ID
+ * @throws Exception if $cid is not a positive integer
+ */
+function incrementCustomerVisits($cid){
+    if(!isInteger($cid) || $cid < 1){
+        throw new Exception("Customer ID must be a positive integer");
+    }
+    $incrementCustomerVisitsSQL =
+            "UPDATE customers
+            SET customers.visits = customers.visits + 1
+            WHERE customers.id = '$cid'";
+    mysql_query($incrementCustomerVisitsSQL) or die (mysql_error());
 }
 
 /**

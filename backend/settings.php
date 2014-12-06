@@ -1,6 +1,7 @@
 <?php
 
 include_once "database.php";
+require_once 'misc.php';
 /**
  * This file contains various settings but also includes
  * the database settings (A requirement to get do any SQL queries). 
