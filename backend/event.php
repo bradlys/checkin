@@ -227,20 +227,65 @@ function getEventNumberOfFreeEntrancesUsed($eventID){
     return 0;
 }
 
-
+/**
+ * Gets the number of new customers as of that event.
+ * This is determined by whether or not a customer has checked into an event
+ * that has a date before the provided event ID's date.
+ * @param int $eventID Event ID
+ * @return int
+ * @throws Exception if $eventID is not a positive integer
+ * @throws Exception if $eventID does not reference an event with a valid date
+ * @throws Exception if $eventID is not an event in the database
+ */
 function getEventNumberOfNewCustomers($eventID){
     if(!isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID must be a positive integer");
     }
-    //Method 1:
-    //Get customers who checked into this event (checkins table)
-    //Get events before this event (events and eventattributes table)
-    //See if those customers have checked into those events (checkins cross correlation)
-    //If not, they're a new customer. (+1 to tally)
-    //Method 2:
-    //Get to this line
-    //???
-    //Profit!
+    $selectEventDateSQL = "SELECT date FROM events WHERE events.id = '$eventID'";
+    $selectEventDateQuery = mysql_query($selectEventDateSQL) or die(mysql_error());
+    $eventDate = mysql_fetch_array($selectEventDateQuery);
+    if($eventDate['date'] == '0000-00-00 00:00:00' || empty($eventDate)){
+        throw new Exception("Provided Event ID does not have a date.");
+    }
+    $eventDate = $eventDate['date'];
+    $selectCustomerIDsFromEventSQL = "
+        SELECT customer_id
+        FROM checkins
+        WHERE checkins.event_id = '$eventID'
+        AND checkins.status = '1'
+        ";
+    $selectEventIDsBeforeEventDateSQL = "
+        SELECT id
+        FROM events
+        WHERE events.date < '$eventDate'
+        AND events.date != '0000-00-00 00:00:00'
+        ";
+    $countCustomersBeforeEventDateSQL = "
+        SELECT COUNT(*) as count
+        FROM (
+        SELECT top_ch.customer_id as cid
+        FROM checkins as top_ch
+        WHERE top_ch.status = '1'
+        AND top_ch.event_id IN ($selectEventIDsBeforeEventDateSQL)
+        AND top_ch.customer_id IN ($selectCustomerIDsFromEventSQL)
+        GROUP BY top_ch.customer_id) as groupedresults
+        ";
+    $countCustomersBeforeEventDateQuery = mysql_query($countCustomersBeforeEventDateSQL) or die(mysql_error());
+    $numberOfExistingCustomers = mysql_fetch_array($countCustomersBeforeEventDateQuery);
+    if(!empty($numberOfExistingCustomers)){
+        $countCustomersFromEventSQL = "
+            SELECT COUNT(*) as count
+            FROM checkins
+            WHERE checkins.event_id = '$eventID'
+            AND checkins.status = '1'";
+        $countCustomersFromEventQuery = mysql_query($countCustomersFromEventSQL) or die(mysql_error());
+        $numberOfCustomers = mysql_fetch_array($countCustomersFromEventQuery);
+        if(empty($numberOfCustomers)){
+            throw new Exception("Invalid Event ID provided.");
+        }
+        return intval($numberOfCustomers['count'] - $numberOfExistingCustomers['count']);
+    }
+    throw new Exception("Invalid Event ID provided.");
 }
 
 /**
