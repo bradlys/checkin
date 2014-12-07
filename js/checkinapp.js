@@ -30,7 +30,9 @@ if($("#organizationStatistics").length > 0){
 }
 
 /**
- * Sets up the event date in the event modal
+ * Puts the supplied date into the DateTimePicker which is 
+ * identified by #modalDate.
+ * This is typically found in the checkin and event modal
  * @param {string} date date string
  * @param {boolean} showTime Show time or not.
  */
@@ -101,7 +103,7 @@ function organizationsPage(){
 }
 
 /**
- * Sets up the check-in page
+ * Sets up the checkin page
  */
 function checkinPage(){
     setupCheckinModal();
@@ -205,8 +207,7 @@ function setupCheckinModal(){
 }
 
 /**
- * Sets up the Checkout Modal. (#modalCheckout)
- * @returns {undefined}
+ * Sets up the checkout button in the checkin modal. (#modalCheckout)
  */
 function setupModalCheckout(){
     $("#modalCheckedout").removeClass("btn-success")
@@ -251,7 +252,6 @@ function setupModalCheckout(){
  * the modal needs to be setup to know that a
  * customer has been checked out. So, it changes
  * the button from "Checkout" to "Checked-out"
- * @returns {undefined}
  */
 function setupModalCheckedout(){
     $("#modalCheckedout").unbind();

@@ -3,7 +3,16 @@
 ## What is it?
 
 Check-In App (CIA) is a web application used to check-in customers at events an organization holds.  
-One of the things that I do frequently is social dance. Social dances frequently don't keep good track of how many customers paid for entry. In fact, the way many dances find out how many people entered the dance is through counting how much money they have in the till at the end of the night and dividing by the cost to enter. The reason for this is that it is difficult to keep physical records and difficult to interpret the data in a meaningful way when you do keep the records. Even when they do keep physical records, they simply keep a tally of how many people paid to enter and possibly how much they paid (e.g. Different rates for students, regulars, someone paid for an extra lesson, etc.). Which is only slightly better than just counting the till at the end of night. This is where CIA comes in and makes sensible data out of customer entries. Right now, CIA is in active development. An active demo of CIA is viewable here at http://bradly.me/checkin/
+
+The target audience of this application is social dances. Social dances frequently don't keep track of how many customers paid for entry. The way many dances find out how many people entered the dance is through counting how much money they have in the till at the end of the night. The reason for this is that it is difficult to keep accurate physical records and to interpret the data in a meaningful way. And physical records tend to be kept as a series of tally marks to indicate how many people paid to enter under a couple columns for different entry costs. This is only slightly better than just counting the till at the end of night. I can proudly say that I've seen one dance step up their tally marks even further by marking times of the night on the tally sheet and how many tally marks were made between times. (e.g. There were 20 tally marks between 9:00-9:30) That's work and still lags behind what you could do. This is where CIA comes in, streamlines the process, and makes sensible data out of customer entries.  
+
+Right now, CIA is in active development. An active production demo of CIA is viewable at http://bradly.me/checkin/
+
+## How does it work?
+
+### Overview
+
+Check-In App starts at the organization selection screen. There, you search for an organization through the search box or click it if it already appears. You can also create a new organization by clicking, "Add new organization". From there, you click go on the modal that pops up or edit the organization info and hit save. Once hitting go, it will take you to the events listing for that organization. There you can search for an event, edit existing events, and create a new event. Click an event, put in some costs (if you want), make sure the date is good, and hit go. That will load up the event and from there you can start checking in people. You do that by searching for their name, clicking their name, loading relevant information into the modal, and hitting check in. If you didn't do something correctly, the modal will let you know. Adding a new customer is easy as well, just click on the "Add new user" button in the search results box. If you want to check a user out then you can click on them and click check out. You can also click on the "About event" link at the top of the checkin page to view the most recent 500 check ins for that event. From there, you can click on one of the entries and it will load up a modal where you can check out the customer for that entry.
 
 # How to setup CIA
 
@@ -13,7 +22,7 @@ CIA requires PHP 5.2+ and a MySQL database.
 
 ### Getting started
 
-The first step is to just say, "no". CIA is currently not ready for deployment. But, I'm not going to stop you from reading on and trying anyway. The second step is to checkout the latest (hopefully) stable release of CIA. Follow up with good configuration settings below.
+The first step is to just say, "no". CIA is currently not ready for deployment. But, I'm not going to stop you from reading on and trying anyway. The second step is to checkout the latest (hopefully) stable release of CIA. At the moment, CIA does not have a stable release that would qualify for real world production use. In the future, you will follow up with good configuration settings described below.
 
 ### Database configuration
 
@@ -22,7 +31,7 @@ The first step is to just say, "no". CIA is currently not ready for deployment. 
 
 ### Configuring the settings
 
-Open up database.php (backend/database.php) in a text-editor. Fill in the username, password, database name, and host information as necessary. Save. Below is an example of what you could enter in the settings.php file. Also set the variable (PRODUCTION_SERVER) in backend/settings.php to true or false depending on whether this is a production server.  
+Open up database.php (backend/database.php) in a text-editor. Fill in the username, password, database name, and host information as necessary. Save. Below is an example of what you could enter in the settings.php file. Also, set the variable (PRODUCTION_SERVER) in backend/settings.php to true or false depending on whether this is a production server.  
 
 Example:
 > define('DB\_USER', 'CoolGuyStan');  
@@ -36,5 +45,5 @@ I did, right? OK, just making sure. There's more you'll need to do in the future
 
 # Work To Be Done
 
-Check the Issues page on https://github.com/Schlenkerb/checkin/issues
+I am not currently accepting work from others on this project. However, you're welcome to check the Issues page on https://github.com/Schlenkerb/checkin/issues 
 
