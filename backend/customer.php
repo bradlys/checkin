@@ -53,7 +53,7 @@ function deleteCustomerBirthday($cid){
  * @throws Exception if $birthday is not in YYYY-MM-DD H:i:s format
  */
 function editCustomerBirthday($cid, $birthday){
-    if(empty($birthday)){
+    if(empty($birthday) || $birthday == "0000-00-00 00:00:00"){
         return deleteCustomerBirthday($cid);
     }
     if(!isInteger($cid) || $cid < 1){

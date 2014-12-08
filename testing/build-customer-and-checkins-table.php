@@ -13,8 +13,12 @@ if(!$ignite){
     return;
 }
 $possiblePayments = array(5, 7, 10);
-$buildCustomersLimit = intval($_GET['buildCustomers']);
-$buildCheckinsLimit = intval($_GET['buildCheckins']);
+if($buildCustomers){
+    $buildCustomersLimit = intval($_GET['buildCustomers']);
+}
+if($buildCheckins){
+    $buildCheckinsLimit = intval($_GET['buildCheckins']);
+}
 if($buildCustomers){
     $firstNames = fopen("yob2013.txt", "r");
     $firstNamesArray = fgetcsv($firstNames);
@@ -27,6 +31,12 @@ if($buildCustomers){
     if($buildCustomersLimit < 5000){
         echo "<table><tr><td>Name</td><td>Email</td><td>Birthday</td><td>Payment</td><td>Event</td></tr>";
     }
+    $allEventsSQL = "SELECT id FROM events WHERE events.status = '1'";
+    $allEventsQuery = mysql_query($allEventsSQL) or die(mysql_error());
+    $allEventsArray = array();
+    while($event = mysql_fetch_array($allEventsQuery)){
+        $allEventsArray[] = $event['id'];
+    }
     for($i = 0; $i < $buildCustomersLimit; $i++){
         $randomFirst = mt_rand(0, $firstArrayLen);
         $randomLast = mt_rand(0, $lastArrayLen);
@@ -36,7 +46,7 @@ if($buildCustomers){
         $email = str_replace(" ", "", $name) . "@gmail.com";
         $birthday = date('Y-m-d H:i:s', $randomDate);
         $randomPay = $possiblePayments[$randomPay];
-        $randomEvent = mt_rand(1, 52);
+        $randomEvent = $allEventsArray[mt_rand(0, $eventsCount)];
         if($buildCustomersLimit < 5000){
             echo "<tr><td>".$name."</td><td>".$email."</td><td>".$birthday."</td><td>".$randomPay."</td><td>".$randomEvent."</td></tr>";
         }
@@ -53,13 +63,20 @@ if($buildCheckins){
     while($customer = mysql_fetch_array($allCustomersQuery)){
         $customerArray[] = $customer;
     }
+    $allEventsSQL = "SELECT id FROM events WHERE events.status = '1'";
+    $allEventsQuery = mysql_query($allEventsSQL) or die(mysql_error());
+    $allEventsArray = array();
+    while($event = mysql_fetch_array($allEventsQuery)){
+        $allEventsArray[] = $event['id'];
+    }
+    $eventsCount = count($allEventsArray) - 1;
     $customerCount = count($customerArray) - 1;
     if($buildCheckinsLimit < 5000){
         echo "<table><tr><td>#</td><td>ID</td><td>Name</td><td>Email</td><td>Birthday</td><td>Payment</td><td>Event</td></tr>";
     }
     for($i = 0; $i < $buildCheckinsLimit; $i++){
         $randomCustomer = mt_rand(0,$customerCount);
-        $randomEvent = mt_rand(1, 52);
+        $randomEvent = $allEventsArray[mt_rand(0, $eventsCount)];
         $randomCustomer = $customerArray[$randomCustomer];
         if(getCheckinIDForCustomerAndEvent($randomCustomer['id'], $randomEvent) == 0){
             $randomPay = mt_rand(0, 2);
