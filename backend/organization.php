@@ -2,6 +2,30 @@
 
 require_once 'settings.php';
 
+/**
+ * Functions related to getting, editing, creating, and statistical analysis of 
+ * organiations. Organizations hold events. There is a one to many relation
+ * with organizations to events. Similarly for organizations and
+ * organizationattributes.
+ * 
+ * Organizations are stored in the organizations table with this schema
+ * Field           | Type         | Null | Key | Default           | Extra
+ * id              | int(11)      | NO   | PRI | NULL              | auto_increment
+ * name            | varchar(127) | NO   | MUL | NULL              | 
+ * email           | varchar(127) | NO   |     | NULL              | 
+ * status          | tinyint(1)   | NO   |     | 1                 | 
+ * timestamp       | timestamp    | NO   |     | CURRENT_TIMESTAMP | 
+ * 
+ * Organizations Attributes are stored in the organizationattributes table
+ * with this schema
+ * Field              | Type          | Null | Key | Default           | Extra
+ * id                 | int(11)       | NO   | PRI | NULL              | auto_increment
+ * organization_id    | int(11)       | NO   |     | NULL              | 
+ * name               | varchar(128)  | NO   |     | NULL              | 
+ * value              | varchar(8192) | NO   |     | NULL              | 
+ * status             | tinyint(1)    | NO   |     | 1                 | 
+ * timestamp          | timestamp     | NO   |     | CURRENT_TIMESTAMP | 
+ */
 
 /**
  * Method for editing the organization information and creating organizations

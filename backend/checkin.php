@@ -5,7 +5,37 @@ require_once 'customer.php';
 require_once 'organization.php';
 
 /**
- * This file handles checking in and checking out customers for events.
+ * Below are functions related to checking in and checking out customers.
+ * Typically, one of these two functions is called through an AJAX request,
+ * and it is to check in a brand new customer, check in an existing customer,
+ * edit an existing check in, or to check out a customer.
+ * 
+ * If a new customer is being checked in then we have to create the customer in 
+ * the customer table as well as create an entry in the checkins table for them.
+ * 
+ * If an existing customer is being checked in then we need to update their
+ * information in the customers table appropriately (along with any possible
+ * information that goes in the customerattributes table) and check them in.
+ * 
+ * If an existing customer is simply updating their customer information or
+ * check in information (their name, payment amount, number of free entrances, 
+ * etc.) then we need to find their checkin entry and update it. Perform
+ * the same for their customer entry.
+ * 
+ * If an existing customer who is checked in needs to be checked out then
+ * we need to update their customer information and turn off the checkin entry.
+ * 
+ * Events have many checkins and customers have many checkins. In other words, 
+ * events are one to many checkins and customers are one to many checkins.
+ * 
+ * checkins are stored in the events table with this schema
+ * Field           | Type         | Null | Key | Default           | Extra
+ * id              | int(11)      | NO   | PRI | NULL              | auto_increment
+ * customer_id     | int(11)      | NO   | MUL | NULL              | 
+ * event_id        | int(11)      | NO   | MUL | NULL              | 
+ * payment         | int(11)      | NO   |     | NULL              | 
+ * status          | tinyint(1)   | NO   |     | 1                 | 
+ * timestamp       | timestamp    | NO   |     | CURRENT_TIMESTAMP | 
  */
 
 /**

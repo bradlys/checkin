@@ -3,6 +3,31 @@
 require_once 'settings.php';
 
 /**
+ * Functions related to getting, editing, creating, and
+ * statistical analysis of events. Many functions reference the checkins table
+ * as well as the events and eventattributes table. The reason is organizations 
+ * have many events and events have many checkins.
+ * 
+ * Events are stored in the events table with this schema
+ * Field           | Type         | Null | Key | Default           | Extra
+ * id              | int(11)      | NO   | PRI | NULL              | auto_increment
+ * organization_id | int(11)      | NO   | MUL | NULL              | 
+ * name            | varchar(127) | NO   |     | NULL              | 
+ * date            | timestamp    | YES  | MUL | NULL              | 
+ * status          | tinyint(1)   | NO   |     | 1                 | 
+ * timestamp       | timestamp    | NO   |     | CURRENT_TIMESTAMP | 
+ * 
+ * Event Attributes are stored in the eventattributes table with this schema
+ * Field       | Type          | Null | Key | Default           | Extra
+ * id          | int(11)       | NO   | PRI | NULL              | auto_increment
+ * event_id    | int(11)       | NO   |     | NULL              | 
+ * name        | varchar(128)  | NO   |     | NULL              | 
+ * value       | varchar(8192) | NO   |     | NULL              | 
+ * status      | tinyint(1)    | NO   |     | 1                 | 
+ * timestamp   | timestamp     | NO   |     | CURRENT_TIMESTAMP | 
+ */
+
+/**
  * Sets event date to null
  * @param int $eventID Event ID
  * @throws Exception if $eventID is not a positive integer
@@ -25,7 +50,7 @@ function deleteEventDate($eventID){
  * @param int $eventID Event ID
  * @param string $name Name of Event
  * @param int $organizationID Organization ID
- * @returns int Event ID of the newly created event or the existing event
+ * @return int Event ID of the newly created event or the existing event
  * @throws Exception if $organizationID is not a positive integer
  * @throws Exception if $eventID is not a non-negative integer
  * @throws Exception if $name is empty
@@ -301,7 +326,7 @@ function getEventNumberOfCheckins($eventID){
         throw new Exception("Event ID must be a positive integer");
     }
     $getEventNumberOfCheckinsSQL =
-    "SELECT SUM(*) as totalCheckins
+    "SELECT COUNT(*) as totalCheckins
     FROM checkins
     WHERE checkins.event_id = '$eventID'
     AND checkins.status = '1'";
@@ -368,7 +393,7 @@ function getEventCheckins($eventID){
     }
     $getEventCheckinsSQL =
     "SELECT checkins.id as id, checkins.customer_id as cid, name,
-    payment, checkins.timestamp, checkins.status as status
+    payment, checkins.timestamp as timestamp, checkins.status as status
     FROM checkins
     LEFT JOIN customers
     on customers.id = checkins.customer_id
@@ -393,7 +418,8 @@ function getEventCosts($eventID){
     if(!isset($eventID) || !isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID must be a positive integer");
     }
-    $sql = "SELECT * FROM eventattributes
+    $sql = "SELECT value 
+            FROM eventattributes
             WHERE event_id = '$eventID'
             AND eventattributes.status = '1'
             AND name = 'Event Costs'";
@@ -441,7 +467,9 @@ function getEventName($eventID){
     if(!isInteger($eventID) || $eventID < 1){
         throw new Exception("Event ID must be a positive integer");
     }
-    $sql = "SELECT name FROM events WHERE id = '$eventID'";
+    $sql = "SELECT name 
+            FROM events 
+            WHERE id = '$eventID'";
     $query = mysql_query($sql) or die (mysql_error());
     $result = mysql_fetch_array($query);
     if($result){

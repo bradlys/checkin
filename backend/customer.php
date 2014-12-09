@@ -1,8 +1,32 @@
 <?php
 
-
 require_once 'settings.php';
 
+/**
+ * Functions related to creation, editing, and deletion of customers
+ * and customer information. Some of which is not solely located in the 
+ * customers and customerattributes table.
+ * 
+ * Customers are stored in the customers table with this schema
+ * Field           | Type         | Null | Key | Default           | Extra
+ * id              | int(11)      | NO   | PRI | NULL              | auto_increment
+ * name            | int(11)      | NO   | MUL | NULL              | 
+ * email           | varchar(127) | NO   |     | NULL              | 
+ * user_id         | timestamp    | YES  | MUL | NULL              | 
+ * birthday        | timestamp    | YES  |     | NULL              | 
+ * visits          | int(11)      | NO   | MUL | 0                 | 
+ * status          | tinyint(1)   | NO   |     | 1                 | 
+ * timestamp       | timestamp    | NO   |     | CURRENT_TIMESTAMP | 
+ * 
+ * Customer Attributes are stored in the customerattributes table with this schema
+ * Field       | Type          | Null | Key | Default           | Extra
+ * id          | int(11)       | NO   | PRI | NULL              | auto_increment
+ * customer_id | int(11)       | NO   | MUL | NULL              | 
+ * name        | varchar(128)  | NO   |     | NULL              | 
+ * value       | varchar(8192) | NO   |     | NULL              | 
+ * status      | tinyint(1)    | NO   |     | 1                 | 
+ * timestamp   | timestamp     | NO   |     | CURRENT_TIMESTAMP | 
+ */
 
 /**
  * Decrements the number of visits for provided customer by 1

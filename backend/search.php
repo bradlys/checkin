@@ -10,7 +10,7 @@ require_once 'customer.php';
  * @param int $eventID Event ID
  * @param int $limit Limit the returned search results to a specific amount
  * @param string $name Name of the customer
- * @returns array Where $array['customers'] contains an array of customers
+ * @return array Where $array['customers'] contains an array of customers
  * from index 0 up to $limit with keys such as birthday, checkinID, cid,
  * email, payment, name, visits, isCheckedIn, usedFreeEntrance, and
  * numberOfFreeEntrances. It also contains a second key called 
