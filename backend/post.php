@@ -4,10 +4,9 @@ require_once 'checkin.php';
 require_once 'customer.php';
 require_once 'event.php';
 require_once 'organization.php';
-require_once 'search.php';
 require_once 'settings.php';
 
-$functions = array("checkinCustomer", "checkoutCustomer", "editEvent", "editOrganization", "getCustomerBirthday", "getCustomerByCheckinID", "getEventCosts", "getEventDate", "searchCustomers", "searchEvents", "searchOrganizations");
+$functions = array("checkinCustomer", "checkoutCustomer", "editEvent", "editOrganization", "getCustomerByCheckinID", "getEventCosts", "searchCustomers", "searchEvents", "searchOrganizations");
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
     return;

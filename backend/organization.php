@@ -28,50 +28,56 @@ require_once 'settings.php';
  */
 
 /**
+ * Creates a new organization
+ * 
+ * @param string $email organization email address
+ * @param string $name organization name
+ * @return int organization ID
+ * @throws Exception if $name is empty
+ */
+function createOrganization($email, $name){
+    if(empty($name)){
+        throw new Exception("Organization name cannot be empty.");
+    }
+    $createOrganizationSQL = "INSERT INTO organizations VALUES('', '$name', '$email', 1, CURRENT_TIMESTAMP)";
+    mysql_query($createOrganizationSQL) or die (mysql_error());
+    return mysql_insert_id();
+}
+
+/**
  * Method for editing the organization information and creating organizations
  * 
  * @param string $name Name of the organization
  * @param int $organizationID Organization ID
- * @return array $array['success'] with string saying editing was successful,
- * otherwise $array['success'] with string saying event creation was successful
- * with correlated $array['organizationID'] and $array['neworganization'] = true.
+ * @return int Organization ID
  * @throws Exception if $organizationID is not a non-negative integer
  * @throws Exception if no organization exists under $organizationID
  * @throws Exception if $name is empty
  */
 function editOrganization($name, $organizationID){
-    $name = isset($name) ? $name : "";
     //will add email later
     $email = "";
-    if((!isInteger($organizationID) || $organizationID < 0)){
-        throw new Exception("Organization ID must be a non-negative integer");
-    }
-    $array['organizationID'] = $organizationID;
-    $array['neworganization'] = false;
     if(!$name){
         throw new Exception("Name cannot be empty.");
     }
-    if(!$organizationID){
-        //create new organization
-        $sql = "INSERT INTO organizations VALUES('', '$name', '$email', 1, CURRENT_TIMESTAMP)";
-        $query = mysql_query($sql) or die (mysql_error());
-        $array['success'] = "You created a new organization!";
-        $array['organizationID'] = mysql_insert_id();
-        $array['neworganization'] = true;
-        return $array;
+    if((!isInteger($organizationID) || $organizationID < 0) && $organizationID != ""){
+        throw new Exception("Organization ID must be a non-negative integer");
     }
-    //edit existing organization
-    $sql = "SELECT * FROM organizations WHERE id = '$organizationID'";
-    $query = mysql_query($sql) or die (mysql_error());
-    if(!mysql_fetch_array($query)){
-        throw new Exception("No organization exists under id = $organizationID");
+    if($organizationID == 0){
+        return createOrganization($email, $name);
+    } else {
+        //edit existing organization
+        $selectOrganizationSQL = "SELECT * FROM organizations WHERE id = '$organizationID'";
+        $selectOrganizationQuery = mysql_query($selectOrganizationSQL) or die (mysql_error());
+        if(!mysql_fetch_array($selectOrganizationQuery)){
+            throw new Exception("No organization exists under id = $organizationID");
+        }
+        $updateOrganizationSQL = "UPDATE organizations
+                SET name = '$name', email = '$email'
+                WHERE id = '$organizationID'";
+        mysql_query($updateOrganizationSQL) or die (mysql_error());
+        return $organizationID;
     }
-    $sql = "UPDATE organizations
-            SET name = '$name', email = '$email'
-            WHERE id = '$organizationID'";
-    $query = mysql_query($sql) or die (mysql_error());
-    $array['success'] = "Successfully saved changes.";
-    return $array;
 }
 
 /**
@@ -141,3 +147,27 @@ function isFreeEntranceEnabled($organizationID){
     return false;
 }
 
+/**
+ * Searches the database for organizations that match LIKE %name%
+ * and returns them in an array
+ * @param string $name name to search for
+ * @return array with array of organizations $array[0]['id'] being the
+ * organization's id number and $array[0]['name'] being the organization name.
+ * $array[2] would give me the array of the 3rd organization that matched the
+ * search result.
+ */
+function searchOrganizations($name){
+    $sql = "SELECT * 
+            FROM organizations 
+            WHERE name LIKE '%$name%'
+            AND status = '1'";
+    $query = mysql_query($sql) or die (mysql_error());
+    $organizations = array();
+    while($organization = mysql_fetch_array($query)){
+        array_push($organizations, array(
+            "organizationResultID" => $organization['id'],
+            "organizationResultName" => $organization['name']
+        ));
+    }
+    return $organizations;
+}

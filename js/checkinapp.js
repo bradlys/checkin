@@ -347,7 +347,7 @@ function eventsPage(){
 function makeSaveOrganizationSuccessBox(text){
     var box = '<div class="alert alert-success alert-dismissable" id="modalSuccess"> \n\ \
                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button> \n\ \
-               <strong>Success!</strong> ' + text + ' \n\ \
+               <strong>Success!</strong> \n\ \
                </div>';
     return box;
 }

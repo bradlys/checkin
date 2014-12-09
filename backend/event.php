@@ -477,3 +477,37 @@ function getEventName($eventID){
     }
     return '';
 }
+
+/**
+ * Searches the database for events that match LIKE %name% and returns 
+ * them in an array. Results are returned in order by events.date descending.
+ * @param string $name Name of Event
+ * @param int $organizationID Organization ID
+ * @return array with keys $array[a] to $array[b] where a = 0 and b = infinite
+ * each containing an event. An event contains keys date, id, and name. So,
+ * $array[0]['date'] would give me the date of the most recent event and
+ * $array[0]['name'] would give me the name of the most recent event and
+ * $array[2]['id'] would give me the ID number of the third most recent event
+ * and so on.
+ * @throws Exception When Organization ID is not a positive integer.
+ */
+function searchEvents($name, $organizationID){
+    if(!isInteger($organizationID) || $organizationID < 1){
+        throw new Exception("Organization ID must be a positive integer.");
+    }
+    $sql = "SELECT *
+            FROM events
+            WHERE organization_id = '$organizationID'
+            AND name LIKE '%$name%'
+            ORDER BY date DESC";
+    $query = mysql_query($sql) or die (mysql_error());
+    $events = array();
+    while($event = mysql_fetch_array($query)){
+        array_push($events, array(
+            "eventResultDate" => $event['date'],
+            "eventResultID" => $event['id'],
+            "eventResultName" => $event['name']
+        ));
+    }
+    return $events;
+}

@@ -1,7 +1,7 @@
 <?php
 
 require_once '../backend/settings.php';
-require_once '../backend/search.php';
+require_once '../backend/customer.php';
 
 PRODUCTION_SERVER ? die() : "";
 

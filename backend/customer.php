@@ -391,6 +391,81 @@ function incrementCustomerVisits($cid){
 }
 
 /**
+ * Searches the customers table and returns the results
+ * for a specific event (this is function is used for the 
+ * front-end events.php page)
+ * @param int $eventID Event ID
+ * @param int $limit Limit the returned search results to a specific amount
+ * @param string $name Name of the customer
+ * @return array Where $array['customers'] contains an array of customers
+ * from index 0 up to $limit with keys such as birthday, checkinID, cid,
+ * email, payment, name, visits, isCheckedIn, usedFreeEntrance, and
+ * numberOfFreeEntrances. It also contains a second key called 
+ * $array['numberOfExtra'] which specifies how many people were not included
+ * in the returned result but matched the criteon of LIKE %$name%
+ * @throws Exception if $eventID is not a positive integer
+ * @throws Exception if $limit is not a positive integer
+ */
+function searchCustomers($eventID, $limit, $name){
+    if(!isInteger($eventID) || $eventID < 1){
+        throw new Exception("Event ID must be a positive integer.");
+    }
+    if(!isInteger($limit) || $limit < 1){
+        throw new Exception("Limit must be a positive integer.");
+    }
+    $numInSystemSQL =
+        "SELECT COUNT(*) as count
+        FROM customers
+        WHERE status = '1'
+        AND name LIKE '%$name%'
+        ";
+    $numInSystemQuery = mysql_query($numInSystemSQL) or die (mysql_error());
+    $numInSystemNumber = mysql_fetch_array($numInSystemQuery);
+    $numInSystemNumber = $numInSystemNumber['count'];
+    $highestVisitsAndLikeName =
+        "SELECT id as cid, name, visits, email, birthday
+        FROM customers
+        WHERE name LIKE '%$name%'
+        AND status = '1'
+        GROUP BY id
+        ORDER BY visits DESC, name ASC, id DESC
+        " . ($numInSystemNumber > ($limit + 1) ? ("LIMIT " .  $limit) : "");
+    $visitquery = mysql_query($highestVisitsAndLikeName) or die (mysql_error());
+    $customerArray = array();
+    while($visit = mysql_fetch_array($visitquery)){
+        $cid = $visit['cid'];
+        $name = $visit['name'];
+        $visits = $visit['visits'];
+        $isCheckedIn = getCustomerCheckedInPayment($cid, $eventID);
+        $checkinID = getCheckinIDForCustomerAndEvent($cid, $eventID);
+        $usedFreeEntrance = $checkinID ? hasCustomerUsedFreeEntrance($cid, $checkinID) : false;
+        $numberOfFreeEntrances = getCustomerNumberOfFreeEntrances($cid);
+        array_push($customerArray, 
+            array(
+            "birthday" => $visit['birthday'],
+            "checkinID" => $checkinID,
+            "cid" => $cid,
+            "email" => $visit['email'],
+            "payment" => ($isCheckedIn == null ? "" : $isCheckedIn),
+            "name" => $name,
+            "visits" => $visits,
+            "isCheckedIn" => ($isCheckedIn != null),
+            "usedFreeEntrance" => $usedFreeEntrance,
+            "numberOfFreeEntrances" => $numberOfFreeEntrances,
+            )
+        );
+    }
+    $resultsArray = array();
+    $resultsArray['customers'] = $customerArray;
+    if($numInSystemNumber > $limit + 1){
+        $resultsArray['numberOfExtra'] = $numInSystemNumber - $limit;
+    } else {
+        $resultsArray['numberOfExtra'] = 0;
+    }
+    return $resultsArray;
+}
+
+/**
  * Unuses a Free Entrance.
  * @param int $cid Customer ID
  * @param int $checkinID Checkin ID
