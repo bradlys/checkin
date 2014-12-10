@@ -62,7 +62,7 @@ function createCheckin($cid, $eventID, $payment){
         throw new Exception("payment must be a non-negative integer");
     }
     $countExistingCheckinsSQL = "
-        SELECT COUNT(*)
+        SELECT COUNT(*) as count
         FROM checkins
         WHERE checkins.event_id = '$eventID'
         AND checkins.customer_id '$cid'
@@ -76,6 +76,30 @@ function createCheckin($cid, $eventID, $payment){
         $insertNewCheckinSQL = "INSERT INTO checkins VALUES('', '$cid', '$eventID', '$payment', '1', CURRENT_TIMESTAMP)";
         mysql_query($insertNewCheckinSQL) or die(mysql_error());
         return mysql_insert_id();
+    }
+}
+
+/**
+ * Reads a checkin
+ * @param int $checkinID checkin ID
+ * @return array
+ * @throws Exception if $checkinID is not a positive integer
+ * @throws Exception if $checkinID checkin doesn't exists
+ */
+function readCheckin($checkinID){
+    if(!isInteger($checkinID) || $checkinID < 1){
+        throw new Exception("checkinID must be a positive integer");
+    }
+    $selectExistingCheckinSQL = "
+        SELECT *
+        FROM checkins
+        WHERE checkins.id = '$checkinID'";
+    $selectExistingCheckinQuery = mysql_query($selectExistingCheckinSQL) or die(mysql_error());
+    $existingCheckin = mysql_fetch_array($selectExistingCheckinQuery);
+    if($existingCheckin){
+        return $existingCheckin;
+    } else {
+        throw new Exception("checkinID must refer to an existing checkin");
     }
 }
 
@@ -112,30 +136,6 @@ function updateCheckin($checkinID, $cid, $eventID, $payment){
                 checkins.payment = '$payment'
             WHERE checkins.id = '$checkinID'";
         mysql_query($updateExistingCheckinSQL) or die(mysql_query());
-    } else {
-        throw new Exception("checkinID must refer to an existing checkin");
-    }
-}
-
-/**
- * Reads a checkin
- * @param int $checkinID checkin ID
- * @return array
- * @throws Exception if $checkinID is not a positive integer
- * @throws Exception if $checkinID checkin doesn't exists
- */
-function readCheckin($checkinID){
-    if(!isInteger($checkinID) || $checkinID < 1){
-        throw new Exception("checkinID must be a positive integer");
-    }
-    $selectExistingCheckinSQL = "
-        SELECT *
-        FROM checkins
-        WHERE checkins.id = '$checkinID'";
-    $selectExistingCheckinQuery = mysql_query($selectExistingCheckinSQL) or die(mysql_error());
-    $existingCheckin = mysql_fetch_array($selectExistingCheckinQuery);
-    if($existingCheckin){
-        return $existingCheckin;
     } else {
         throw new Exception("checkinID must refer to an existing checkin");
     }

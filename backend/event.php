@@ -27,6 +27,54 @@ require_once 'settings.php';
  * timestamp   | timestamp     | NO   |     | CURRENT_TIMESTAMP | 
  */
 
+function createEvent($date, $name, $organizationID){
+    validateEventDate($date);
+    validateEventName($name);
+    validateOrganizationID($organizationID);
+    $insertEventSQL = "INSERT INTO events VALUES('', '$organizationID', '$name', '$date', '1', CURRENT_TIMESTAMP";
+    mysql_query($insertEventSQL) or die(mysql_error());
+    return readEvent(mysql_insert_id());
+}
+
+function readEvent($eventID){
+    validateEventID($eventID);
+    $getEventSQL = "
+        SELECT *
+        FROM events
+        WHERE events.id = '$eventID'";
+    $getEventQuery = mysql_query($getEventSQL) or die(mysql_error());
+    $event = mysql_fetch_array($getEventQuery);
+    if($event){
+        return $event;
+    } else {
+        throw new Exception("eventID refers to non-existent event");
+    }
+}
+
+function updateEvent($date, $eventID, $name, $organizationID){
+    validateEventDate($date);
+    validateEventID($eventID);
+    validateEventName($name);
+    validateOrganizationID($organizationID);
+    readEvent($eventID);
+    $updateEventSQL = "
+        UPDATE events
+        SET events.date = '$date', events.name = '$name', events.organization_id = '$organizationID'
+        WHERE events.id = '$eventID'";
+    mysql_query($updateEventSQL) or die(mysql_error());
+    return readEvent($eventID);
+}
+
+function deleteEvent($eventID){
+    validateEventID($eventID);
+    readEvent($eventID);
+    $deleteEventSQL = "
+        UPDATE events
+        SET events.status = '0'
+        WHERE events.id = '$eventID'";
+    return readEvent($eventID);
+}
+
 /**
  * Sets event date to null
  * @param int $eventID Event ID

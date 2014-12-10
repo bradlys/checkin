@@ -27,6 +27,54 @@ require_once 'settings.php';
  * timestamp          | timestamp     | NO   |     | CURRENT_TIMESTAMP | 
  */
 
+function createOrganization($email, $name){
+    validateOrganizationEmail($email);
+    validateOrganizationName($name);
+    $createOrganizationSQL = "INSERT INTO organizations VALUES('', '$name', '$email', 1, CURRENT_TIMESTAMP)";
+    mysql_query($createOrganizationSQL) or die (mysql_error());
+    return readOrganization(mysql_insert_id());
+}
+
+function readOrganization($organizationID){
+    validateOrganizationID($organizationID);
+    $selectOrganizationSQL = "
+        SELECT *
+        FROM organizations
+        WHERE organizations.id = '$organizationID'";
+    $selectOrganizationQuery = mysql_query($selectOrganizationSQL) or die(mysql_error());
+    $organization = mysql_fetch_array($selectOrganizationQuery);
+    if($organization){
+        return $organization;
+    } else {
+        throw new Exception("organizationID refers to non-existent organization");
+    }
+}
+
+function updateOrganization($email, $name, $organizationID){
+    validateOrganizationEmail($email);
+    validateOrganizationName($name);
+    validateOrganizationID($organizationID);
+    readOrganization($organizationID);
+    $updateOrganizationSQL = "
+        UPDATE organizations
+        SET organizations.email = '$email', $name = '$name'
+        WHERE organizations.id = '$organizationID'";
+    mysql_query($updateOrganizationSQL) or die(mysql_error());
+    return readOrganization($organizationID);
+}
+
+function deleteOrganization($organizationID){
+    validateOrganizationID($organizationID);
+    readOrganization($organizationID);
+    $deleteOrganizationSQL = "
+        UPDATE organizations
+        SET organizations.status = '0'
+        WHERE organizations.id = '$organizationID'";
+    mysql_query($deleteOrganizationSQL) or die(mysql_error());
+    return readOrganization($organizationID);
+}
+
+
 /**
  * Creates a new organization
  * 
@@ -34,7 +82,7 @@ require_once 'settings.php';
  * @param string $name organization name
  * @return int organization ID
  * @throws Exception if $name is empty
- */
+ */ /*
 function createOrganization($email, $name){
     if(empty($name)){
         throw new Exception("Organization name cannot be empty.");
@@ -42,7 +90,7 @@ function createOrganization($email, $name){
     $createOrganizationSQL = "INSERT INTO organizations VALUES('', '$name', '$email', 1, CURRENT_TIMESTAMP)";
     mysql_query($createOrganizationSQL) or die (mysql_error());
     return mysql_insert_id();
-}
+} */
 
 /**
  * Method for editing the organization information and creating organizations

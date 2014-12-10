@@ -28,6 +28,69 @@ require_once 'settings.php';
  * timestamp   | timestamp     | NO   |     | CURRENT_TIMESTAMP | 
  */
 
+function createCustomer($birthday, $email, $name){
+    validateCustomerBirthday($birthday);
+    validateCustomerName($name);
+    validateCustomerEmail($email);
+    $existingCustomerSQL = "
+        SELECT COUNT(*) as count
+        FROM customers
+        WHERE customers.email = '$email'
+        AND customers.name = '$name'
+        AND customers.status = '1'";
+    $existingCustomerQuery = mysql_query($existingCustomerSQL) or die(mysql_error());
+    $existingCustomer = mysql_fetch_array($existingCustomerQuery);
+    if($existingCustomer['count'] == 0){
+        $insertCustomerSQL = "INSERT INTO customers VALUES('', '$name', '$email', '', '$birthday', '0', '1', CURRENT_TIMESTAMP)";
+        mysql_query($insertCustomerSQL) or die(mysql_error());
+        return readCustomer(mysql_insert_id());
+    } else {
+        throw new Exception("customer already exists with provided name and email");
+    }
+}
+
+function readCustomer($cid){
+    validateCustomerID($cid);
+    $existingCustomerSQL = "
+        SELECT *
+        FROM customers
+        WHERE customers.id = '$cid'";
+    $existingCustomerQuery = mysql_query($existingCustomerSQL) or die(mysql_error());
+    $existingCustomer = mysql_fetch_array($existingCustomerQuery);
+    if($existingCustomer){
+        return $existingCustomer;
+    } else {
+        throw new Exception("customerID refers to non-existent customer");
+    }
+}
+
+function updateCustomer($birthday, $cid, $email, $name, $visits){
+    validateCustomerBirthday($birthday);
+    validateCustomerID($cid);
+    validateCustomerEmail($email);
+    validateCustomerName($name);
+    validateCustomerVisits($visits);
+    readCustomer($cid);
+    $updateCustomerSQL = "
+        UPDATE customers
+        SET customers.birthday = '$birthday', customers.email = '$email',
+            customers.name = '$name', customers.visits = '$visits'
+        WHERE customers.id = '$cid'";
+    mysql_query($updateCustomerSQL) or die(mysql_error());
+    return readCustomer($cid);
+}
+
+function deleteCustomer($cid){
+    validateCustomerID($cid);
+    readCustomer($cid);
+    $updateCustomerSQL = "
+        UPDATE customers
+        SET customers.status = '0'
+        WHERE customers.id = '$cid'";
+    mysql_query($updateCustomerSQL) or die(mysql_error());
+    return readCustomer($cid);
+}
+
 /**
  * Decrements the number of visits for provided customer by 1
  * @param int $cid Customer ID

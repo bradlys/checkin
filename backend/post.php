@@ -36,11 +36,11 @@ $functions = array(
     "searchOrganizations" => array("name")
     );
 $argumentTypes = array(
-    "birthday" => "isDateFormat",
+    "birthday" => "isValidDateFormat",
     "checkinID" => "isPositiveInteger",
     "cid" => "isPositiveInteger",
     "costs" => "isItemCostFormat",
-    "date" => "isDateFormat",
+    "date" => "isValidDateFormat",
     "eventID" => "isPositiveInteger",
     "limit" => "isPositiveInteger",
     "numberOfFreeEntrances" => "isNonNegativeInteger",
