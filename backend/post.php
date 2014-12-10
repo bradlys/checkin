@@ -6,11 +6,48 @@ require_once 'event.php';
 require_once 'organization.php';
 require_once 'settings.php';
 
-$functions = array("checkinCustomer", "checkoutCustomer", "editEvent", "editOrganization", "getCustomerByCheckinID", "getEventCosts", "searchCustomers", "searchEvents", "searchOrganizations");
 $method = $_SERVER['REQUEST_METHOD'];
 if( strtolower($method) != 'post'){
     return;
 }
+$functions = array(
+    "checkinCustomer" => array("birthday", "checkinID", "cid", "email", 
+        "eventID", "name", "numberOfFreeEntrances", "payment",
+        "useFreeEntrance"),
+    "checkoutCustomer" => array("checkinID", "cid", "eventID"),
+    "createCheckin" => array("cid", "eventID", "payment", "useFreeEntrance"),
+    "createCustomer" => array("birthday", "email", "name", 
+        "numberOfFreeEntrances"),
+    "createCustomerAndCheckinCustomer" => array("birthday", "checkinID", "cid",
+        "email", "eventID", "name", "numberOfFreeEntrances", "payment",
+        "useFreeEntrance"),
+    "deleteCheckin" => array("checkinID"),
+    "editCheckin" => array("checkinID", "cid", "eventID", "payment",
+        "useFreeEntrance"),
+    "editCustomerCheckin" => array("birthday", "checkinID", "cid", "email", 
+        "eventID", "name", "numberOfFreeEntrances", "payment",
+        "useFreeEntrance"),
+    "editEvent" => array("costs", "date", "eventID", "name", "organizationID"),
+    "editOrganization" => array("name", "organizationID"),
+    "getCustomerByCheckinID" => array("checkinID"),
+    "getEventCosts" => array("eventID"),
+    "searchCustomers" => array("eventID", "limit", "name"),
+    "searchEvents" => array("name", "organizationID"),
+    "searchOrganizations" => array("name")
+    );
+$argumentTypes = array(
+    "birthday" => "isDateFormat",
+    "checkinID" => "isPositiveInteger",
+    "cid" => "isPositiveInteger",
+    "costs" => "isItemCostFormat",
+    "date" => "isDateFormat",
+    "eventID" => "isPositiveInteger",
+    "limit" => "isPositiveInteger",
+    "numberOfFreeEntrances" => "isNonNegativeInteger",
+    "organizationID" => "isPositiveInteger",
+    "payment" => "isNonNegativeInteger",
+    "useFreeEntrance" => "isBoolean"
+);
 
 /**
  * Breakdown:
@@ -44,22 +81,22 @@ if( strtolower($method) != 'post'){
  * will be echo'd in JSON format. That echo'd JSON encoded string is then
  * returned to the View (Client-side JS) for processing.
  */
-
-if(isset($_POST['purpose'])){
-    $jsonarray = array();
-    $purpose = $_POST['purpose'];
-    $args = parse_post_arguments();
-    if(in_array($purpose, $functions)){
-        try {
+$toEcho = array("error"=>"Unable to achieve anything. Total system failure.");
+try {
+    if(isset($_POST['purpose'])){
+        $purpose = $_POST['purpose'];
+        $args = parse_post_arguments();
+        if(in_array($purpose, $functions)){
             $toEcho = call_user_func_array($purpose, $args);
-        } catch (Exception $e) {
-            $toEcho = array("error"=>$e->getMessage());
+        } else {
+            $toEcho = array("error"=>"Unable to achieve purpose: $purpose");
         }
     } else {
-        $toEcho = array("error"=>"Unable to achieve purpose: $purpose");
+        $toEcho = array("error"=>"Purpose is not set.");
     }
-    echo json_encode($toEcho);
-    return;
+} catch (Exception $e) {
+    $toEcho = array("error"=>$e->getMessage());
 }
-
-return;
+header("HTTP/1.1 200 OK");
+header("Content-type: text/html");
+echo json_encode($toEcho);
