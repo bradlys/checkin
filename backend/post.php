@@ -35,19 +35,25 @@ $functions = array(
     "searchEvents" => array("name", "organizationID"),
     "searchOrganizations" => array("name")
     );
-$argumentTypes = array(
-    "birthday" => "isValidDateFormat",
-    "checkinID" => "isPositiveInteger",
-    "cid" => "isPositiveInteger",
-    "costs" => "isItemCostFormat",
-    "date" => "isValidDateFormat",
-    "eventID" => "isPositiveInteger",
-    "limit" => "isPositiveInteger",
-    "numberOfFreeEntrances" => "isNonNegativeInteger",
-    "organizationID" => "isPositiveInteger",
-    "payment" => "isNonNegativeInteger",
-    "useFreeEntrance" => "isBoolean"
-);
+
+function parse_arguments($functions){
+    $isPurposeSet = isset($_POST['purpose']);
+    if($isPurposeSet){
+        $purpose = $_POST['purpose'];
+        $isPurposeInFunctionArray = in_array($purpose, $functions);
+        if($isPurposeInFunctionArray){
+            $args = $functions[$purpose];
+            $formattedParams = array();
+            foreach($args as $arg){
+                
+            }
+        } else {
+            throw new Exception("purpose is invalid");
+        }
+    } else {
+        throw new Exception("purpose is not set");
+    }
+}
 
 /**
  * Breakdown:
@@ -86,10 +92,11 @@ try {
     if(isset($_POST['purpose'])){
         $purpose = $_POST['purpose'];
         $args = parse_post_arguments();
-        if(in_array($purpose, $functions)){
+        $function_keys = array_keys($functions);
+        if(in_array($purpose, $function_keys)){
             $toEcho = call_user_func_array($purpose, $args);
         } else {
-            $toEcho = array("error"=>"Unable to achieve purpose: $purpose");
+            $toEcho = array("error"=>"Unable to find purpose: $purpose");
         }
     } else {
         $toEcho = array("error"=>"Purpose is not set.");
