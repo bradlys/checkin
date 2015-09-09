@@ -2,7 +2,7 @@
 
 /**
  * Currently this is the landing page and where you can select, edit, and create an organization.
- * Organizatiosns hold events.
+ * Organizations hold events.
  * Events check-in users.
  */
 
