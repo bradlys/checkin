@@ -1,5 +1,8 @@
 # Check-In App
 
+### Status:
+Check-In App is currently abandoned. I would do more work on it but I've been consumed with other priorities. Currently, the project is in a date of disrepair and between deployment cycles. Normally, I would have branched off these things and it'd be no big deal but as the only developer I didn't bother. So while everything may technically work, there is a bunch of code in there that shouldn't be or is halfway done. Similarly, the "RESTful" nature of it isn't really 100% kosher. Normally, methods would actually use a get/put/post/update/whatever when hitting the API but I didn't cause reasons. Still, it's a valid API (cause I said so) and does the job.
+
 ## What is it?
 
 Check-In App (CIA) is a web application used to check-in customers at events an organization holds.  
