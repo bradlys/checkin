@@ -9,8 +9,6 @@ Check-In App (CIA) is a web application used to check-in customers at events an 
 
 The target audience of this application is social dances. Social dances frequently don't keep track of how many customers paid for entry. The way many dances find out how many people entered the dance is through counting how much money they have in the till at the end of the night. The reason for this is that it is difficult to keep accurate physical records and to interpret the data in a meaningful way. And physical records tend to be kept as a series of tally marks to indicate how many people paid to enter under a couple columns for different entry costs. This is only slightly better than just counting the till at the end of night. I can proudly say that I've seen one dance step up their tally marks even further by marking times of the night on the tally sheet and how many tally marks were made between times. (e.g. There were 20 tally marks between 9:00-9:30) That's work and still lags behind what you could do. This is where CIA comes in, streamlines the process, and makes sensible data out of customer entries.  
 
-Right now, CIA is in active development. An active production demo of CIA is viewable at http://bradly.me/checkin/
-
 ## How does it work?
 
 ### Overview
