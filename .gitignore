@@ -1,1 +1,4 @@
 nbproject/
+.idea/
+backend/database.php
+*/error_log
