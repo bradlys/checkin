@@ -48,3 +48,6 @@ I did, right? OK, just making sure. There's more you'll need to do in the future
 
 I am not currently accepting work from others on this project. However, you're welcome to check the Issues page on https://github.com/Schlenkerb/checkin/issues 
 
+## License
+
+[MIT (c) 2015 Bradly Schlenker](LICENSE)
